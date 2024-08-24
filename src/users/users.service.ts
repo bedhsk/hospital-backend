@@ -8,51 +8,54 @@ import { RolesService } from './roles/roles.service';
 
 @Injectable()
 export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    private readonly rolesService: RolesService,
+  ) {}
 
-    constructor(
-        @InjectRepository(User) 
-        private readonly usersRepository: Repository<User>,
-        private readonly rolesService: RolesService
-        ){}
-        
+  findAll() {
+    const record = this.usersRepository.find({
+      where: { is_Active: true },
+      relations: ['role'],
+    });
+    return record;
+  }
 
-        findAll()
-        {
-            return this.usersRepository.find();
-        }
-        async findOne(id: number)
-        {
-            const record = await this.usersRepository.findOne({where:{id},});
-            if(record===null){
-              throw new NotFoundException(`Usuario #${id} no encontrado`);
+  async findOne(id: number) {
+    const record = await this.usersRepository.findOne({ where: { id }, relations: ['role']});
+    if (record === null) {
+      throw new NotFoundException(`Usuario #${id} no encontrado`);
+    }
+    return record;
+  }
 
-            }
-            return record;
-        }
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const { roleId, ...userData } = createUserDto;
+    const role = await this.rolesService.findOne(createUserDto.roleId);
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
-        create(new_user: CreateUserDto)
-        {
-          const role = this.rolesService.findOne(new_user.roleId)
-         if (role!==null)
-         {
-            const user = this.usersRepository.create(new_user);
-            return this.usersRepository.save(user);
-         }
-          
-         return null;
-        }
+    const user = this.usersRepository.create({ ...userData, role });
+    return this.usersRepository.save(user);
+  }
 
-        async update(id: number,update_user: UpdateUserDto)
-        {
-          const user =  await this.findOne(id);
-          this.usersRepository.merge(user, update_user);
-          return this.usersRepository.save(user);
-        }
-
-        async remove(id:number)
-        {
-          const user = await this.findOne(id);
-          return this.usersRepository.remove(user);
+  async update(id: number, update_user: UpdateUserDto) {
+    const user = await this.findOne(id);
+    const { roleId, ...userData } = update_user;
+    const role = await this.rolesService.findOne(update_user.roleId);
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
     
-        }
+    this.usersRepository.merge(user, {...userData, role});
+    return this.usersRepository.save(user);
+  }
+
+  async remove(id: number) {
+    const user = await this.findOne(id);
+    user.is_Active = false;
+    await this.usersRepository.save(user);
+  }
 }

@@ -1,4 +1,9 @@
-import { IsEmail, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength, ValidateNested, isNumber } from "class-validator";
+
+
+import CreateRoleDto from "./create-role.dto";
+
+import { RelationId } from "typeorm";
 class CreateUserDto {
 
     @IsString()
@@ -21,11 +26,14 @@ class CreateUserDto {
     email: string;
 
     @IsString()
-    password: string;
+    password: string;    
+
 
     @IsNumber()
-    roleId:number;
-    
+    roleId: number;
+ 
+
+
 }
 
 export default CreateUserDto;
