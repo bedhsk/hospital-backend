@@ -27,6 +27,15 @@ import * as Joi from 'joi';
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: false,
+      ssl: process.env.POSTGRES_SSL === 'true',
+      extra: {
+        ssl:
+          process.env.POSTGRES_SSL === 'true'
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
+      },
     }),
   ],
   controllers: [AppController],
