@@ -26,7 +26,7 @@ import * as Joi from 'joi';
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
       ssl: process.env.POSTGRES_SSL === 'true',
       extra: {
         ssl:
