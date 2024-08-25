@@ -8,17 +8,26 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import CreateUserDto from './dto/create-user.dto';
 import User from './entities/user.entity';
+import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import Role from './entities/role.entity';
+import { IsPublic } from 'src/common/is-public.decorator';
+import { JwtGuard } from 'src/auth/jwt.guard';
+import { RoleGuard } from 'src/auth/role.guard';
+
 
 @ApiTags('users')
 @Controller('users')
+@UseGuards(JwtGuard, RoleGuard)
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @AuthorizedRoles()
   @Get()
   @ApiCreatedResponse({
     description:
@@ -29,6 +38,7 @@ export class UsersController {
     return records;
   }
 
+  @AuthorizedRoles()
   @Get(':id')
   @ApiCreatedResponse({
     description:
@@ -38,6 +48,7 @@ export class UsersController {
     return this.userService.findOne(id);
   }
 
+  @AuthorizedRoles()
   @Post()
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para crear nuevos usuarios',
@@ -51,6 +62,7 @@ export class UsersController {
     return response;
   }
 
+  @AuthorizedRoles()
   @Patch(':id')
   @ApiCreatedResponse({
     description:
@@ -60,6 +72,7 @@ export class UsersController {
     return this.userService.update(id, body);
   }
 
+  @AuthorizedRoles()
   @Delete(':id')
   @ApiCreatedResponse({
     description:

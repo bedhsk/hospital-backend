@@ -23,25 +23,25 @@ export default class User {
   @ApiProperty({
     description: 'Nombre del empleado',
   })
-  name: String;
+  name: string;
 
   @Column({ type: 'varchar', length: 60 })
   @ApiProperty({
     description: 'Apellido del empleado',
   })
-  lastname: String;
+  lastname: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 50, unique: true})
   @ApiProperty({
     description: 'Nombre de usuario del empleado',
   })
-  username: String;
+  username: string;
 
   @Column({ type: 'varchar' })
   @ApiProperty({
     description: 'Direccion de correo Electronico del empleaod',
   })
-  email: String;
+  email: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   @ApiProperty({
@@ -60,7 +60,7 @@ export default class User {
   @ApiProperty({
     description: 'Muestra si el usuario esta activo para su uso',
   })
-  is_Active: Boolean;
+  is_Active: boolean;
 
   @ManyToOne(() => Role, (role) => role.users)
   @JoinColumn({ name: 'roleId' })

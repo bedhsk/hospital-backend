@@ -23,9 +23,17 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const record = await this.usersRepository.findOne({ where: { id }, relations: ['role']});
+    const record = await this.usersRepository.findOne({ where: { id, is_Active: true}, relations: ['role']});
     if (record === null) {
       throw new NotFoundException(`Usuario #${id} no encontrado`);
+    }
+    return record;
+  }
+
+  async findOneByUsername(username: string) {
+    const record = await this.usersRepository.findOne({ where: { username, is_Active: true }, relations: ['role']});
+    if (record === null) {
+      throw new NotFoundException(`Usuario #${username} no encontrado`);
     }
     return record;
   }
