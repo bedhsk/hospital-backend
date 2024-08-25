@@ -11,8 +11,8 @@ export class CreateUsersSeed {
     const adminRole = await roleRepository.findOneBy({ name: 'Admin' });
     const doctorRole = await roleRepository.findOneBy({ name: 'Doctor' });
 
-    const passwordAdminHash = await bcrypt.hash('admin.hospital24', 10);
-    const passwordDoctorHash = await bcrypt.hash('admin.hospital24', 10);
+    const passwordAdminHash = await bcrypt.hash('admin.hsptl24*', 10);
+    const passwordDoctorHash = await bcrypt.hash('doctorahsptl24', 10);
     const users = [
       {
         name: 'Admin',
