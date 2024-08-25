@@ -9,6 +9,7 @@ import * as Joi from 'joi';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: '.env.local',
       validationSchema: Joi.object({
         DB_HOST: Joi.string().required(),
