@@ -20,7 +20,6 @@ import { IsPublic } from 'src/common/is-public.decorator';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
 
-
 @ApiTags('users')
 @Controller('users')
 @UseGuards(JwtGuard, RoleGuard)
@@ -48,7 +47,8 @@ export class UsersController {
     return this.userService.findOne(id);
   }
 
-  @AuthorizedRoles()
+  // @AuthorizedRoles()
+  @IsPublic()
   @Post()
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para crear nuevos usuarios',
