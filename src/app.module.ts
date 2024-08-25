@@ -3,11 +3,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: '.env.local',
       validationSchema: Joi.object({
         DB_HOST: Joi.string().required(),
@@ -28,6 +31,8 @@ import * as Joi from 'joi';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
