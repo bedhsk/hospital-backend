@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import CreateUserDto from './dto/create-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
 import { RolesService } from './roles/roles.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -56,7 +57,7 @@ export class UsersService {
     if (!role) {
       throw new NotFoundException('Role not found');
     }
-    
+    userData.password = await bcrypt.hash(userData.password, 10);
     this.usersRepository.merge(user, {...userData, role});
     return this.usersRepository.save(user);
   }

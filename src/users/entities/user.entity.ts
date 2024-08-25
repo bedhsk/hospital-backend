@@ -11,6 +11,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
 @Entity('users')
 export default class User {
   @PrimaryGeneratedColumn()
@@ -31,7 +32,7 @@ export default class User {
   })
   lastname: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true})
+  @Column({ type: 'varchar', length: 50, unique: true })
   @ApiProperty({
     description: 'Nombre de usuario del empleado',
   })
