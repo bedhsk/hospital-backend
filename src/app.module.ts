@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { MedicamentosModule } from './medicamentos/medicamentos.module';
+import { IndiceMedicamentosModule } from './indice_medicamentos/indice_medicamentos.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -28,6 +30,8 @@ import * as Joi from 'joi';
       autoLoadEntities: true,
       synchronize: false,
     }),
+    MedicamentosModule,
+    IndiceMedicamentosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

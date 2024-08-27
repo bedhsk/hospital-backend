@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import IndiceMedicamento from "src/indice_medicamento/entities/indice_medicamento.entity";
+import IndiceMedicamento from "src/indice_medicamentos/entities/indice_medicamento.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('medicamentos')
@@ -8,7 +8,7 @@ class Medicamento {
     @ApiProperty()
     id: number;
 
-    @Column({ type: 'boolean', default: true })
+    @Column({ type: 'boolean', default: false })
     @ApiProperty()
     trazador: boolean;
 

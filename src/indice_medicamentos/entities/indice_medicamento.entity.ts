@@ -18,11 +18,15 @@ class IndiceMedicamento {
 
     @Column({ type: 'int'})
     @ApiProperty()
-    excelencia_fisica: number;
+    existencia_fisica: number;
 
     @Column({ type: 'float'})
     @ApiProperty()
-    existencia_fisica: number;
+    existencia_disponible: number;
+
+    @Column({ type: 'varchar', length: 50 })
+    @ApiProperty()
+    puesto: string;
 
 }
 export default IndiceMedicamento;
