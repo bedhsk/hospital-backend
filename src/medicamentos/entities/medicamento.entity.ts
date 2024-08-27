@@ -1,11 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import IndiceMedicamento from "src/indice_medicamento/entities/indice_medicamento.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('medicamentos')
 class Medicamento {
     @PrimaryGeneratedColumn()
     @ApiProperty()
     id: number;
+
+    @Column({ type: 'boolean', default: true })
+    @ApiProperty()
+    trazador: boolean;
 
     @Column({ type: 'varchar', length: 255 })
     @ApiProperty()
@@ -17,17 +22,10 @@ class Medicamento {
 
     @Column({ type: 'varchar', length: 255 })
     @ApiProperty()
-    medicamento: string;
+    nombre: string;
 
-    @Column({ type: 'int'})
-    @ApiProperty()
-    promedio_mensual: number;
-
-    @Column({ type: 'int'})
-    @ApiProperty()
-    existencia: number;
-
-    @Column({ type: 'float'})
-    @ApiProperty()
-    meses_existencia: number;
+    @OneToMany(() => IndiceMedicamento, (indiceMedicamento) => indiceMedicamento.medicamento)
+    @ApiProperty({ type: () => IndiceMedicamento, isArray: true })
+    indices: IndiceMedicamento[];
 }
+export default Medicamento;
