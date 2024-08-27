@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsString, MaxLength, Min, MinLength } from "class
 export default class CreateIndiceMedicamentoDto {
     @IsNumber()
     @IsNotEmpty()
-    medicamento: number;
+    medicamentoId: number;
 
     @IsNumber()
     promedio_demanda_real: number;

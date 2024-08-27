@@ -8,6 +8,7 @@ import IndiceMedicamento from './entities/indice_medicamento.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([IndiceMedicamento])],
   providers: [IndiceMedicamentosService],
-  controllers: [IndiceMedicamentosController]
+  controllers: [IndiceMedicamentosController],
+  exports: [IndiceMedicamentosService],
 })
 export class IndiceMedicamentosModule {}

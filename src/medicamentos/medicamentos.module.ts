@@ -7,6 +7,7 @@ import Medicamento from './entities/medicamento.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Medicamento])],
   providers: [MedicamentosService],
-  controllers: [MedicamentosController]
+  controllers: [MedicamentosController],
+  exports: [MedicamentosService],
 })
 export class MedicamentosModule {}
