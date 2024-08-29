@@ -21,8 +21,6 @@ import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Roles')
 @Controller('roles')
-// Sirve para colocar los guardianes tanto de token como de roles
-@UseGuards(JwtGuard, RoleGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
   /**
@@ -45,12 +43,11 @@ export class RolesController {
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para retornar un role existente',
   })
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.rolesService.findOne(id);
   }
 
-  // @AuthorizedRoles()
-  @IsPublic()
+  @AuthorizedRoles()
   @Post()
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para crear nuevos Roles',
@@ -65,7 +62,7 @@ export class RolesController {
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para actualizar un role existente',
   })
-  update(@Param('id') id: number, @Body() body) {
+  update(@Param('id') id: string, @Body() body) {
     return this.rolesService.update(id, body);
   }
 
@@ -75,7 +72,7 @@ export class RolesController {
     description: 'Este endpoint sirve para eliminar un role existente',
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  destroy(@Param('id') id: number) {
+  destroy(@Param('id') id: string) {
     return this.rolesService.remove(id);
   }
 }

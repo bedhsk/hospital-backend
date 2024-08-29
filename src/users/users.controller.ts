@@ -22,7 +22,6 @@ import { RoleGuard } from 'src/auth/role.guard';
 
 @ApiTags('users')
 @Controller('users')
-@UseGuards(JwtGuard, RoleGuard)
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
@@ -43,12 +42,11 @@ export class UsersController {
     description:
       'Este endpoint sirve para encontrar un usuario por medio del ID',
   })
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
-  // @AuthorizedRoles()
-  @IsPublic()
+  @AuthorizedRoles()
   @Post()
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para crear nuevos usuarios',
@@ -68,7 +66,7 @@ export class UsersController {
     description:
       'Este endpoint sirve para actualizar datos de los usarios existentes',
   })
-  update(@Param('id') id: number, @Body() body) {
+  update(@Param('id') id: string, @Body() body) {
     return this.userService.update(id, body);
   }
 
@@ -79,7 +77,7 @@ export class UsersController {
       'Este endpoint sirve para poner un usuario en estado desactivado',
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
 }
