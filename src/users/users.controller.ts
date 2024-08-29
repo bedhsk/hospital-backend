@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
@@ -19,6 +20,8 @@ import Role from './entities/role.entity';
 import { IsPublic } from 'src/common/is-public.decorator';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
+import QueryUserDto from './dto/query-user.dto';
+import UpdateUserDto from './dto/update-user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -31,8 +34,9 @@ export class UsersController {
     description:
       'Este endpoint sirve para devolver todos los usarios que estan activos',
   })
-  findAll() {
-    const records = this.userService.findAll();
+  findAll(@Query() query: QueryUserDto) {
+    console.log(query)
+    const records = this.userService.findAll(query);
     return records;
   }
 
@@ -66,7 +70,7 @@ export class UsersController {
     description:
       'Este endpoint sirve para actualizar datos de los usarios existentes',
   })
-  update(@Param('id') id: string, @Body() body) {
+  update(@Param('id') id: string, @Body() body: UpdateUserDto) {
     return this.userService.update(id, body);
   }
 

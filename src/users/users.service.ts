@@ -6,6 +6,7 @@ import CreateUserDto from './dto/create-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
 import { RolesService } from './roles/roles.service';
 import * as bcrypt from 'bcrypt';
+import QueryUserDto from './dto/query-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -15,12 +16,43 @@ export class UsersService {
     private readonly rolesService: RolesService,
   ) {}
 
-  findAll() {
-    const record = this.usersRepository.find({
-      where: { is_Active: true },
-      relations: ['role'],
-    });
-    return record;
+  async findAll(query: QueryUserDto) {
+    const { name, role, currentPage, limit} = query;
+    const queryBuilder = this.usersRepository.createQueryBuilder('user')
+    .leftJoinAndSelect('user.role', 'role')
+    .select([
+      'user.id',
+      'user.name',
+      'user.lastname',
+      'user.username',
+      'user.email',
+      'role.id',
+      'role.name'
+    ]);
+
+    if (name) {
+      queryBuilder.andWhere('user.name LIKE :name', { name: `${name}` });
+    }
+
+    if (role) {
+      queryBuilder.andWhere('role.name = :role', { role });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+
+    const users = await queryBuilder
+      .skip((currentPage - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: users,
+      totalItems,
+      totalPages,
+      currentPage,
+    };
   }
 
   async findOne(id: string) {

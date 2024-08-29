@@ -19,7 +19,6 @@ export class RoleGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-    console.log("Usuario: " , user)
 
     // Allow access to users with 'Admin' or 'Gerente' roles
     const hasAdminOrManagerRole = user?.role?.name === 'Admin' || user?.role?.name === 'Gerente';
