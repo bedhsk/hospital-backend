@@ -27,6 +27,8 @@ export class UsersService {
         'user.lastname',
         'user.username',
         'user.email',
+        'user.createdAt',
+        'user.updatedAt',
         'role.id',
         'role.name'
       ]);
