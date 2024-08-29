@@ -17,7 +17,7 @@ export class RolesService {
         return this.rolesRepository.find();
     }
 
-    async findOne(id: number)
+    async findOne(id: string)
     {
         const record = await this.rolesRepository.findOne({where:{id},});
         if(record===null){
@@ -34,14 +34,14 @@ export class RolesService {
     
     }
 
-    async update(id: number,update_user: UpdateRoleDto)
+    async update(id: string,update_user: UpdateRoleDto)
     {
       const user =  await this.findOne(id);
       this.rolesRepository.merge(user, update_user);
       return this.rolesRepository.save(user);
     }
 
-    async remove(id:number)
+    async remove(id: string)
     {
       const user = await this.findOne(id);
       return this.rolesRepository.remove(user);

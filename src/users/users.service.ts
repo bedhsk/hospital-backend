@@ -23,7 +23,7 @@ export class UsersService {
     return record;
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const record = await this.usersRepository.findOne({ where: { id, is_Active: true}, relations: ['role']});
     if (record === null) {
       throw new NotFoundException(`Usuario #${id} no encontrado`);
@@ -50,19 +50,22 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async update(id: number, update_user: UpdateUserDto) {
+  async update(id: string, update_user: UpdateUserDto) {
     const user = await this.findOne(id);
     const { roleId, ...userData } = update_user;
     const role = await this.rolesService.findOne(update_user.roleId);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
-    userData.password = await bcrypt.hash(userData.password, 10);
+    console.log(userData.password)
+    if (userData.password !== undefined){
+      userData.password = await bcrypt.hash(userData.password, 10);
+    }
     this.usersRepository.merge(user, {...userData, role});
     return this.usersRepository.save(user);
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.findOne(id);
     user.is_Active = false;
     await this.usersRepository.save(user);

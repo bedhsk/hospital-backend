@@ -4,11 +4,11 @@ import { ApiProperty } from "@nestjs/swagger";
 
 @Entity('roles')
 class Role {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     @ApiProperty({
         description: 'ID unico para los Roles',
       })
-    id: number;
+    id: string;
 
     @Column({ type: 'varchar', length: 60})
     @ApiProperty({

@@ -1,4 +1,4 @@
-import { IsEmail, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
 
 class CreateUserDto {
 
@@ -24,8 +24,8 @@ class CreateUserDto {
     @IsString()
     password: string;    
 
-    @IsNumber()
-    roleId: number;
+    @IsString()
+    roleId: string;
 
 }
 
