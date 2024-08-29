@@ -8,16 +8,13 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import CreateRoleDto from '../dto/create-role.dto';
 import { RolesService } from './roles.service';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import Role from '../entities/role.entity';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
-import { JwtGuard } from 'src/auth/jwt.guard';
-import { RoleGuard } from 'src/auth/role.guard';
-import { IsPublic } from 'src/common/is-public.decorator';
+import UpdateRoleDto from '../dto/update-role.dto';
 
 @ApiTags('Roles')
 @Controller('roles')
@@ -62,7 +59,7 @@ export class RolesController {
   @ApiCreatedResponse({
     description: 'Este endpoint sirve para actualizar un role existente',
   })
-  update(@Param('id') id: string, @Body() body) {
+  update(@Param('id') id: string, @Body() body: UpdateRoleDto) {
     return this.rolesService.update(id, body);
   }
 

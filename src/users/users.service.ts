@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import User from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,21 +14,22 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly rolesService: RolesService,
-  ) {}
+  ) { }
 
   async findAll(query: QueryUserDto) {
-    const { name, role, currentPage, limit} = query;
+    const { name, role, currentPage, limit } = query;
     const queryBuilder = this.usersRepository.createQueryBuilder('user')
-    .leftJoinAndSelect('user.role', 'role')
-    .select([
-      'user.id',
-      'user.name',
-      'user.lastname',
-      'user.username',
-      'user.email',
-      'role.id',
-      'role.name'
-    ]);
+      .where({ is_Active: true })
+      .leftJoinAndSelect('user.role', 'role')
+      .select([
+        'user.id',
+        'user.name',
+        'user.lastname',
+        'user.username',
+        'user.email',
+        'role.id',
+        'role.name'
+      ]);
 
     if (name) {
       queryBuilder.andWhere('user.name LIKE :name', { name: `${name}` });
@@ -56,7 +57,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const record = await this.usersRepository.findOne({ where: { id, is_Active: true}, relations: ['role']});
+    const record = await this.usersRepository.findOne({ where: { id, is_Active: true }, relations: ['role'] });
     if (record === null) {
       throw new NotFoundException(`Usuario #${id} no encontrado`);
     }
@@ -64,7 +65,7 @@ export class UsersService {
   }
 
   async findOneByUsername(username: string) {
-    const record = await this.usersRepository.findOne({ where: { username, is_Active: true }, relations: ['role']});
+    const record = await this.usersRepository.findOne({ where: { username, is_Active: true }, relations: ['role'] });
     if (record === null) {
       throw new NotFoundException(`Usuario #${username} no encontrado`);
     }
@@ -72,28 +73,52 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { roleId, ...userData } = createUserDto;
+    const { roleId, username, ...userData } = createUserDto;
     const role = await this.rolesService.findOne(createUserDto.roleId);
+
+    const existingUser = await this.usersRepository.findOne({ where: { username } });
+    if (existingUser) {
+      throw new ConflictException('Username already exists');
+    }
+
     if (!role) {
       throw new NotFoundException('Role not found');
     }
 
-    const user = this.usersRepository.create({ ...userData, role });
+    const user = this.usersRepository.create({ ...userData, role, username });
     return this.usersRepository.save(user);
   }
 
   async update(id: string, update_user: UpdateUserDto) {
     const user = await this.findOne(id);
-    const { roleId, ...userData } = update_user;
-    const role = await this.rolesService.findOne(update_user.roleId);
-    if (!role) {
-      throw new NotFoundException('Role not found');
+    const { roleId, username, ...userData } = update_user;
+
+    // Verificar si el username existe y es diferente al del usuario actual
+    if (username && username !== user.username) {
+      const existingUser = await this.usersRepository.findOne({ where: { username } });
+      if (existingUser) {
+        throw new ConflictException('Username already exists');
+      }
+      user.username = username;
     }
-    console.log(userData.password)
-    if (userData.password !== undefined){
-      userData.password = await bcrypt.hash(userData.password, 10);
+
+    // Verificar si se envió un roleId y actualizar solo si se envía
+    if (roleId) {
+      const role = await this.rolesService.findOne(roleId);
+      if (!role) {
+        throw new NotFoundException('Role not found');
+      }
+      user.role = role;
     }
-    this.usersRepository.merge(user, {...userData, role});
+
+    // Si se envía un password, hashearlo antes de actualizar
+    if (userData.password !== undefined) {
+      user.password = await bcrypt.hash(userData.password, 10);
+    }
+
+    // Mergear los otros datos del usuario
+    this.usersRepository.merge(user, userData);
+
     return this.usersRepository.save(user);
   }
 

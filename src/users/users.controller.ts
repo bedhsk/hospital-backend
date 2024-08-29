@@ -9,24 +9,19 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import CreateUserDto from './dto/create-user.dto';
 import User from './entities/user.entity';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
-import Role from './entities/role.entity';
-import { IsPublic } from 'src/common/is-public.decorator';
-import { JwtGuard } from 'src/auth/jwt.guard';
-import { RoleGuard } from 'src/auth/role.guard';
 import QueryUserDto from './dto/query-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly userService: UsersService) { }
 
   @AuthorizedRoles()
   @Get()
@@ -47,6 +42,7 @@ export class UsersController {
       'Este endpoint sirve para encontrar un usuario por medio del ID',
   })
   findOne(@Param('id') id: string) {
+    console.log(id)
     return this.userService.findOne(id);
   }
 
