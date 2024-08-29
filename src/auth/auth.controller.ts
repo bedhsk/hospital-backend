@@ -19,7 +19,7 @@ export class AuthController {
             sub: user.id,
             name: `${user.name} ${user.lastname}`,
             iat: new Date().getTime(),
-            role: user.role,
+            role: user.role?.name,
         }
 
         const accessToken = await this.jwtService.signAsync(payload);
