@@ -17,7 +17,7 @@ export class RolesService {
         return this.rolesRepository.find();
     }
 
-    async findOne(id: number)
+    async findOne(id: string)
     {
         const record = await this.rolesRepository.findOne({where:{id},});
         if(record===null){
@@ -26,25 +26,25 @@ export class RolesService {
         return record;
     }
 
-    create(new_user: CreateRoleDto)
+    create(new_role: CreateRoleDto)
     {
-      const user = this.rolesRepository.create(new_user);
-      return this.rolesRepository.save(user);
+      const role = this.rolesRepository.create(new_role);
+      return this.rolesRepository.save(role);
 
     
     }
 
-    async update(id: number,update_user: UpdateRoleDto)
+    async update(id: string, update_role: UpdateRoleDto)
     {
-      const user =  await this.findOne(id);
-      this.rolesRepository.merge(user, update_user);
-      return this.rolesRepository.save(user);
+      const role =  await this.findOne(id);
+      this.rolesRepository.merge(role, update_role);
+      return this.rolesRepository.save(role);
     }
 
-    async remove(id:number)
+    async remove(id: string)
     {
-      const user = await this.findOne(id);
-      return this.rolesRepository.remove(user);
+      const role = await this.findOne(id);
+      return this.rolesRepository.remove(role);
 
     }
     

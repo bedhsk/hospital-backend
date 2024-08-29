@@ -14,11 +14,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('users')
 export default class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Id Unico de usuario',
   })
-  id: number;
+  id: string;
 
   @Column({ type: 'varchar', length: 60 })
   @ApiProperty({

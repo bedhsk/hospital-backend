@@ -5,9 +5,9 @@ import Role from "src/users/entities/role.entity";
 import { UsersService } from "src/users/users.service";
 
 type Payload = {
-    sub: number;
+    sub: string;
     name: string;
-    role: Role;
+    role: string;
     iat: number;
 }
 
