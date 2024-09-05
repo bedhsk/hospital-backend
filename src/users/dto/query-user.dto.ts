@@ -5,16 +5,16 @@ class QueryUserDto {
 
     @IsOptional()
     @IsString()
-    name?: string;
+    q?: string;
     
     @IsOptional()
     @IsString()
-    role?: string;
+    filter?: string;
     
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
-    currentPage: number = 1;
+    page: number = 1;
 
     @IsOptional()
     @IsNumber()
