@@ -9,6 +9,7 @@ import { InsumosModule } from './insumos/insumos.module';
 import { IndiceInsumosModule } from './indice_insumos/indice_insumos.module';
 import { LotesModule } from './lotes/lotes.module';
 import { MovimientoInsumosModule } from './movimiento_insumos/movimiento_insumos.module';
+import { CategoriasModule } from './categorias/categorias.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -40,6 +41,7 @@ import * as Joi from 'joi';
     IndiceInsumosModule,
     LotesModule,
     MovimientoInsumosModule,
+    CategoriasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
