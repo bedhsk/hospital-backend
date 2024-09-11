@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { InsumosModule } from './insumos/insumos.module';
 import { LotesModule } from './lotes/lotes.module';
 import { CategoriasModule } from './categorias/categorias.module';
+import { InsumoDepartamentoModule } from './insumo_departamentos/insumo_departamentos.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -35,6 +36,7 @@ import * as Joi from 'joi';
     InsumosModule,
     LotesModule,
     CategoriasModule,
+    InsumoDepartamentoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

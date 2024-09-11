@@ -1,46 +1,43 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import Departamento from './entities/departamento.entity';
 import CreateDepartamentoDto from './dto/create-departamento.dto';
 import UpdateDepartamentoDto from './dto/update-departamento.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import Departamento from './entities/departamento.entity';
-import { Repository } from 'typeorm';
+
 
 @Injectable()
-export class DepartamentosService {
-  constructor(
-    @InjectRepository(Departamento)
-    private readonly departamentosRepository: Repository<Departamento>,
-  ) {}
+export class DepartamentoService {
+    constructor(
+        @InjectRepository(Departamento)
+        private readonly departamentoRepository: Repository<Departamento>,
+    ) {}
 
-  create(createDepartamentoDto: CreateDepartamentoDto): Promise<Departamento> {
-    const record = this.departamentosRepository.create(createDepartamentoDto);
-    return this.departamentosRepository.save(record);
-  }
-
-  findAll() {
-    return this.departamentosRepository.find();
-  }
-
-  async findOne(id: string) {
-    const record = await this.departamentosRepository.findOne({
-      where: { id, is_Active: true },
-    });
-    if (record === null) {
-      throw new NotFoundException(`Departamento #${id} no encontrado`);
+    async findAll() {
+        return await this.departamentoRepository.find();
     }
-    return record;
-  }
 
-  async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
-    const depto = await this.findOne(id);
-    this.departamentosRepository.merge(depto, updateDepartamentoDto);
-    return this.departamentosRepository.save(depto);
-  }
+    async findOne(id: string) {
+        const departamento = await this.departamentoRepository.findOne({ where: { id } });
+        if (!departamento) {
+            throw new NotFoundException(`Departamento con ID ${id} no encontrado`);
+        }
+        return departamento;
+    }
 
-  async remove(id: string) {
-    const depto = await this.findOne(id);
-    depto.is_Active = false;
-    await this.departamentosRepository.save(depto);
-    return 'Departamento desactivado exitosamente';
-  }
+    async create(createDepartamentoDto: CreateDepartamentoDto) {
+        const departamento = this.departamentoRepository.create(createDepartamentoDto);
+        return await this.departamentoRepository.save(departamento);
+    }
+
+    async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
+        const departamento = await this.findOne(id);
+        this.departamentoRepository.merge(departamento, updateDepartamentoDto);
+        return await this.departamentoRepository.save(departamento);
+    }
+
+    async remove(id: string) {
+        const departamento = await this.findOne(id);
+        return await this.departamentoRepository.remove(departamento);
+    }
 }

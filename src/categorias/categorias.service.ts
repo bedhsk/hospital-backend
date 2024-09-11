@@ -12,41 +12,31 @@ export class CategoriasService {
         private readonly categoriaRepository: Repository<Categoria>,
     ) {}
 
-    // Obtener todas las categorías que están activas
-    findAll() {
-        return this.categoriaRepository.find({ where: { is_active: true } });
+    async findAll() {
+        return await this.categoriaRepository.find();
     }
 
-    // Obtener una categoría por ID (solo si está activa)
     async findOne(id: string) {
-        const categoria = await this.categoriaRepository.findOne({ where: { id, is_active: true } });
-
+        const categoria = await this.categoriaRepository.findOne({ where: { id } });
         if (!categoria) {
-            throw new NotFoundException(`Categoría con id ${id} no encontrada`);
+            throw new NotFoundException(`Categoría con ID ${id} no encontrada`);
         }
-
         return categoria;
     }
 
-    // Crear una nueva categoría
-    create(createCategoriaDto: CreateCategoriaDto) {
+    async create(createCategoriaDto: CreateCategoriaDto) {
         const categoria = this.categoriaRepository.create(createCategoriaDto);
-        return this.categoriaRepository.save(categoria);
+        return await this.categoriaRepository.save(categoria);
     }
 
-    // Actualizar una categoría
     async update(id: string, updateCategoriaDto: UpdateCategoriaDto) {
-        const categoria = await this.findOne(id);  // Asegurarse de que la categoría existe
+        const categoria = await this.findOne(id);
         this.categoriaRepository.merge(categoria, updateCategoriaDto);
-        return this.categoriaRepository.save(categoria);
+        return await this.categoriaRepository.save(categoria);
     }
 
-    // Realizar un soft delete marcando is_active a false
     async remove(id: string) {
-        const categoria = await this.findOne(id);  // Asegurarse de que la categoría existe
-
-        // Realiza el "soft delete" actualizando is_active a false
-        categoria.is_active = false;
-        return this.categoriaRepository.save(categoria);  // Guarda la categoría actualizada
+        const categoria = await this.findOne(id);
+        return await this.categoriaRepository.remove(categoria);
     }
 }

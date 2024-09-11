@@ -5,7 +5,8 @@ import UpdateInsumoDto from './dtos/update-insumo.dto';
 
 @Controller('insumos')
 export class InsumosController {
-    constructor(
+    
+    /*constructor(
         private readonly insumosService: InsumosService
     ) {}
 
@@ -32,5 +33,5 @@ export class InsumosController {
     @Delete(':id')
     destroy(@Param('id') id: number) {
         return this.insumosService.remove(id);
-    }
+    }*/
 }

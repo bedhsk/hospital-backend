@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import Insumo from './entities/insumo.entity';
 import { Repository } from 'typeorm';
-import UpdateInsumoDto from './dtos/update-insumo.dto';
+import Insumo from './entities/insumo.entity';
 import CreateInsumoDto from './dtos/create-insumo.dto';
+import UpdateInsumoDto from './dtos/update-insumo.dto';
 
 @Injectable()
 export class InsumosService {
@@ -12,35 +12,31 @@ export class InsumosService {
         private readonly insumoRepository: Repository<Insumo>,
     ) {}
 
-    findAll() {
-        return this.insumoRepository.find();
+    async findAll() {
+        return await this.insumoRepository.find();
     }
 
-    async findOne(id: number) {
+    async findOne(id: string) { 
         const insumo = await this.insumoRepository.findOne({ where: { id } });
-
         if (!insumo) {
-            throw new NotFoundException(`Insumo con id ${id} no encontrado`);
+            throw new NotFoundException(`Insumo con ID ${id} no encontrado`);
         }
-
         return insumo;
     }
 
-    async update(id: number, updateInsumoDto: UpdateInsumoDto) {
-        const insumo = await this.findOne(id);
-
-        this.insumoRepository.merge(insumo, updateInsumoDto);
-
-        return this.insumoRepository.save(insumo);
-    }
-
-    create(createInsumoDto: CreateInsumoDto) {
+    async create(createInsumoDto: CreateInsumoDto) {
         const insumo = this.insumoRepository.create(createInsumoDto);
-        return this.insumoRepository.save(insumo);
+        return await this.insumoRepository.save(insumo);
     }
 
-    async remove(id: number) {
+    async update(id: string, updateInsumoDto: UpdateInsumoDto) {
         const insumo = await this.findOne(id);
-        return this.insumoRepository.remove(insumo);
+        this.insumoRepository.merge(insumo, updateInsumoDto);
+        return await this.insumoRepository.save(insumo);
+    }
+
+    async remove(id: string) {
+        const insumo = await this.findOne(id);
+        return await this.insumoRepository.remove(insumo);
     }
 }

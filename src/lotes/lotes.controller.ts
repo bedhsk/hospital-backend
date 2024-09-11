@@ -5,6 +5,7 @@ import UpdateLoteDto from './dtos/update-lote.dto';
 
 @Controller('lotes')
 export class LotesController {
+    /*
     constructor(
         private readonly lotesService: LotesService
     ) {}
@@ -32,5 +33,5 @@ export class LotesController {
     @Delete(':id')
     destroy(@Param('id') id: number) {
         return this.lotesService.remove(id);
-    }
+    }*/
 }
