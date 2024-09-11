@@ -1,24 +1,24 @@
-import { IsBoolean, IsString, MinLength, MaxLength } from "class-validator";
+import { IsString, IsBoolean, IsUUID, MaxLength, IsNotEmpty, IsOptional } from 'class-validator';
 
 export default class CreateInsumoDto {
-    @IsBoolean()
-    trazador: boolean;
+    @IsUUID()
+    @IsNotEmpty()
+    categoriaId: string; 
 
     @IsString()
-    @MinLength(1)
     @MaxLength(12)
-    codigo: string;
+    @IsNotEmpty()
+    codigo: string; 
 
     @IsString()
-    @MinLength(1)
     @MaxLength(255)
-    nombre: string;
+    @IsNotEmpty()
+    nombre: string;  
 
-    @IsString()
-    @MaxLength(100)
-    categoria: string;
+    @IsBoolean()
+    trazador: boolean = false;  
 
-    @IsString()
-    @MaxLength(100)
-    departamento: string;
+    @IsBoolean()
+    @IsOptional()
+    is_active?: boolean = true; 
 }

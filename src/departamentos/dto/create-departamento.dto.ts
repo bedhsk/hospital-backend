@@ -1,10 +1,13 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 class CreateDepartamentoDto {
   @IsString()
-  @MinLength(1)
-  @MaxLength(60)
-  nombre: string;
+  @MaxLength(255)
+  nombre: string; 
+
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean = true; 
 }
 
 export default CreateDepartamentoDto;

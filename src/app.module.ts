@@ -3,12 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { MedicamentosModule } from './medicamentos/medicamentos.module';
-import { IndiceMedicamentosModule } from './indice_medicamentos/indice_medicamentos.module';
 import { InsumosModule } from './insumos/insumos.module';
-import { IndiceInsumosModule } from './indice_insumos/indice_insumos.module';
 import { LotesModule } from './lotes/lotes.module';
-import { MovimientoInsumosModule } from './movimiento_insumos/movimiento_insumos.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import * as Joi from 'joi';
 
@@ -36,12 +32,8 @@ import * as Joi from 'joi';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    MedicamentosModule,
-    IndiceMedicamentosModule,
     InsumosModule,
-    IndiceInsumosModule,
     LotesModule,
-    MovimientoInsumosModule,
     CategoriasModule,
   ],
   controllers: [AppController],

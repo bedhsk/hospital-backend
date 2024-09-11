@@ -1,45 +1,45 @@
-import { ApiProperty } from "@nestjs/swagger";
-import IndiceInsumo from "src/indice_insumos/entities/indice_insumo.entity";
-import Lote from "src/lotes/entities/lote.entity";
-import MovimientoInsumo from "src/movimiento_insumos/entities/movimiento_insumo.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import Categoria from 'src/categorias/entities/categoria.entity';
+import Lote from 'src/lotes/entities/lote.entity';
+import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsUUID, IsString, IsBoolean } from 'class-validator';
 
-@Entity('insumos')
+@Entity('insumo')
 class Insumo {
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn('uuid')
     @ApiProperty()
-    id: number;
-
-    @Column({ type: 'boolean', default: false })
-    @ApiProperty()
-    trazador: boolean;
+    @IsUUID()
+    id: string;  // UUID
 
     @Column({ type: 'varchar', length: 12 })
     @ApiProperty()
+    @IsString()
     codigo: string;
 
     @Column({ type: 'varchar', length: 255 })
     @ApiProperty()
+    @IsString()
     nombre: string;
 
-    @Column({ type: 'varchar', length: 100 })
-    @ApiProperty()
-    categoria: string;
+    @ManyToOne(() => Categoria, (categoria) => categoria.insumos)
+    categoria: Categoria;  // Relación con Categoría
 
-    @Column({ type: 'varchar', length: 100 })
+    @Column({ type: 'boolean', default: false })
     @ApiProperty()
-    departamento: string;
+    @IsBoolean()
+    trazador: boolean = false;
 
-    @OneToMany(() => IndiceInsumo, (indiceInsumo) => indiceInsumo.insumo)
-    @ApiProperty({ type: () => IndiceInsumo, isArray: true })
-    indices: IndiceInsumo[];
+    @Column({ type: 'boolean', default: true })
+    @ApiProperty()
+    @IsBoolean()
+    is_active: boolean = true;  // Soft delete
 
     @OneToMany(() => Lote, (lote) => lote.insumo)
-    @ApiProperty({ type: () => Lote, isArray: true })
     lotes: Lote[];
 
-    @OneToMany(() => MovimientoInsumo, (movimientoInsumo) => movimientoInsumo.insumo)
-    @ApiProperty({ type: () => MovimientoInsumo, isArray: true })
-    movimientos: MovimientoInsumo[];
+    @OneToMany(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.insumo)
+    insumosDepartamentos: InsumoDepartamento[];
 }
+
 export default Insumo;

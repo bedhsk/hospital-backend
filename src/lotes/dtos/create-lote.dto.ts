@@ -1,24 +1,36 @@
-import { Type } from "class-transformer";
-import { IsDate, IsInt, IsString, MaxLength, Min, IsNotEmpty } from "class-validator";
+import { Type } from 'class-transformer';
+import { IsDate, IsInt, IsString, MaxLength, Min, IsUUID, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
 
 export default class CreateLoteDto {
     @IsString()
     @MaxLength(50)
-    numero_lote: string;
+    numeroLote: string;  
 
     @IsDate()
-    @Type(() => Date) // Transformar cadena a fecha
-    fechaFabricacion: Date;
+    @Type(() => Date)  
+    fechaFabricacion: Date;  
 
     @IsDate()
-    @Type(() => Date) // Transformar cadena a fecha
-    fechaCaducidad: Date;
+    @Type(() => Date)  
+    fechaCaducidad: Date;  
 
     @IsInt()
     @Min(0)
-    cantidad: number;
+    cantidad: number;  
 
-    @IsInt()
+    @IsUUID()
     @IsNotEmpty()
-    insumoId: number; // Relación con Insumo
+    insumoId: string;  
+
+    @IsUUID()
+    @IsNotEmpty()
+    insumoDepartamentoId: string;  
+
+    @IsString()
+    @IsOptional()
+    status?: string; 
+
+    @IsBoolean()
+    @IsOptional()
+    is_active?: boolean = true;  
 }

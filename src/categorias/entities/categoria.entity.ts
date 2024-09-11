@@ -1,24 +1,27 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsString, IsBoolean, MaxLength } from 'class-validator';
+import { IsUUID, IsString, IsBoolean } from 'class-validator';
+import Insumo from 'src/insumos/entities/insumo.entity';
 
-@Entity('categorias')
+@Entity('categoria')
 class Categoria {
     @PrimaryColumn('uuid')
     @ApiProperty()
     @IsUUID()
-    id: string;  // Clave primaria, UUID
+    id: string;  // UUID
 
     @Column({ type: 'varchar', length: 255 })
     @ApiProperty()
     @IsString()
-    @MaxLength(255)
-    nombre: string;  // Nombre de la categoría, string
+    nombre: string;
 
     @Column({ type: 'boolean', default: true })
     @ApiProperty()
     @IsBoolean()
-    is_active: boolean = true;  // Soft delete, booleano con valor por defecto true
+    is_active: boolean = true;  // Soft delete
+
+    @OneToMany(() => Insumo, (insumo) => insumo.categoria)
+    insumos: Insumo[];
 }
 
 export default Categoria;
