@@ -3,17 +3,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { MedicamentosModule } from './medicamentos/medicamentos.module';
-import { IndiceMedicamentosModule } from './indice_medicamentos/indice_medicamentos.module';
-import { InsumosModule } from './insumos/insumos.module';
-import { IndiceInsumosModule } from './indice_insumos/indice_insumos.module';
-import { LotesModule } from './lotes/lotes.module';
-import { MovimientoInsumosModule } from './movimiento_insumos/movimiento_insumos.module';
 import * as Joi from 'joi';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: '.env.local',
       validationSchema: Joi.object({
         DB_HOST: Joi.string().required(),
@@ -32,14 +27,8 @@ import * as Joi from 'joi';
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
     }),
-    MedicamentosModule,
-    IndiceMedicamentosModule,
-    InsumosModule,
-    IndiceInsumosModule,
-    LotesModule,
-    MovimientoInsumosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
