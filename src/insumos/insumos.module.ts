@@ -14,4 +14,4 @@ import { CategoriasModule } from '../categorias/categorias.module';
   controllers: [InsumosController],
   exports: [InsumosService],
 })
-export class InsumosModule {}
+export class InsumosModule { }

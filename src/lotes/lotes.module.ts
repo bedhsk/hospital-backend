@@ -17,4 +17,4 @@ import { InsumoDepartamentoModule } from 'src/insumo_departamentos/insumo_depart
   controllers: [LotesController],
   exports: [LotesService],
 })
-export class LotesModule {}
+export class LotesModule { }
