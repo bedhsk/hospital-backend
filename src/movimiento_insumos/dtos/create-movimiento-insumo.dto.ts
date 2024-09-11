@@ -1,7 +1,9 @@
+import { Type } from "class-transformer";
 import { IsBoolean, IsInt, IsString, MaxLength, Min, IsOptional, IsDate, IsNotEmpty } from "class-validator";
 
 export default class CreateMovimientoInsumoDto {
     @IsDate()
+    @Type(() => Date) // Transforma la cadena a instancia de Date
     fecha: Date;
 
     @IsInt()
