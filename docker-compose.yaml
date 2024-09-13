@@ -1,10 +1,27 @@
 version: "3"
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASS: ky12pc34rj90
+      DB_NAME: hospital
+      JWT_SECRET: 'secret2309'
+      PORT: 3000
+    depends_on:
+      - db
+    command: ["npm", "run", "start"]
   db:
     image: "postgres:latest"
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=ky12pc34rj90
-      - POSTGRES_DB=hospital
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ky12pc34rj90
+      POSTGRES_DB: hospital
