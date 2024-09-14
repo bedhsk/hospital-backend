@@ -6,6 +6,7 @@ import {
     Patch,
     Param,
     Delete,
+    Query,
 } from '@nestjs/common';
 import { LotesService } from './lotes.service';
 import CreateLoteDto from './dtos/create-lote.dto';
@@ -18,6 +19,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import QueryLoteDto from './dtos/query-lote.dto';
 
 @ApiTags('Lotes')
 @Controller('lotes')
@@ -121,9 +123,9 @@ export class LotesController {
             },
         },
     })
-    findAll() {
-        return this.lotesService.findAll();
-    }
+    findAll(@Query() query: QueryLoteDto) {
+        return this.lotesService.findAll(query);
+      }
 
     @AuthorizedRoles()
     @Get(':id')

@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import Insumo from 'src/insumos/entities/insumo.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsString, IsDate, IsNumber, IsBoolean } from 'class-validator';
@@ -6,9 +6,9 @@ import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departa
 
 @Entity('lote')
 class Lote {
-    @PrimaryColumn('uuid')
+   // @PrimaryColumn('uuid')
+    @PrimaryGeneratedColumn('uuid')
     @ApiProperty()
-    @IsUUID()
     id: string;  // UUID
 
     @Column({ type: 'varchar', length: 255 })
