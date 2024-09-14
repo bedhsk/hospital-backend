@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CategoriasService } from './categorias.service';
 import CreateCategoriaDto from './dtos/create-categoria.dto';
@@ -14,10 +15,12 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import QueryCategoriarDto from './dtos/query-categoria.dto';
 
 @ApiTags('Categorías')
 @Controller('categorias')
@@ -62,39 +65,50 @@ export class CategoriasController {
   @AuthorizedRoles()
   @Get()
   @ApiOperation({
-    summary: 'Listar Categorías',
-    description: 'Este endpoint sirve para listar todas las categorías',
+    summary: 'Obtiene todas las categorías',
+    description: 'Este endpoint sirve para retornar todas las categorías activas en la base de datos.',
+  })
+  @ApiQuery({
+    name: 'q',
+    type: String,
+    required: false,
+    description: 'Nombre de la categoría para filtrar.',
+    example: 'Categoría A',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Número de página actual para la paginación.',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: 'Número de elementos por página para la paginación.',
+    example: 10,
   })
   @ApiResponse({
     status: 200,
-    description: 'Listado de categorías',
+    description: 'Categorías obtenidas exitosamente.',
     schema: {
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          id: {
-            type: 'string',
-            example: 'f7b1c4c3-3e2b-4b4b-8f7b-3d6c7b7b7b7b',
-          },
-          nombre: {
-            type: 'string',
-            example: 'Electrónica',
-          },
-          is_active: {
-            type: 'boolean',
-            example: true,
-          },
+          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174003' },
+          nombre: { type: 'string', example: 'Categoría A' },
         },
       },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Acceso denegado',
+    description: 'Acceso denegado.',
   })
-  findAll() {
-    return this.categoriasService.findAll();
+  findAll(@Query() query: QueryCategoriarDto) {
+    return this.categoriasService.findAll(query);
   }
 
   @AuthorizedRoles()

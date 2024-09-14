@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DepartamentoService } from './departamentos.service';
+import { DepartamentosService } from './departamentos.service';
 import { DepartamentosController } from './departamentos.controller';
 import Departamento from './entities/departamento.entity';
 
@@ -8,8 +8,8 @@ import Departamento from './entities/departamento.entity';
   imports: [
     TypeOrmModule.forFeature([Departamento]),
   ],
-  providers: [DepartamentoService],
+  providers: [DepartamentosService],
   controllers: [DepartamentosController],
-  exports: [DepartamentoService],
+  exports: [DepartamentosService],
 })
 export class DepartamentosModule {}

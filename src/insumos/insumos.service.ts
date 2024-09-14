@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import Insumo from './entities/insumo.entity';
 import CreateInsumoDto from './dtos/create-insumo.dto';
 import UpdateInsumoDto from './dtos/update-insumo.dto';
+import QueryInsumoDto from './dtos/query-insumo.dto';
 
 @Injectable()
 export class InsumosService {
@@ -13,8 +14,43 @@ export class InsumosService {
   ) { }
 
   // Método para obtener todos los insumos que están activos
-  async findAll() {
-    return await this.insumoRepository.find({ where: { is_active: true } });
+  async findAll(query: QueryInsumoDto) {
+    const { q, filter, page, limit } = query;
+    const queryBuilder = this.insumoRepository.createQueryBuilder('insumo')
+      .where({ is_active: true })
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .select([
+        'insumo.id',
+        'insumo.codigo',
+        'insumo.nombre',
+        'insumo.trazador',
+        'insumo.categoriaId',
+        'categoria.id',
+        'categoria.nombre'
+      ]);
+
+    if (q) {
+      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+    }
+
+    if (filter) {
+      queryBuilder.andWhere('categoria.nombre = :categoria', { categoria: `${filter}` });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+    const insumos = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: insumos,
+      totalItems,
+      totalPages,
+      page,
+    };
   }
 
   // Método para obtener un solo insumo por ID si está activo

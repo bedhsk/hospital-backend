@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import Lote from './entities/lote.entity';
 import CreateLoteDto from './dtos/create-lote.dto';
 import UpdateLoteDto from './dtos/update-lote.dto';
+import QueryLoteDto from './dtos/query-lote.dto';
 
 @Injectable()
 export class LotesService {
@@ -13,9 +14,47 @@ export class LotesService {
     ) { }
 
     // Obtener todos los lotes activos
-    async findAll() {
-        return await this.loteRepository.find({ where: { is_active: true } });
-    }
+    async findAll(query: QueryLoteDto) {
+        const { q, filter, page, limit } = query;
+        const queryBuilder = this.loteRepository.createQueryBuilder('lote')
+          .where({ is_active: true })
+          .leftJoinAndSelect('lote.insumoDepartamento', 'insumoDepartamento')
+          .select([
+            'lote.id',
+            'lote.numeroLote',
+            'lote.fechaFabricacion',
+            'lote.fechaCaducidad',
+            'lote.cantidad',
+            'lote.insumoId',
+            'lote.insumoDepartamentoId',
+            'insumoDepartamento.id',
+            'insumoDepartamento.existencia'
+          ]);
+    
+        if (q) {
+          queryBuilder.andWhere('lote.numeroLote LIKE :numeroLote', { numeroLote: `%${q}%` });
+        }
+    
+        if (filter) {
+          queryBuilder.andWhere('insumoDepartamento.existencia = :existencia', { existencia: `${filter}` });
+        }
+    
+        const totalItems = await queryBuilder.getCount();
+        const lotes = await queryBuilder
+          .skip((page - 1) * limit)
+          .take(limit)
+          .getMany();
+    
+        const totalPages = Math.ceil(totalItems / limit);
+    
+        return {
+          data: lotes,
+          totalItems,
+          totalPages,
+          page,
+        };
+      }
+    
 
     // Buscar un lote activo por su ID
     async findOne(id: string) {

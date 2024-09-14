@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { DepartamentoService } from './departamentos.service';
+import { DepartamentosService } from './departamentos.service';
 import UpdateDepartamentoDto from './dto/update-departamento.dto';
 import CreateDepartamentoDto from './dto/create-departamento.dto';
 import {
@@ -22,7 +22,7 @@ import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 @ApiTags('Departamentos')
 @Controller('departamentos')
 export class DepartamentosController {
-  constructor(private readonly departamentosService: DepartamentoService) {}
+  constructor(private readonly departamentosService: DepartamentosService) {}
 
   @AuthorizedRoles()
   @Post()

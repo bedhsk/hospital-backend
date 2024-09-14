@@ -6,14 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { InsumosService } from './insumos.service';
 import CreateInsumoDto from './dtos/create-insumo.dto';
 import UpdateInsumoDto from './dtos/update-insumo.dto';
+import QueryInsumoDto from './dtos/query-insumo.dto'; // Add this line
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -74,51 +77,58 @@ export class InsumosController {
   @AuthorizedRoles()
   @Get()
   @ApiOperation({
-    summary: 'Listar insumos',
-    description: 'Este endpoint sirve para listar todos los insumos activos',
+    summary: 'Obtiene todos los insumos',
+    description: 'Este endpoint sirve para retornar todos los insumos activos en la base de datos.',
+  })
+  @ApiQuery({
+    name: 'q',
+    type: String,
+    required: false,
+    description: 'Nombre del insumo para filtrar.',
+    example: 'Insumo X',
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    required: false,
+    description: 'Filtro por categoría del insumo.',
+    example: 'Categoria Y',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Número de página actual para la paginación.',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: 'Número de elementos por página para la paginación.',
+    example: 10,
   })
   @ApiResponse({
     status: 200,
-    description: 'Listado de insumos activos',
+    description: 'Insumos obtenidos exitosamente.',
     schema: {
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          id: {
-            type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174000',
-          },
-          categoriaId: {
-            type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174001',
-          },
-          codigo: {
-            type: 'string',
-            example: 'INS-001',
-          },
-          nombre: {
-            type: 'string',
-            example: 'Insumo X',
-          },
-          trazador: {
-            type: 'boolean',
-            example: false,
-          },
-          is_active: {
-            type: 'boolean',
-            example: true,
-          },
+          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174001' },
+          nombre: { type: 'string', example: 'Insumo X' },
+          codigo: { type: 'string', example: 'INS-001' },
         },
       },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Acceso denegado',
+    description: 'Acceso denegado.',
   })
-  findAll() {
-    return this.insumosService.findAll();
+  findAll(@Query() query: QueryInsumoDto) {
+    return this.insumosService.findAll(query);
   }
 
   @AuthorizedRoles()

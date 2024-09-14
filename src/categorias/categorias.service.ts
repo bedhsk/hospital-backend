@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import Categoria from './entities/categoria.entity';
 import CreateCategoriaDto from './dtos/create-categoria.dto';
 import UpdateCategoriaDto from './dtos/update-categoria.dto';
+import QueryCategoriarDto from './dtos/query-categoria.dto';
 
 @Injectable()
 export class CategoriasService {
@@ -12,9 +13,33 @@ export class CategoriasService {
     private readonly categoriaRepository: Repository<Categoria>,
   ) { }
 
-  async findAll() {
-    // Solo devuelve las categorías activas
-    return await this.categoriaRepository.find({ where: { is_active: true } });
+  async findAll(query: QueryCategoriarDto) {
+    const { q, filter, page, limit } = query;
+    const queryBuilder = this.categoriaRepository.createQueryBuilder('categoria')
+      .where({ is_active: true })
+      .select([
+        'categoria.id',
+        'categoria.nombre',
+      ]);
+
+    if (q) {
+      queryBuilder.andWhere('categoria.nombre LIKE :nombre', { nombre: `%${q}%` });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+    const categorias = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: categorias,
+      totalItems,
+      totalPages,
+      page,
+    };
   }
 
   async findOne(id: string) {

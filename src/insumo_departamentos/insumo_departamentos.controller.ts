@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { InsumoDepartamentoService } from './insumo_departamentos.service';
 import CreateInsumoDepartamentoDto from './dtos/create-insumo_departamento.dto';
@@ -14,10 +15,12 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import QueryIsumoDepartamentoDto from './dtos/query-insumo_departamento.dto';
 
 @ApiTags('InsumoDepartamento')
 @Controller('insumo-departamento')
@@ -70,47 +73,57 @@ export class InsumoDepartamentoController {
   @AuthorizedRoles()
   @Get()
   @ApiOperation({
-    summary: 'Listar todas las relaciones insumo-departamento',
-    description: 'Este endpoint sirve para listar todas las relaciones insumo-departamento activas',
+    summary: 'Obtiene todos los insumos departamento',
+    description: 'Este endpoint sirve para retornar todos los insumos por departamento en la base de datos.',
+  })
+  @ApiQuery({
+    name: 'q',
+    type: String,
+    required: false,
+    description: 'Nombre del insumo para filtrar.',
+    example: 'Insumo X',
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    required: false,
+    description: 'Nombre del departamento para filtrar.',
+    example: 'Departamento A',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Número de página actual para la paginación.',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: 'Número de elementos por página para la paginación.',
+    example: 10,
   })
   @ApiResponse({
     status: 200,
-    description: 'Listado de relaciones activas entre insumo y departamento',
+    description: 'Insumos por departamento obtenidos exitosamente.',
     schema: {
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          id: {
-            type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174000',
-          },
-          insumoId: {
-            type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174000',
-          },
-          departamentoId: {
-            type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174001',
-          },
-          existencia: {
-            type: 'number',
-            example: 100,
-          },
-          is_active: {
-            type: 'boolean',
-            example: true,
-          },
+          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174002' },
+          existencia: { type: 'number', example: 150 },
         },
       },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Acceso denegado',
+    description: 'Acceso denegado.',
   })
-  findAll() {
-    return this.insumoDepartamentoService.findAll();
+  findAll(@Query() query: QueryIsumoDepartamentoDto) {
+    return this.insumoDepartamentoService.findAll(query);
   }
 
   @AuthorizedRoles()

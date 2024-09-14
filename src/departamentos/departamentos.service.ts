@@ -7,7 +7,7 @@ import UpdateDepartamentoDto from './dto/update-departamento.dto';
 
 
 @Injectable()
-export class DepartamentoService {
+export class DepartamentosService {
     constructor(
         @InjectRepository(Departamento)
         private readonly departamentoRepository: Repository<Departamento>,
