@@ -1,13 +1,14 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsString, IsBoolean } from 'class-validator';
 import Insumo from 'src/insumos/entities/insumo.entity';
 
 @Entity('categoria')
 class Categoria {
-    @PrimaryColumn('uuid')
+    //@PrimaryColumn('uuid')
+    @PrimaryGeneratedColumn('uuid')
     @ApiProperty()
-    @IsUUID()
+    //@IsUUID()
     id: string;  // UUID
 
     @Column({ type: 'varchar', length: 255 })

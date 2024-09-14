@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import Categoria from 'src/categorias/entities/categoria.entity';
 import Lote from 'src/lotes/entities/lote.entity';
 import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
@@ -7,9 +7,10 @@ import { IsUUID, IsString, IsBoolean } from 'class-validator';
 
 @Entity('insumo')
 class Insumo {
-    @PrimaryColumn('uuid')
+    //@PrimaryColumn('uuid')
+    @PrimaryGeneratedColumn('uuid')
     @ApiProperty()
-    @IsUUID()
+    //@IsUUID()
     id: string;  // UUID
 
     @Column({ type: 'varchar', length: 12 })
