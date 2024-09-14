@@ -5,12 +5,16 @@ import Insumo from './entities/insumo.entity';
 import CreateInsumoDto from './dtos/create-insumo.dto';
 import UpdateInsumoDto from './dtos/update-insumo.dto';
 import QueryInsumoDto from './dtos/query-insumo.dto';
+import Categoria from 'src/categorias/entities/categoria.entity';
 
 @Injectable()
 export class InsumosService {
   constructor(
     @InjectRepository(Insumo)
     private readonly insumoRepository: Repository<Insumo>,
+
+    @InjectRepository(Categoria)
+    private readonly categoriaRepository: Repository<Categoria>,
   ) { }
 
   // Método para obtener todos los insumos que están activos
@@ -64,7 +68,21 @@ export class InsumosService {
 
   // Crear un nuevo insumo
   async create(createInsumoDto: CreateInsumoDto) {
-    const insumo = this.insumoRepository.create(createInsumoDto);
+    const { categoriaId, ...rest } = createInsumoDto;
+
+    // Buscar la categoría a la que pertenece el insumo
+    const categoria = await this.categoriaRepository.findOne({ where: { id: categoriaId } });
+
+    if (!categoria) {
+      throw new NotFoundException(`Categoria con id ${categoriaId} no encontrada`);
+    }
+
+    // Crear el nuevo insumo con la categoría relacionada
+    const insumo = this.insumoRepository.create({
+      ...rest,
+      categoria,  // Relacionar el insumo con la categoría encontrada
+    });
+
     return await this.insumoRepository.save(insumo);
   }
 

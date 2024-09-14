@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import Insumo from './entities/insumo.entity';
 import { InsumosService } from './insumos.service';
 import { InsumosController } from './insumos.controller';
-import Insumo from './entities/insumo.entity';
-import { CategoriasModule } from '../categorias/categorias.module';
+import Categoria from 'src/categorias/entities/categoria.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Insumo]),
-    CategoriasModule,
+    TypeOrmModule.forFeature([Insumo, Categoria]),  // Importamos la entidad Categoria
   ],
   providers: [InsumosService],
   controllers: [InsumosController],
-  exports: [InsumosService],
 })
-export class InsumosModule { }
+export class InsumosModule {}

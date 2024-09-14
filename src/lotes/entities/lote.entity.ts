@@ -11,7 +11,7 @@ class Lote {
     @ApiProperty()
     id: string;  // UUID
 
-    @Column({ type: 'varchar', length: 255 })
+    @Column({type: 'varchar', length: 255 })
     @ApiProperty()
     @IsString()
     numeroLote: string;

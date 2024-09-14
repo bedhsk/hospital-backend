@@ -6,12 +6,20 @@ import CreateInsumoDepartamentoDto from './dtos/create-insumo_departamento.dto';
 import UpdateInsumoDepartamentoDto from './dtos/update-insumo_departamento.dto';
 import { Query } from 'typeorm/driver/Query';
 import QueryIsumoDepartamentoDto from './dtos/query-insumo_departamento.dto';
+import Insumo from 'src/insumos/entities/insumo.entity';
+import Departamento from 'src/departamentos/entities/departamento.entity';
 
 @Injectable()
 export class InsumoDepartamentoService {
   constructor(
     @InjectRepository(InsumoDepartamento)
     private readonly insumoDepartamentoRepository: Repository<InsumoDepartamento>,
+
+    @InjectRepository(Insumo)
+    private readonly insumoRepository: Repository<Insumo>,
+
+    @InjectRepository(Departamento)
+    private readonly departamentoRepository: Repository<Departamento>,
   ) { }
 
   async findAll(query: QueryIsumoDepartamentoDto) {
@@ -64,8 +72,28 @@ export class InsumoDepartamentoService {
   }
 
   async create(createInsumoDepartamentoDto: CreateInsumoDepartamentoDto) {
-    const insumoDepartamento = this.insumoDepartamentoRepository.create(createInsumoDepartamentoDto);
-    return await this.insumoDepartamentoRepository.save(insumoDepartamento);
+    const { insumoId, departamentoId, ...rest } = createInsumoDepartamentoDto;
+
+    // Buscar el insumo por su ID
+    const insumo = await this.insumoRepository.findOne({ where: { id: insumoId } });
+    if (!insumo) {
+      throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
+    }
+
+    // Buscar el departamento por su ID
+    const departamento = await this.departamentoRepository.findOne({ where: { id: departamentoId } });
+    if (!departamento) {
+      throw new NotFoundException(`Departamento con ID ${departamentoId} no encontrado`);
+    }
+
+    // Crear la relación entre insumo y departamento
+    const insumoDepartamento = this.insumoDepartamentoRepository.create({
+      ...rest,
+      insumo,
+      departamento,
+    });
+
+    return this.insumoDepartamentoRepository.save(insumoDepartamento);
   }
 
   async update(id: string, updateInsumoDepartamentoDto: UpdateInsumoDepartamentoDto) {
