@@ -5,12 +5,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import Receta from 'src/recetas/entities/receta.entity';
 
 @Entity('users')
 export default class User {
@@ -70,6 +72,13 @@ export default class User {
       'Relaciòn entre Usarios y Roles. Un usuario puede tener solo un rol',
   })
   role: Role;
+
+  @OneToMany(() => Receta, (Receta) => Receta.user)
+  @ApiProperty({
+    description:
+      'Relaciòn entre Usuarios y Recetas. Un usuario puede generar varias recetas',
+  })
+  recetas: Receta[];
 
   @Column({ type: 'varchar' })
   @ApiProperty({
