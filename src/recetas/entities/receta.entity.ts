@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import Paciente from 'src/pacientes/entities/paciente.entity';
 import User from 'src/users/entities/user.entity';
 import {
   Column,
@@ -35,4 +36,12 @@ export default class Receta {
       'Relaciòn entre Usarios y Roles. Un usuario puede tener solo un rol',
   })
   user: User;
+
+  @ManyToOne(() => Paciente, (paciente) => paciente.recetas)
+  @JoinColumn({ name: 'pacienteId' })
+  @ApiProperty({
+    description:
+      'Relaciòn entre Pacientes y Recetas. Un paciente puede tener varias recetas',
+  })
+  paciente: Paciente;
 }

@@ -10,7 +10,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import CreateUserDto from './dto/create-user.dto';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
@@ -20,13 +27,14 @@ import UpdateUserDto from './dto/update-user.dto';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) { }
+  constructor(private readonly userService: UsersService) {}
 
   @AuthorizedRoles()
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los usuarios',
-    description: 'Este endpoint sirve para retornar todos los usuarios existentes en la base de datos.',
+    description:
+      'Este endpoint sirve para retornar todos los usuarios existentes en la base de datos.',
   })
   @ApiQuery({
     name: 'q',
@@ -114,7 +122,7 @@ export class UsersController {
     description: 'Acceso denegado.',
   })
   findAll(@Query() query: QueryUserDto) {
-    console.log(query)
+    console.log(query);
     const records = this.userService.findAll(query);
     return records;
   }
@@ -123,7 +131,8 @@ export class UsersController {
   @Get(':id')
   @ApiOperation({
     summary: 'Obtiene un usuario por ID',
-    description: 'Este endpoint sirve para encontrar un usuario por medio del ID.',
+    description:
+      'Este endpoint sirve para encontrar un usuario por medio del ID.',
   })
   @ApiParam({
     name: 'id',
@@ -186,7 +195,7 @@ export class UsersController {
     description: 'Acceso denegado.',
   })
   findOne(@Param('id') id: string) {
-    console.log(id)
+    console.log(id);
     return this.userService.findOne(id);
   }
 
@@ -194,7 +203,8 @@ export class UsersController {
   @Post()
   @ApiOperation({
     summary: 'Crea un nuevo usuario',
-    description: 'Este endpoint sirve para crear nuevos usuarios en la base de datos.',
+    description:
+      'Este endpoint sirve para crear nuevos usuarios en la base de datos.',
   })
   @ApiBody({
     description: 'Datos necesarios para crear un nuevo usuario.',
@@ -223,7 +233,7 @@ export class UsersController {
         },
         roleId: {
           type: 'string',
-          example: '59271b3e-e4ca-4434-8064-048a094ec8dc'
+          example: '59271b3e-e4ca-4434-8064-048a094ec8dc',
         },
       },
     },
@@ -262,9 +272,9 @@ export class UsersController {
           type: 'string',
           example: '2024-08-29T01:38:11.779Z',
         },
-        is_Active:{
+        is_Active: {
           type: 'boolean',
-          example: 'true'
+          example: 'true',
         },
         role: {
           type: 'object',
@@ -284,7 +294,8 @@ export class UsersController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Solicitud incorrecta. Puede ser que el rol no se haya encontrado.',
+    description:
+      'Solicitud incorrecta. Puede ser que el rol no se haya encontrado.',
   })
   create(@Body() body: CreateUserDto) {
     const response = this.userService.create(body);
@@ -298,7 +309,8 @@ export class UsersController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualiza un usuario existente',
-    description: 'Este endpoint sirve para actualizar los datos de un usuario existente.',
+    description:
+      'Este endpoint sirve para actualizar los datos de un usuario existente.',
   })
   @ApiParam({
     name: 'id',
@@ -307,7 +319,8 @@ export class UsersController {
     example: '59271b3e-e4ca-4434-8064-048a094ec8dc',
   })
   @ApiBody({
-    description: 'Cualquiera de estos datos son aceptados para actualizar el usuario',
+    description:
+      'Cualquiera de estos datos son aceptados para actualizar el usuario',
     schema: {
       type: 'object',
       properties: {
@@ -333,7 +346,7 @@ export class UsersController {
         },
         roleId: {
           type: 'string',
-          example: '59271b3e-e4ca-4434-8064-048a094ec8dc'
+          example: '59271b3e-e4ca-4434-8064-048a094ec8dc',
         },
       },
     },
@@ -372,9 +385,9 @@ export class UsersController {
           type: 'string',
           example: '2024-08-29T01:38:11.779Z',
         },
-        is_Active:{
+        is_Active: {
           type: 'boolean',
-          example: 'true'
+          example: 'true',
         },
         role: {
           type: 'object',
@@ -394,7 +407,8 @@ export class UsersController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Solicitud incorrecta. Puede ser que el rol no se haya encontrado o los datos son inválidos.',
+    description:
+      'Solicitud incorrecta. Puede ser que el rol no se haya encontrado o los datos son inválidos.',
   })
   update(@Param('id') id: string, @Body() body: UpdateUserDto) {
     return this.userService.update(id, body);
@@ -404,7 +418,8 @@ export class UsersController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Elimina (desactiva) un usuario',
-    description: 'Este endpoint sirve para eliminar (o desactivar) un usuario existente.',
+    description:
+      'Este endpoint sirve para eliminar (o desactivar) un usuario existente.',
   })
   @ApiParam({
     name: 'id',
