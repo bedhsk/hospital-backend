@@ -3,10 +3,12 @@ import Paciente from 'src/pacientes/entities/paciente.entity';
 import User from 'src/users/entities/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('recetas')
@@ -22,6 +24,19 @@ export default class Receta {
     description: 'Descripción de la receta',
   })
   descripcion: string;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  @ApiProperty({
+    description: 'Fecha de Creaciòn del Usuario se inserta automaticamente',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  @ApiProperty({
+    description:
+      'Ultima fecha de modificaciòn de la informacion de los usuarios',
+  })
+  updatedAt: Date;
 
   @Column({ default: true })
   @ApiProperty({
