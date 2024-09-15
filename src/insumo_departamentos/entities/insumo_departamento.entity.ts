@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import Insumo from 'src/insumos/entities/insumo.entity';
 import Departamento from 'src/departamentos/entities/departamento.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -7,9 +7,10 @@ import Lote from 'src/lotes/entities/lote.entity';
 
 @Entity('insumoDepartamento')
 class InsumoDepartamento {
-    @PrimaryColumn('uuid')
+    //@PrimaryColumn('uuid')
+    @PrimaryGeneratedColumn('uuid')
     @ApiProperty()
-    @IsUUID()
+   // @IsUUID()
     id: string;  // UUID
 
     @Column({ type: 'float' })

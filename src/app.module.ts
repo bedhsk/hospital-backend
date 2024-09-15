@@ -8,6 +8,10 @@ import { LotesModule } from './lotes/lotes.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { InsumoDepartamentoModule } from './insumo_departamentos/insumo_departamentos.module';
 import * as Joi from 'joi';
+import Departamento from './departamentos/entities/departamento.entity';
+import { UsersController } from './users/users.controller';
+import { AuthModule } from './auth/auth.module';
+import { DepartamentosModule } from './departamentos/departamentos.module';
 
 @Module({
   imports: [
@@ -37,6 +41,9 @@ import * as Joi from 'joi';
     LotesModule,
     CategoriasModule,
     InsumoDepartamentoModule,
+   // UsersController,
+    //AuthModule,
+    DepartamentosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
