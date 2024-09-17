@@ -29,21 +29,21 @@ export class UsersController {
     description: 'Este endpoint sirve para retornar todos los usuarios existentes en la base de datos.',
   })
   @ApiQuery({
-    name: 'name',
+    name: 'q',
     type: String,
     required: false,
     description: 'Nombre del usuario para filtrar.',
     example: 'Maria',
   })
   @ApiQuery({
-    name: 'role',
+    name: 'filter',
     type: String,
     required: false,
     description: 'Rol del usuario para filtrar.',
     example: 'Admin',
   })
   @ApiQuery({
-    name: 'currentPage',
+    name: 'page',
     type: Number,
     required: false,
     description: 'Número de página actual para la paginación.',

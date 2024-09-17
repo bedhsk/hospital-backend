@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { IsNumber, IsString, IsOptional } from "class-validator";
 
-class QueryUserDto {
+class QueryPacienteDto {
 
     @IsOptional()
     @IsString()
@@ -10,6 +10,10 @@ class QueryUserDto {
     @IsOptional()
     @IsString()
     filter?: string;
+
+    @IsOptional()
+    @IsString()
+    filterCui?: string;
     
     @IsOptional()
     @IsNumber()
@@ -22,4 +26,4 @@ class QueryUserDto {
     limit: number = 10;
 }
 
-export default QueryUserDto;
+export default QueryPacienteDto;

@@ -17,7 +17,7 @@ export class UsersService {
   ) { }
 
   async findAll(query: QueryUserDto) {
-    const { name, role, currentPage, limit } = query;
+    const { q, filter, page, limit } = query;
     const queryBuilder = this.usersRepository.createQueryBuilder('user')
       .where({ is_Active: true })
       .leftJoinAndSelect('user.role', 'role')
@@ -33,18 +33,18 @@ export class UsersService {
         'role.name'
       ]);
 
-    if (name) {
-      queryBuilder.andWhere('user.name LIKE :name', { name: `${name}` });
+    if (q) {
+      queryBuilder.andWhere('user.name LIKE :name', { name: `${q}` });
     }
 
-    if (role) {
-      queryBuilder.andWhere('role.name = :role', { role });
+    if (filter) {
+      queryBuilder.andWhere('role.name = :role', { role: `${filter}` });
     }
 
     const totalItems = await queryBuilder.getCount();
 
     const users = await queryBuilder
-      .skip((currentPage - 1) * limit)
+      .skip((page - 1) * limit)
       .take(limit)
       .getMany();
 
@@ -54,7 +54,7 @@ export class UsersService {
       data: users,
       totalItems,
       totalPages,
-      currentPage,
+      page,
     };
   }
 
