@@ -1,18 +1,18 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import CreateDepartamentoDto from './dto/create-departamento.dto';
-import UpdateDepartamentoDto from './dto/update-departamento.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import Departamento from './entities/departamento.entity';
 import { Repository } from 'typeorm';
 import { isUUID } from 'class-validator';
+import Departamento from './entities/departamento.entity';
+import CreateDepartamentoDto from './dto/create-departamento.dto';
+import UpdateDepartamentoDto from './dto/update-departamento.dto';
 import QueryDepartamentoDto from './dto/query-departamento.dto';
 
 @Injectable()
 export class DepartamentosService {
-  constructor(
-    @InjectRepository(Departamento)
-    private readonly departamentosRepository: Repository<Departamento>,
-  ) {}
+    constructor(
+        @InjectRepository(Departamento)
+        private readonly departamentosRepository: Repository<Departamento>,
+    ) {}
 
   create(createDepartamentoDto: CreateDepartamentoDto): Promise<Departamento> {
     const record = this.departamentosRepository.create(createDepartamentoDto);
@@ -68,16 +68,14 @@ export class DepartamentosService {
     return record;
   }
 
-  async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
-    const depto = await this.findOne(id);
-    this.departamentosRepository.merge(depto, updateDepartamentoDto);
-    return this.departamentosRepository.save(depto);
-  }
+    async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
+        const departamento = await this.findOne(id);
+        this.departamentosRepository.merge(departamento, updateDepartamentoDto);
+        return await this.departamentosRepository.save(departamento);
+    }
 
-  async remove(id: string) {
-    const depto = await this.findOne(id);
-    depto.is_Active = false;
-    await this.departamentosRepository.save(depto);
-    return 'Departamento desactivado exitosamente';
-  }
+    async remove(id: string) {
+        const departamento = await this.findOne(id);
+        return await this.departamentosRepository.remove(departamento);
+    }
 }
