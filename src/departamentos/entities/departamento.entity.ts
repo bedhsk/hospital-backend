@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, UpdateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('departamentos')
 export default class Departamento {
@@ -15,6 +15,20 @@ export default class Departamento {
     description: 'Nombre del departamento',
   })
   nombre: string;
+
+  // METADATA
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  @ApiProperty({
+    description: 'Fecha de Creaciòn del Usuario se inserta automaticamente',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  @ApiProperty({
+    description:
+      'Ultima fecha de modificaciòn de la informacion de los usuarios',
+  })
+  updatedAt: Date;
 
   @Column({ default: true })
   @ApiProperty({
