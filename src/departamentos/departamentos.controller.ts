@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { DepartamentosService } from './departamentos.service';
 import UpdateDepartamentoDto from './dto/update-departamento.dto';
@@ -18,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import QueryDepartamentoDto from './dto/query-departamento.dto';
 
 @ApiTags('Departamentos')
 @Controller('departamentos')
@@ -69,8 +71,8 @@ export class DepartamentosController {
     status: 403,
     description: 'Acceso denegado',
   })
-  findAll() {
-    return this.departamentosService.findAll();
+  findAll(@Query() query: QueryDepartamentoDto) {
+    return this.departamentosService.findAll(query);
   }
 
   @AuthorizedRoles()
