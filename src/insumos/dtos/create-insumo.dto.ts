@@ -16,9 +16,5 @@ export default class CreateInsumoDto {
     nombre: string;  
 
     @IsBoolean()
-    trazador: boolean = false;  
-
-    @IsBoolean()
-    @IsOptional()
-    is_active?: boolean = true; 
+    trazador: boolean = false;
 }
