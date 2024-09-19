@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import InsumoDepartamento from '../../insumo_departamentos/entities/insumo_departamento.entity';
 import { Column, CreateDateColumn, UpdateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('departamentos')

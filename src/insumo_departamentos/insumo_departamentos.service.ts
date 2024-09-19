@@ -6,8 +6,8 @@ import CreateInsumoDepartamentoDto from './dtos/create-insumo_departamento.dto';
 import UpdateInsumoDepartamentoDto from './dtos/update-insumo_departamento.dto';
 import { Query } from 'typeorm/driver/Query';
 import QueryIsumoDepartamentoDto from './dtos/query-insumo_departamento.dto';
-import Insumo from 'src/insumos/entities/insumo.entity';
-import Departamento from 'src/departamentos/entities/departamento.entity';
+import Insumo from '../insumos/entities/insumo.entity';
+import Departamento from '../departamentos/entities/departamento.entity';
 
 @Injectable()
 export class InsumoDepartamentoService {

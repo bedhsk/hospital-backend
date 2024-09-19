@@ -5,8 +5,8 @@ import Lote from './entities/lote.entity';
 import CreateLoteDto from './dtos/create-lote.dto';
 import UpdateLoteDto from './dtos/update-lote.dto';
 import QueryLoteDto from './dtos/query-lote.dto';
-import Insumo from 'src/insumos/entities/insumo.entity';
-import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import Insumo from '../../src/insumos/entities/insumo.entity';
+import InsumoDepartamento from '../insumo_departamentos/entities/insumo_departamento.entity';
 
 @Injectable()
 export class LotesService {

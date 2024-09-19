@@ -1,7 +1,8 @@
 import { Entity, PrimaryColumn, Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsString, IsBoolean } from 'class-validator';
-import Insumo from 'src/insumos/entities/insumo.entity';
+//import Insumo from '../../insumos/entities/insumo.entity';
+import Insumo from '../../insumos/entities/insumo.entity'
 
 @Entity('categoria')
 class Categoria {

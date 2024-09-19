@@ -5,8 +5,8 @@ import { LotesController } from './lotes.controller';
 import Lote from './entities/lote.entity';
 import { InsumosModule } from '../insumos/insumos.module';
 import { InsumoDepartamentoModule } from 'src/insumo_departamentos/insumo_departamentos.module';
-import Insumo from 'src/insumos/entities/insumo.entity';
-import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import Insumo from '../insumos/entities/insumo.entity';
+import InsumoDepartamento from '../insumo_departamentos/entities/insumo_departamento.entity';
 
 
 @Module({

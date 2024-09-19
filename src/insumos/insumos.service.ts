@@ -5,7 +5,7 @@ import Insumo from './entities/insumo.entity';
 import CreateInsumoDto from './dtos/create-insumo.dto';
 import UpdateInsumoDto from './dtos/update-insumo.dto';
 import QueryInsumoDto from './dtos/query-insumo.dto';
-import Categoria from 'src/categorias/entities/categoria.entity';
+import Categoria from '../../src/categorias/entities/categoria.entity';
 
 @Injectable()
 export class InsumosService {

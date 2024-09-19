@@ -1,9 +1,9 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import Insumo from 'src/insumos/entities/insumo.entity';
-import Departamento from 'src/departamentos/entities/departamento.entity';
+import Insumo from '../../insumos/entities/insumo.entity';
+import Departamento from '../../departamentos/entities/departamento.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsNumber, IsBoolean } from 'class-validator';
-import Lote from 'src/lotes/entities/lote.entity';
+import Lote from '../../lotes/entities/lote.entity';
 
 @Entity('insumoDepartamento')
 class InsumoDepartamento {

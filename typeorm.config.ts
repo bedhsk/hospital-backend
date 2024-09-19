@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 
-// Cargar las variables de entorno desde el archivo .env.local
 dotenv.config({ path: '.env.local' });
 
 export const dataSource: DataSource = new DataSource({
@@ -14,4 +13,5 @@ export const dataSource: DataSource = new DataSource({
   synchronize: false,
   entities: ['src/**/*.entity{.ts, .js}'],
   migrations: ['./src/migrations/*.ts'],
+   // Rutas absolutas para las migraciones
 });
