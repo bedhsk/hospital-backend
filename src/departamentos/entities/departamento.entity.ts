@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import InsumoDepartamento from '../../insumo_departamentos/entities/insumo_departamento.entity';
 import { Column, CreateDateColumn, UpdateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('departamentos')
+@Entity('departamento')
 export default class Departamento {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -34,7 +34,7 @@ export default class Departamento {
   @ApiProperty({
     description: 'Muestra si el usuario esta activo para su uso',
   })
-  is_Active: boolean;
+  is_active: boolean;
 
   @OneToMany(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.departamento)
     insumosDepartamentos: InsumoDepartamento[];

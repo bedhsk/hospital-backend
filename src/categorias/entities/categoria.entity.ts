@@ -20,7 +20,7 @@ class Categoria {
     @Column({ type: 'boolean', default: true })
     @ApiProperty()
     @IsBoolean()
-    is_active: boolean = true;  // Soft delete
+    is_active: boolean;  // Soft delete
 
     @OneToMany(() => Insumo, (insumo) => insumo.categoria)
     insumos: Insumo[];

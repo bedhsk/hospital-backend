@@ -22,7 +22,7 @@ export class DepartamentosService {
   async findAll(queryDto: QueryDepartamentoDto) {
     const { query, filter, page, limit } = queryDto;
     const queryBuilder = this.departamentosRepository.createQueryBuilder('departamento')
-      .where({ is_Active: true })
+      .where({ is_active: true })
       .select([
         'departamento.id',
         'departamento.nombre',
@@ -57,7 +57,7 @@ export class DepartamentosService {
     }
 
     const record = await this.departamentosRepository.findOne({
-      where: { id, is_Active: true },
+      where: { id, is_active: true },
     });
 
     if (!record) {

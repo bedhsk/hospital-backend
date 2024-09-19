@@ -35,7 +35,7 @@ class Insumo {
     @Column({ type: 'boolean', default: true })
     @ApiProperty()
     @IsBoolean()
-    is_active: boolean = true;  // Soft delete
+    is_active: boolean;  // Soft delete
 
     @OneToMany(() => Lote, (lote) => lote.insumo)
     lotes: Lote[];
