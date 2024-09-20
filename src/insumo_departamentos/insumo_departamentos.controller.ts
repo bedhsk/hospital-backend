@@ -8,9 +8,8 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { InsumoDepartamentoService } from './insumo_departamentos.service';
-import CreateInsumoDepartamentoDto from './dtos/create-insumo_departamento.dto';
-import UpdateInsumoDepartamentoDto from './dtos/update-insumo_departamento.dto';
+import { InsumoDepartamentosService } from './insumo_departamentos.service';
+import { CreateInsumoDepartamentoDto } from './dto/create-insumo_departamento.dto';
 import {
   ApiBody,
   ApiOperation,
@@ -20,18 +19,22 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
-import QueryIsumoDepartamentoDto from './dtos/query-insumo_departamento.dto';
+import QueryIsumoDepartamentoDto from './dto/query-insumo_departamento.dto';
+import UpdateInsumoDepartamentoDto from './dto/update-insumo_departamento.dto';
 
-@ApiTags('InsumoDepartamento')
-@Controller('insumo-departamento')
-export class InsumoDepartamentoController {
-  constructor(private readonly insumoDepartamentoService: InsumoDepartamentoService) { }
+@ApiTags('InsumoDepartamentos')
+@Controller('insumo-departamentos')
+export class InsumoDepartamentosController {
+  constructor(
+    private readonly insumoDepartamentoService: InsumoDepartamentosService,
+  ) {}
 
   @AuthorizedRoles()
   @Post()
   @ApiOperation({
     summary: 'Crear una relación de insumo con departamento',
-    description: 'Este endpoint sirve para crear una nueva relación entre insumo y departamento',
+    description:
+      'Este endpoint sirve para crear una nueva relación entre insumo y departamento',
   })
   @ApiResponse({
     status: 201,
@@ -74,7 +77,8 @@ export class InsumoDepartamentoController {
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los insumos departamento',
-    description: 'Este endpoint sirve para retornar todos los insumos por departamento en la base de datos.',
+    description:
+      'Este endpoint sirve para retornar todos los insumos por departamento en la base de datos.',
   })
   @ApiQuery({
     name: 'q',
@@ -112,7 +116,10 @@ export class InsumoDepartamentoController {
       items: {
         type: 'object',
         properties: {
-          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174002' },
+          id: {
+            type: 'string',
+            example: '123e4567-e89b-12d3-a456-426614174002',
+          },
           existencia: { type: 'number', example: 150 },
         },
       },
@@ -130,7 +137,8 @@ export class InsumoDepartamentoController {
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar una relación insumo-departamento',
-    description: 'Este endpoint sirve para buscar una relación insumo-departamento por su ID',
+    description:
+      'Este endpoint sirve para buscar una relación insumo-departamento por su ID',
   })
   @ApiParam({
     name: 'id',
@@ -182,7 +190,8 @@ export class InsumoDepartamentoController {
   @AuthorizedRoles()
   @ApiOperation({
     summary: 'Actualizar una relación insumo-departamento',
-    description: 'Este endpoint sirve para actualizar una relación insumo-departamento existente',
+    description:
+      'Este endpoint sirve para actualizar una relación insumo-departamento existente',
   })
   @ApiParam({
     name: 'id',
@@ -204,7 +213,8 @@ export class InsumoDepartamentoController {
   })
   @ApiResponse({
     status: 201,
-    description: 'La relación insumo-departamento ha sido actualizada exitosamente',
+    description:
+      'La relación insumo-departamento ha sido actualizada exitosamente',
     schema: {
       type: 'object',
       properties: {
@@ -232,14 +242,21 @@ export class InsumoDepartamentoController {
     },
   })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInsumoDepartamentoDto: UpdateInsumoDepartamentoDto) {
-    return this.insumoDepartamentoService.update(id, updateInsumoDepartamentoDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateInsumoDepartamentoDto: UpdateInsumoDepartamentoDto,
+  ) {
+    return this.insumoDepartamentoService.update(
+      id,
+      updateInsumoDepartamentoDto,
+    );
   }
 
   @AuthorizedRoles()
   @ApiOperation({
     summary: 'Eliminar (soft delete) una relación insumo-departamento',
-    description: 'Este endpoint sirve para eliminar (soft delete) una relación insumo-departamento',
+    description:
+      'Este endpoint sirve para eliminar (soft delete) una relación insumo-departamento',
   })
   @ApiParam({
     name: 'id',
@@ -249,7 +266,8 @@ export class InsumoDepartamentoController {
   })
   @ApiResponse({
     status: 200,
-    description: 'La relación insumo-departamento ha sido desactivada exitosamente',
+    description:
+      'La relación insumo-departamento ha sido desactivada exitosamente',
   })
   @ApiResponse({
     status: 404,

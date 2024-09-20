@@ -1,4 +1,4 @@
-
+import 'module-alias/register';
 import { dataSource } from '../../typeorm.config';
 import { CreateRolesSeed } from './create-role';
 import { CreateUsersSeed } from './create-user';

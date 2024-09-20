@@ -1,28 +1,26 @@
-import { Entity, PrimaryColumn, Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsString, IsBoolean } from 'class-validator';
+import { IsString, IsBoolean } from 'class-validator';
 import Insumo from 'src/insumos/entities/insumo.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('categoria')
 class Categoria {
-    //@PrimaryColumn('uuid')
-    @PrimaryGeneratedColumn('uuid')
-    @ApiProperty()
-    //@IsUUID()
-    id: string;  // UUID
+  @PrimaryGeneratedColumn('uuid')
+  @ApiProperty()
+  id: string; // UUID
 
-    @Column({ type: 'varchar', length: 255 })
-    @ApiProperty()
-    @IsString()
-    nombre: string;
+  @Column({ type: 'varchar', length: 255 })
+  @ApiProperty()
+  @IsString()
+  nombre: string;
 
-    @Column({ type: 'boolean', default: true })
-    @ApiProperty()
-    @IsBoolean()
-    is_active: boolean;  // Soft delete
+  @Column({ type: 'boolean', default: true })
+  @ApiProperty()
+  @IsBoolean()
+  is_active: boolean; // Soft delete
 
-    @OneToMany(() => Insumo, (insumo) => insumo.categoria)
-    insumos: Insumo[];
+  @OneToMany(() => Insumo, (insumo) => insumo.categoria)
+  insumos: Insumo[];
 }
 
 export default Categoria;

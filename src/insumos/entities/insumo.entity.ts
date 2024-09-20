@@ -1,46 +1,51 @@
-import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import Categoria from 'src/categorias/entities/categoria.entity';
-import Lote from 'src/lotes/entities/lote.entity';
-import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsString, IsBoolean } from 'class-validator';
+import { IsString, IsBoolean } from 'class-validator';
+import Categoria from 'src/categorias/entities/categoria.entity';
+import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  Entity,
+} from 'typeorm';
 
 @Entity('insumo')
-class Insumo {
-    //@PrimaryColumn('uuid')
-    @PrimaryGeneratedColumn('uuid')
-    @ApiProperty()
-    //@IsUUID()
-    id: string;  // UUID
+export class Insumo {
+  @PrimaryGeneratedColumn('uuid')
+  @ApiProperty()
+  id: string;
 
-    @Column({ type: 'varchar', length: 12 })
-    @ApiProperty()
-    @IsString()
-    codigo: string;
+  @Column({ type: 'varchar', length: 12 })
+  @ApiProperty()
+  @IsString()
+  codigo: string;
 
-    @Column({ type: 'varchar', length: 255 })
-    @ApiProperty()
-    @IsString()
-    nombre: string;
+  @Column({ type: 'varchar', length: 255 })
+  @ApiProperty()
+  @IsString()
+  nombre: string;
 
-    @ManyToOne(() => Categoria, (categoria) => categoria.insumos)
-    categoria: Categoria;  // Relación con Categoría
+  @Column({ type: 'boolean', default: false })
+  @ApiProperty()
+  @IsBoolean()
+  trazador: boolean = false;
 
-    @Column({ type: 'boolean', default: false })
-    @ApiProperty()
-    @IsBoolean()
-    trazador: boolean = false;
+  @Column({ type: 'boolean', default: true })
+  @ApiProperty()
+  @IsBoolean()
+  is_active: boolean; // Soft delete
 
-    @Column({ type: 'boolean', default: true })
-    @ApiProperty()
-    @IsBoolean()
-    is_active: boolean;  // Soft delete
+  @ManyToOne(() => Categoria, (categoria) => categoria.insumos)
+  @JoinColumn({ name: 'categoriaId' })
+  categoria: Categoria; // Relación con Categoría
 
-    @OneToMany(() => Lote, (lote) => lote.insumo)
-    lotes: Lote[];
-
-    @OneToMany(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.insumo)
-    insumosDepartamentos: InsumoDepartamento[];
+  @OneToMany(
+    () => InsumoDepartamento,
+    (insumoDepartamento) => insumoDepartamento.insumo,
+  )
+  insumosDepartamentos: InsumoDepartamento[];
 }
 
 export default Insumo;

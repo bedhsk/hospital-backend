@@ -9,9 +9,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { InsumosService } from './insumos.service';
-import CreateInsumoDto from './dtos/create-insumo.dto';
-import UpdateInsumoDto from './dtos/update-insumo.dto';
-import QueryInsumoDto from './dtos/query-insumo.dto'; // Add this line
+import { CreateInsumoDto } from './dto/create-insumo.dto';
+import UpdateInsumoDto from './dto/update-insumo.dto';
 import {
   ApiBody,
   ApiOperation,
@@ -21,11 +20,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import QueryInsumoDto from './dto/query-insumo.dto';
 
 @ApiTags('Insumos')
 @Controller('insumos')
 export class InsumosController {
-  constructor(private readonly insumosService: InsumosService) { }
+  constructor(private readonly insumosService: InsumosService) {}
 
   @AuthorizedRoles()
   @Post()
@@ -78,7 +78,8 @@ export class InsumosController {
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los insumos',
-    description: 'Este endpoint sirve para retornar todos los insumos activos en la base de datos.',
+    description:
+      'Este endpoint sirve para retornar todos los insumos activos en la base de datos.',
   })
   @ApiQuery({
     name: 'q',
@@ -116,7 +117,10 @@ export class InsumosController {
       items: {
         type: 'object',
         properties: {
-          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174001' },
+          id: {
+            type: 'string',
+            example: '123e4567-e89b-12d3-a456-426614174001',
+          },
           nombre: { type: 'string', example: 'Insumo X' },
           codigo: { type: 'string', example: 'INS-001' },
         },
@@ -135,7 +139,8 @@ export class InsumosController {
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar un insumo por ID',
-    description: 'Este endpoint sirve para buscar un insumo por su ID, si está activo',
+    description:
+      'Este endpoint sirve para buscar un insumo por su ID, si está activo',
   })
   @ApiParam({
     name: 'id',
@@ -264,7 +269,8 @@ export class InsumosController {
   @AuthorizedRoles()
   @ApiOperation({
     summary: 'Eliminar (soft delete) un insumo',
-    description: 'Este endpoint sirve para eliminar un insumo sin borrarlo físicamente de la base de datos',
+    description:
+      'Este endpoint sirve para eliminar un insumo sin borrarlo físicamente de la base de datos',
   })
   @ApiParam({
     name: 'id',

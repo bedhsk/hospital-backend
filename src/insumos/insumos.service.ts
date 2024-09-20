@@ -1,26 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateInsumoDto } from './dto/create-insumo.dto';
+import UpdateInsumoDto from './dto/update-insumo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CategoriasService } from 'src/categorias/categorias.service';
 import { Repository } from 'typeorm';
+import QueryInsumoDto from './dto/query-insumo.dto';
 import Insumo from './entities/insumo.entity';
-import CreateInsumoDto from './dtos/create-insumo.dto';
-import UpdateInsumoDto from './dtos/update-insumo.dto';
-import QueryInsumoDto from './dtos/query-insumo.dto';
-import Categoria from 'src/categorias/entities/categoria.entity';
 
 @Injectable()
 export class InsumosService {
   constructor(
     @InjectRepository(Insumo)
     private readonly insumoRepository: Repository<Insumo>,
-
-    @InjectRepository(Categoria)
-    private readonly categoriaRepository: Repository<Categoria>,
-  ) { }
+    private readonly categoriaService: CategoriasService,
+  ) {}
 
   // Método para obtener todos los insumos que están activos
   async findAll(query: QueryInsumoDto) {
     const { q, filter, page, limit } = query;
-    const queryBuilder = this.insumoRepository.createQueryBuilder('insumo')
+    const queryBuilder = this.insumoRepository
+      .createQueryBuilder('insumo')
       .where({ is_active: true })
       .leftJoinAndSelect('insumo.categoria', 'categoria')
       .select([
@@ -30,7 +29,7 @@ export class InsumosService {
         'insumo.trazador',
         'insumo.categoriaId',
         'categoria.id',
-        'categoria.nombre'
+        'categoria.nombre',
       ]);
 
     if (q) {
@@ -38,7 +37,9 @@ export class InsumosService {
     }
 
     if (filter) {
-      queryBuilder.andWhere('categoria.nombre = :categoria', { categoria: `${filter}` });
+      queryBuilder.andWhere('categoria.nombre = :categoria', {
+        categoria: `${filter}`,
+      });
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -59,9 +60,14 @@ export class InsumosService {
 
   // Método para obtener un solo insumo por ID si está activo
   async findOne(id: string) {
-    const insumo = await this.insumoRepository.findOne({ where: { id, is_active: true } });
+    const insumo = await this.insumoRepository.findOne({
+      where: { id, is_active: true },
+      relations: ['categoria'],
+    });
     if (!insumo) {
-      throw new NotFoundException(`Insumo con ID ${id} no encontrado o desactivado`);
+      throw new NotFoundException(
+        `Insumo con ID ${id} no encontrado o desactivado`,
+      );
     }
     return insumo;
   }
@@ -69,18 +75,20 @@ export class InsumosService {
   // Crear un nuevo insumo
   async create(createInsumoDto: CreateInsumoDto) {
     const { categoriaId, ...rest } = createInsumoDto;
-
-    // Buscar la categoría a la que pertenece el insumo
-    const categoria = await this.categoriaRepository.findOne({ where: { id: categoriaId } });
+    const categoria = await this.categoriaService.findOne(
+      createInsumoDto.categoriaId,
+    );
 
     if (!categoria) {
-      throw new NotFoundException(`Categoria con id ${categoriaId} no encontrada`);
+      throw new NotFoundException(
+        `Categoria con id ${categoriaId} no encontrada`,
+      );
     }
 
     // Crear el nuevo insumo con la categoría relacionada
     const insumo = this.insumoRepository.create({
       ...rest,
-      categoria,  // Relacionar el insumo con la categoría encontrada
+      categoria, // Relacionar el insumo con la categoría encontrada
     });
 
     return await this.insumoRepository.save(insumo);
@@ -90,7 +98,9 @@ export class InsumosService {
   async update(id: string, updateInsumoDto: UpdateInsumoDto) {
     const insumo = await this.findOne(id);
     if (!insumo) {
-      throw new NotFoundException(`Insumo con ID ${id} no encontrado o desactivado`);
+      throw new NotFoundException(
+        `Insumo con ID ${id} no encontrado o desactivado`,
+      );
     }
     this.insumoRepository.merge(insumo, updateInsumoDto);
     return await this.insumoRepository.save(insumo);
@@ -100,7 +110,9 @@ export class InsumosService {
   async softDelete(id: string) {
     const insumo = await this.findOne(id);
     if (!insumo) {
-      throw new NotFoundException(`Insumo con ID ${id} no encontrado o ya desactivado`);
+      throw new NotFoundException(
+        `Insumo con ID ${id} no encontrado o ya desactivado`,
+      );
     }
     // Cambiamos el campo is_active a false para realizar el soft delete
     insumo.is_active = false;

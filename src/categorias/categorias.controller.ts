@@ -9,8 +9,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { CategoriasService } from './categorias.service';
-import CreateCategoriaDto from './dtos/create-categoria.dto';
-import UpdateCategoriaDto from './dtos/update-categoria.dto';
+import CreateCategoriaDto from './dto/create-categoria.dto';
+import UpdateCategoriaDto from './dto/update-categoria.dto';
 import {
   ApiBody,
   ApiOperation,
@@ -20,12 +20,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
-import QueryCategoriarDto from './dtos/query-categoria.dto';
+import QueryCategoriarDto from './dto/query-categoria.dto';
 
 @ApiTags('Categorías')
 @Controller('categorias')
 export class CategoriasController {
-  constructor(private readonly categoriasService: CategoriasService) { }
+  constructor(private readonly categoriasService: CategoriasService) {}
 
   @AuthorizedRoles()
   @Post()
@@ -66,7 +66,8 @@ export class CategoriasController {
   @Get()
   @ApiOperation({
     summary: 'Obtiene todas las categorías',
-    description: 'Este endpoint sirve para retornar todas las categorías activas en la base de datos.',
+    description:
+      'Este endpoint sirve para retornar todas las categorías activas en la base de datos.',
   })
   @ApiQuery({
     name: 'q',
@@ -97,7 +98,10 @@ export class CategoriasController {
       items: {
         type: 'object',
         properties: {
-          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174003' },
+          id: {
+            type: 'string',
+            example: '123e4567-e89b-12d3-a456-426614174003',
+          },
           nombre: { type: 'string', example: 'Categoría A' },
         },
       },
@@ -201,14 +205,18 @@ export class CategoriasController {
     },
   })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoriaDto: UpdateCategoriaDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCategoriaDto: UpdateCategoriaDto,
+  ) {
     return this.categoriasService.update(id, updateCategoriaDto);
   }
 
   @AuthorizedRoles()
   @ApiOperation({
     summary: 'Eliminar una categoría (soft delete)',
-    description: 'Este endpoint sirve para eliminar (soft delete) una categoría',
+    description:
+      'Este endpoint sirve para eliminar (soft delete) una categoría',
   })
   @ApiParam({
     name: 'id',

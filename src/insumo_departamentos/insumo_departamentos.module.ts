@@ -1,16 +1,31 @@
 import { Module } from '@nestjs/common';
+import { InsumoDepartamentosService } from './insumo_departamentos.service';
+import { InsumoDepartamentosController } from './insumo_departamentos.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import InsumoDepartamento from './entities/insumo_departamento.entity';
-import Insumo from 'src/insumos/entities/insumo.entity';
+import { InsumoDepartamento } from './entities/insumo_departamento.entity';
 import Departamento from 'src/departamentos/entities/departamento.entity';
-import { InsumoDepartamentoService } from './insumo_departamentos.service';
-import { InsumoDepartamentoController } from './insumo_departamentos.controller';
+import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import Insumo from 'src/insumos/entities/insumo.entity';
+import { InsumosService } from 'src/insumos/insumos.service';
+import Categoria from 'src/categorias/entities/categoria.entity';
+import { CategoriasService } from 'src/categorias/categorias.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([InsumoDepartamento, Insumo, Departamento]),  // Importamos las entidades necesarias
+    TypeOrmModule.forFeature([
+      InsumoDepartamento,
+      Insumo,
+      Categoria,
+      Departamento,
+    ]),
   ],
-  providers: [InsumoDepartamentoService],
-  controllers: [InsumoDepartamentoController],
+  controllers: [InsumoDepartamentosController],
+  providers: [
+    InsumoDepartamentosService,
+    InsumosService,
+    DepartamentosService,
+    CategoriasService,
+  ],
+  exports: [InsumoDepartamentosService, InsumosService],
 })
-export class InsumoDepartamentoModule {}
+export class InsumoDepartamentosModule {}

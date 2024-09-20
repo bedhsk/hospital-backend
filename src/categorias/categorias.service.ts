@@ -1,29 +1,29 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import CreateCategoriaDto from './dto/create-categoria.dto';
+import UpdateCategoriaDto from './dto/update-categoria.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import QueryCategoriarDto from './dto/query-categoria.dto';
 import Categoria from './entities/categoria.entity';
-import CreateCategoriaDto from './dtos/create-categoria.dto';
-import UpdateCategoriaDto from './dtos/update-categoria.dto';
-import QueryCategoriarDto from './dtos/query-categoria.dto';
 
 @Injectable()
 export class CategoriasService {
   constructor(
     @InjectRepository(Categoria)
     private readonly categoriaRepository: Repository<Categoria>,
-  ) { }
+  ) {}
 
   async findAll(query: QueryCategoriarDto) {
     const { q, filter, page, limit } = query;
-    const queryBuilder = this.categoriaRepository.createQueryBuilder('categoria')
+    const queryBuilder = this.categoriaRepository
+      .createQueryBuilder('categoria')
       .where({ is_active: true })
-      .select([
-        'categoria.id',
-        'categoria.nombre',
-      ]);
+      .select(['categoria.id', 'categoria.nombre']);
 
     if (q) {
-      queryBuilder.andWhere('categoria.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere('categoria.nombre LIKE :nombre', {
+        nombre: `%${q}%`,
+      });
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -43,9 +43,13 @@ export class CategoriasService {
   }
 
   async findOne(id: string) {
-    const categoria = await this.categoriaRepository.findOne({ where: { id, is_active: true } });
+    const categoria = await this.categoriaRepository.findOne({
+      where: { id, is_active: true },
+    });
     if (!categoria) {
-      throw new NotFoundException(`Categoría con ID ${id} no encontrada o desactivada`);
+      throw new NotFoundException(
+        `Categoría con ID ${id} no encontrada o desactivada`,
+      );
     }
     return categoria;
   }
@@ -58,7 +62,9 @@ export class CategoriasService {
   async update(id: string, updateCategoriaDto: UpdateCategoriaDto) {
     const categoria = await this.findOne(id);
     if (!categoria) {
-      throw new NotFoundException(`Categoría con ID ${id} no encontrada o desactivada`);
+      throw new NotFoundException(
+        `Categoría con ID ${id} no encontrada o desactivada`,
+      );
     }
     this.categoriaRepository.merge(categoria, updateCategoriaDto);
     return await this.categoriaRepository.save(categoria);
@@ -67,7 +73,9 @@ export class CategoriasService {
   async softDelete(id: string) {
     const categoria = await this.findOne(id);
     if (!categoria) {
-      throw new NotFoundException(`Categoría con ID ${id} no encontrada o ya desactivada`);
+      throw new NotFoundException(
+        `Categoría con ID ${id} no encontrada o ya desactivada`,
+      );
     }
     // Realiza el soft delete actualizando el campo `is_active`
     categoria.is_active = false;

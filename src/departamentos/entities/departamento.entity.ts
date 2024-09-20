@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import InsumoDepartamento from 'src/insumo_departamentos/entities/insumo_departamento.entity';
-import { Column, CreateDateColumn, UpdateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import {
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('departamento')
 export default class Departamento {
@@ -36,6 +43,9 @@ export default class Departamento {
   })
   is_active: boolean;
 
-  @OneToMany(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.departamento)
-    insumosDepartamentos: InsumoDepartamento[];
+  @OneToMany(
+    () => InsumoDepartamento,
+    (insumoDepartamento) => insumoDepartamento.departamento,
+  )
+  insumosDepartamentos: InsumoDepartamento[];
 }

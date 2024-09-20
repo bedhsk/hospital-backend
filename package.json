@@ -22,7 +22,10 @@
     "migration:generate": "npm run typeorm migration:generate -- -d ./typeorm.config.ts",
     "migration:run": "npm run typeorm migration:run -- -d typeorm.config.ts",
     "migration:revert": "npm run typeorm migration:revert -- -d typeorm.config.ts",
-    "seed": "ts-node src/seeds/seed-runner.ts"
+    "schema:log": "npm run typeorm -- schema:log -d ./typeorm.config.ts",
+    "schema:sync": "npm run typeorm -- schema:sync -d ./typeorm.config.ts",
+    "cache:clear": "npm run typeorm -- cache:clear -d ./typeorm.config.ts",
+    "seed": "NODE_PATH=. ts-node src/seeds/seed-runner.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -38,6 +41,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
+    "module-alias": "^2.2.3",
     "moment": "^2.30.1",
     "nestjs-joi": "^1.10.0",
     "passport": "^0.7.0",
@@ -55,6 +59,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
+    "@types/module-alias": "^2.0.4",
     "@types/node": "^20.3.1",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
@@ -71,7 +76,6 @@
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3"
   },
   "jest": {
@@ -90,5 +94,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "_moduleAliases": {
+    "src": "src"
   }
 }

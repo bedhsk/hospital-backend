@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import Categoria from './entities/categoria.entity';
 import { CategoriasService } from './categorias.service';
 import { CategoriasController } from './categorias.controller';
+import { Type } from 'class-transformer';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import Insumo from 'src/insumos/entities/insumo.entity';
+import Categoria from './entities/categoria.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Categoria])], // Registramos la entidad Categoria
-  providers: [CategoriasService],
+  imports: [TypeOrmModule.forFeature([Categoria, Insumo])], // Registramos la entidad Categoria
   controllers: [CategoriasController],
-  exports: [TypeOrmModule], // Exportamos el módulo para que otros módulos lo puedan usar
+  providers: [CategoriasService],
+  exports: [CategoriasService],
 })
 export class CategoriasModule {}
