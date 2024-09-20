@@ -277,25 +277,26 @@ describe('UsersService', () => {
     });
   });
 
-  // Pruebas para el método findAll
   describe('findAll', () => {
     it('debe retornar una lista de usuarios con paginación', async () => {
+      // Configuración de datos de prueba
       const query: QueryUserDto = {
-        name: 'John',
-        role: 'Admin',
-        currentPage: 1,
+        q: 'John',
+        filter: 'Admin',
+        page: 1,
         limit: 10,
       };
-
+  
       const user = new User();
       user.id = 'user1';
       user.name = 'John Doe';
       user.is_Active = true;
       user.role = new Role();
-
+  
       const totalItems = 1;
       const totalPages = 1;
-
+  
+      // Mock del QueryBuilder
       const mockQueryBuilder: any = {
         where: jest.fn().mockReturnThis(),
         leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -306,11 +307,14 @@ describe('UsersService', () => {
         take: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue([user]),
       };
-
+  
+      // Configurar el mock del método createQueryBuilder para que devuelva el mock del QueryBuilder
       usersRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-
+  
+      // Llamada al método findAll
       const result = await service.findAll(query);
-
+  
+      // Aserciones para verificar que los métodos del QueryBuilder fueron llamados con los parámetros correctos
       expect(usersRepository.createQueryBuilder).toHaveBeenCalledWith('user');
       expect(mockQueryBuilder.where).toHaveBeenCalledWith({ is_Active: true });
       expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('user.role', 'role');
@@ -328,15 +332,15 @@ describe('UsersService', () => {
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.name LIKE :name', { name: 'John' });
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('role.name = :role', { role: 'Admin' });
       expect(mockQueryBuilder.getCount).toHaveBeenCalled();
-      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0); // (page - 1) * limit = (1 - 1) * 10 = 0
       expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
       expect(mockQueryBuilder.getMany).toHaveBeenCalled();
       expect(result).toEqual({
         data: [user],
         totalItems,
         totalPages,
-        currentPage: 1,
+        page: 1,
       });
     });
-  }); 
+  });
 });
