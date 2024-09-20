@@ -1,9 +1,8 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 class CreateDepartamentoDto {
   @IsString()
-  @MinLength(1)
-  @MaxLength(60)
+  @MaxLength(255)
   nombre: string;
 }
 

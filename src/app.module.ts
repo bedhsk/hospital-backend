@@ -1,12 +1,16 @@
-import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { CategoriasModule } from './categorias/categorias.module';
+import { ConfigModule } from '@nestjs/config';
 import { DepartamentosModule } from './departamentos/departamentos.module';
+import { InsumoDepartamentoModule } from './insumo_departamentos/insumo_departamentos.module';
+import { InsumosModule } from './insumos/insumos.module';
+import { LotesModule } from './lotes/lotes.module';
+import { Module } from '@nestjs/common';
 import { PacientesModule } from './pacientes/pacientes.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersModule } from './users/users.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -33,10 +37,16 @@ import * as Joi from 'joi';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    UsersModule,
+    InsumosModule,
+    CategoriasModule,
+    LotesModule,
+    InsumoDepartamentoModule,
+    //UsersController,
     AuthModule,
     DepartamentosModule,
     PacientesModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
