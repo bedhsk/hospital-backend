@@ -41,5 +41,5 @@ export class InsumoDepartamento {
   @Column({ type: 'boolean', default: true })
   @ApiProperty()
   @IsBoolean()
-  is_active: boolean = true;
+  is_active: boolean;
 }
