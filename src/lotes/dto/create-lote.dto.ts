@@ -18,7 +18,7 @@ class CreateLoteDto {
 
   @IsDate()
   @Type(() => Date)
-  fechaFabricacion: Date;
+  fechaEntrada: Date;
 
   @IsDate()
   @Type(() => Date)
@@ -26,11 +26,12 @@ class CreateLoteDto {
 
   @IsInt()
   @Min(0)
-  cantidad: number;
+  cantidadInical: number;
 
-  @IsUUID()
-  @IsNotEmpty()
-  insumoDepartamentoId: string;
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  cantidadActual: number;
 
   @IsString()
   @IsOptional()
@@ -39,6 +40,10 @@ class CreateLoteDto {
   @IsBoolean()
   @IsOptional()
   is_active?: boolean = true;
+
+  @IsUUID()
+  @IsNotEmpty()
+  insumoDepartamentoId: string;
 }
 
 export default CreateLoteDto;

@@ -23,7 +23,7 @@ export default class Lote {
   @Column({ type: 'date' })
   @ApiProperty()
   @IsDate()
-  fechaFabricacion: Date;
+  fechaEntrada: Date;
 
   @Column({ type: 'date' })
   @ApiProperty()
@@ -33,12 +33,22 @@ export default class Lote {
   @Column({ type: 'int', default: 0 })
   @ApiProperty()
   @IsNumber()
-  cantidad: number;
+  cantidadInical: number;
+
+  @Column({ type: 'int' })
+  @ApiProperty()
+  @IsNumber()
+  cantidadActual?: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   @ApiProperty()
   @IsString()
   status: string;
+
+  @Column({ type: 'boolean', default: true })
+  @ApiProperty()
+  @IsBoolean()
+  is_active: boolean = true; // Soft delete
 
   @ManyToOne(
     () => InsumoDepartamento,
@@ -46,9 +56,4 @@ export default class Lote {
   )
   @JoinColumn({ name: 'insumoDepartamentoId' })
   insumoDepartamento: InsumoDepartamento; // Relación con InsumoDepartamento
-
-  @Column({ type: 'boolean', default: true })
-  @ApiProperty()
-  @IsBoolean()
-  is_active: boolean = true; // Soft delete
 }
