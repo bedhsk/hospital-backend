@@ -25,9 +25,11 @@ export class LotesService {
       .select([
         'lote.id',
         'lote.numeroLote',
-        'lote.fechaFabricacion',
+        'lote.fechaEntrada',
         'lote.fechaCaducidad',
-        'lote.cantidad',
+        'lote.cantidadInical',
+        'lote.cantidadActual',
+        'lote.status',
         'lote.insumoDepartamentoId',
         'insumoDepartamento.id',
         'insumoDepartamento.existencia',
