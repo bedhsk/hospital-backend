@@ -79,7 +79,9 @@ export class LotesService {
 
   // Crear un nuevo lote
   async create(createLoteDto: CreateLoteDto) {
-    const { insumoDepartamentoId, ...rest } = createLoteDto;
+    const { insumoDepartamentoId, cantidadInical, cantidadActual, ...rest } =
+      createLoteDto;
+
     const insumoDepartamento = await this.insumoDepartamentoService.findOne(
       createLoteDto.insumoDepartamentoId,
     );
@@ -92,6 +94,8 @@ export class LotesService {
 
     // Crear el lote con las relaciones establecidas
     const lote = this.loteRepository.create({
+      cantidadInical,
+      cantidadActual: cantidadActual || cantidadInical,
       ...rest,
       insumoDepartamento,
     });

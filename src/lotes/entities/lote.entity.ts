@@ -38,7 +38,7 @@ export default class Lote {
   @Column({ type: 'int' })
   @ApiProperty()
   @IsNumber()
-  cantidadActual: number;
+  cantidadActual?: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   @ApiProperty()

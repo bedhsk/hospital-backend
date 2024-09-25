@@ -30,6 +30,7 @@ class CreateLoteDto {
 
   @IsInt()
   @Min(0)
+  @IsOptional()
   cantidadActual: number;
 
   @IsString()
