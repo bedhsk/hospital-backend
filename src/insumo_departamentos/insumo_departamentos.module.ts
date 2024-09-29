@@ -9,6 +9,7 @@ import Insumo from 'src/insumos/entities/insumo.entity';
 import { InsumosService } from 'src/insumos/insumos.service';
 import Categoria from 'src/categorias/entities/categoria.entity';
 import { CategoriasService } from 'src/categorias/categorias.service';
+import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
 import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
 
 import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
@@ -20,6 +21,7 @@ import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.e
       Insumo,
       Categoria,
       Departamento,
+      detalleAdquisicion,
       DetalleRetiro
       detalleAdquisicion,
     ]),
