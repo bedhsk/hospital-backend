@@ -84,7 +84,7 @@ export default class User {
     const hash = await bcrypt.hash(this.password, saltOrRounds);
     this.password = hash;
   }
-
+  
   @OneToMany(() => Adquisicion, (adquisicion) => adquisicion.usuario)
   @ApiProperty({
       description: 'Relacion entre usuarios y adquisicion, un usuario pueden tenerlo varias adquisiciones',

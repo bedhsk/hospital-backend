@@ -3,37 +3,38 @@ import { AdquisicionesService } from './adquisiciones.service';
 import { AdquisicionesController } from './adquisiciones.controller';
 import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import detalleAdquisicion from './entities/detalle_adquisicion.entity';
 import Adquisicion from './entities/adquisicion.entity';
-import detalleAdquisicion from './entities/detalleAdquisicion.entity';
+import { InsumoDepartamentosModule } from 'src/insumo_departamentos/insumo_departamentos.module';
+import { UsersModule } from 'src/users/users.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
-import { InsumoDepartamento } from '../insumo_departamentos/entities/insumo_departamento.entity';
-import { InsumoDepartamentosModule } from '../insumo_departamentos/insumo_departamentos.module';
-import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
-import { UsersService } from 'src/users/users.service';
-import User from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
     InsumoDepartamentosModule,
-    TypeOrmModule.forFeature([Adquisicion, detalleAdquisicion, InsumoDepartamento, User]),
+    UsersModule,
+    TypeOrmModule.forFeature([
+      detalleAdquisicion,
+      InsumoDepartamento,
+      Adquisicion,
+    ]),
   ],
-  controllers: [AdquisicionesController],
-  providers: [
-    AdquisicionesService,
+  providers: [ 
+    AdquisicionesService, 
     DetalleadquisicionesService,
-    InsumoDepartamentosService,
-    UsersService,
     {
-      provide: APP_GUARD,
+      provide: APP_GUARD, 
       useClass: JwtGuard,
     },
     {
-      provide: APP_GUARD,
-      useClass: RoleGuard,
+        provide: APP_GUARD, 
+        useClass: RoleGuard,
     }
-  ],
-  exports: [AdquisicionesService, DetalleadquisicionesService],
+    ],
+  controllers: [AdquisicionesController],
+  exports: [AdquisicionesService]
 })
 export class AdquisicionesModule {}

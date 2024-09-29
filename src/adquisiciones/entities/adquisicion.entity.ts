@@ -8,9 +8,9 @@ import {
   JoinColumn,
   OneToMany,
   Entity,
-  Timestamp,
+  CreateDateColumn,
 } from 'typeorm';
-import detalleAdquisicion from './detalleAdquisicion.entity';
+import detalleAdquisicion from '../entities/detalle_adquisicion.entity';
 
 @Entity('adquisicion')
 export default class Adquisicion {
@@ -18,10 +18,10 @@ export default class Adquisicion {
   @ApiProperty()
   id: string;
 
-  @Column({ type: 'varchar', length: 12 })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   @ApiProperty()
   @IsDate()
-  created_at: Timestamp;
+  created_at: Date;
 
   @Column({ type: 'varchar', length: 255 })
   @ApiProperty()

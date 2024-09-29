@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import Adquisicion from './adquisicion.entity';
 
+
 @Entity('detalleAdquisicion')
 export default class detalleAdquisicion {
   @PrimaryGeneratedColumn('uuid')
@@ -29,9 +30,9 @@ export default class detalleAdquisicion {
   @ManyToOne(() => Adquisicion, (adquisicion) => adquisicion.detalleAdquisicion)
   @JoinColumn({ name: 'adquisicionId' })
   adquisicion: Adquisicion; // Relación con adquisicion
-
-  @ManyToOne(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.detalleAdquisicion)
+  
+  @ManyToOne(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.lotes,)
   @JoinColumn({ name: 'insumoDepartamentoId' })
-  insumoDepartamento: Adquisicion; // Relación con insumoDepartamento
+  insumoDepartamento: InsumoDepartamento; // Relación con InsumoDepartamento
 
 }

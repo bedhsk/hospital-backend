@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { AdquisicionesService } from './adquisiciones.service';
-import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
@@ -10,7 +9,6 @@ import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
 export class AdquisicionesController {
   constructor(
     private readonly adquisicionService: AdquisicionesService,
-    private readonly detalleAdquisicionService: DetalleadquisicionesService,
   ) {}
 
   @AuthorizedRoles()

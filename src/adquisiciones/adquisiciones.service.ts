@@ -103,7 +103,7 @@ export class AdquisicionesService {
       ...rest,
       usuario, // Relacionar el insumo con la categoría encontrada
     });
-
+    
     // Crear el detalle con la cantidad y insumo departamento relacionado
     const detalle = await this.detalleAdquisicionService.create({
       adquisicionId: adquisicion.id,
