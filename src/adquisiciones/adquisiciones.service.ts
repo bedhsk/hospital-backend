@@ -61,6 +61,14 @@ export class AdquisicionesService {
     };
   }*/
 
+  async findAll(){
+    const adquisiciones = await this.adquisicionRepository.find({
+      where: { is_active: true },
+      relations: ['usuario'],
+    })
+    return adquisiciones
+  }
+
   // Método para obtener un solo insumo por ID si está activo
   async findOne(id: string) {
     const adquisicion = await this.adquisicionRepository.findOne({
@@ -99,20 +107,21 @@ export class AdquisicionesService {
     }
 
     // Crear la nueva adquisicion con el usuario relacionado
-    const adquisicion = this.adquisicionRepository.create({
+    const adquisicionCreate = this.adquisicionRepository.create({
       ...rest,
-      usuario, // Relacionar el insumo con la categoría encontrada
+      usuario: {id: usuario.id, username: usuario.username}, // Relacionar el insumo con la categoría encontrada
     });
     
+    const adquisicion = await this.adquisicionRepository.save(adquisicionCreate)
     // Crear el detalle con la cantidad y insumo departamento relacionado
-    const detalle = await this.detalleAdquisicionService.create({
+    const detalleAdquisicion = await this.detalleAdquisicionService.create({
       adquisicionId: adquisicion.id,
       insumoDepartamentoId: insumoDepartamentoId,
       is_active: true,
       cantidad: createAdquisicion.cantidad,
     })
 
-    return await this.adquisicionRepository.save(adquisicion);
+    return {adquisicion, detalleAdquisicion};
   }
 
   // Actualizar un insumo existente, si está activo

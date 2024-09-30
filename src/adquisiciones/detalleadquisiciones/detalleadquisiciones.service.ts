@@ -89,7 +89,11 @@ export class DetalleadquisicionesService {
     // Crear el nuevo detalle adquisicion con sus respectivas relaciones
     const detalleAdquisicion = this.detalleAdquisicionesRepository.create({
       ...rest,
-      insumoDepartamento, // Relacionar el detalleadquisicion con el insumoDepartamento encontrado
+      adquisicion: {id: adquisicionId},
+      insumoDepartamento: {
+        id: insumoDepartamento.id,
+        existencia: insumoDepartamento.existencia,
+      }, // Relacionar el detalleadquisicion con el insumoDepartamento encontrado
     });
 
     return await this.detalleAdquisicionesRepository.save(detalleAdquisicion);

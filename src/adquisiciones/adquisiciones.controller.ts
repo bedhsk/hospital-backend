@@ -58,13 +58,13 @@ export class AdquisicionesController {
     return this.adquisicionService.create(createAdquisicionDto);
   }
 
-  /*@AuthorizedRoles()
+  @AuthorizedRoles()
   @Get()
   @ApiOperation({
-    summary: 'Obtiene todos los insumos',
+    summary: 'Obtiene todas las adquisiciones',
     description:
       'Este endpoint sirve para retornar todos los insumos activos en la base de datos.',
-  })
+  })/*
   @ApiQuery({
     name: 'q',
     type: String,
@@ -92,7 +92,7 @@ export class AdquisicionesController {
     required: false,
     description: 'Número de elementos por página para la paginación.',
     example: 10,
-  })
+  })*/
   @ApiResponse({
     status: 200,
     description: 'Insumos obtenidos exitosamente.',
@@ -115,9 +115,13 @@ export class AdquisicionesController {
     status: 403,
     description: 'Acceso denegado.',
   })
+  /*
   findAll(@Query() query: QueryInsumoDto) {
     return this.insumosService.findAll(query);
   }*/
+  findAll() {
+    return this.adquisicionService.findAll();
+  }
 
   @AuthorizedRoles()
   @Get(':id')

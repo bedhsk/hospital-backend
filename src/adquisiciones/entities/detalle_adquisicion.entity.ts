@@ -22,7 +22,7 @@ export default class detalleAdquisicion {
   @IsBoolean()
   is_active: boolean; // Soft delete
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'int'})
   @ApiProperty()
   @IsNumber()
   cantidad: number; // Soft delete
