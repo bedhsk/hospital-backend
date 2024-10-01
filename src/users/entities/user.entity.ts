@@ -5,12 +5,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import Retiro from 'src/retiros/entities/retiro.entity';
 
 @Entity('users')
 export default class User {
@@ -76,6 +78,10 @@ export default class User {
     description: 'Contraseña de acceso para el usuario',
   })
   password: string;
+
+  @OneToMany(()=> Retiro,(retiro)=> retiro.user)
+  retiros:Retiro[];
+  
   @BeforeInsert()
   async hashPassword() {
     const saltOrRounds = 10;
