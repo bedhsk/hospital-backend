@@ -15,6 +15,8 @@ import { InsumosModule } from './insumos/insumos.module';
 import { RetirosModule } from './retiros/retiros.module';
 
 import { AdquisicionesModule } from './adquisiciones/adquisiciones.module';
+import { ExamenesModule } from './examenes/examenes.module';
+import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { AdquisicionesModule } from './adquisiciones/adquisiciones.module';
     DepartamentosModule,
     LotesModule,
     InsumoDepartamentosModule,
+    ExamenesModule,
+    InsumoExamenesModule,
     RetirosModule,
     AdquisicionesModule,
   ],
