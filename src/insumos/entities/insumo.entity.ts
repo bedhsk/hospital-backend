@@ -42,6 +42,7 @@ class Insumo {
 
     @OneToMany(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.insumo)
     insumosDepartamentos: InsumoDepartamento[];
+    insumoExamen: any;
 }
 
 export default Insumo;

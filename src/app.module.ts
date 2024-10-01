@@ -12,6 +12,8 @@ import Departamento from './departamentos/entities/departamento.entity';
 import { UsersController } from './users/users.controller';
 import { AuthModule } from './auth/auth.module';
 import { DepartamentosModule } from './departamentos/departamentos.module';
+import { ExamenesModule } from './examenes/examenes.module';
+import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { DepartamentosModule } from './departamentos/departamentos.module';
     //UsersController,
     AuthModule,
     DepartamentosModule,
+    ExamenesModule,
+    InsumoExamenesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
