@@ -148,20 +148,40 @@ export class AdquisicionesService {
         `Adquisicion con ID ${id} no encontrado o desactivado`,
       );
     }
-    this.adquisicionRepository.merge(adquisicion, updateInsumoDto);
+    if(updateInsumoDto.descripcion){
+      this.adquisicionRepository.merge(adquisicion, {descripcion: updateInsumoDto.descripcion});
+    }
+    if(updateInsumoDto.cantidad){
+      const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionId(id)
+      await this.detalleAdquisicionService.update(detalleAdquisicionAux.id, {cantidad: updateInsumoDto.cantidad})
+    }
     return await this.adquisicionRepository.save(adquisicion);
   }
 
   // Realiza el soft delete cambiando el campo is_active a false
   async softDelete(id: string) {
-    const adquisicion = await this.findOne(id);
-    if (!adquisicion) {
+    const adquisicionAux = await this.findOne(id);
+    if (!adquisicionAux) {
       throw new NotFoundException(
         `Adquisicion con ID ${id} no encontrado o ya desactivado`,
       );
     }
     // Cambiamos el campo is_active a false para realizar el soft delete
-    adquisicion.is_active = false;
-    return await this.adquisicionRepository.save(adquisicion);
+    adquisicionAux.is_active = false;
+    const adquisicion = await this.adquisicionRepository.save(adquisicionAux);
+
+    const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionId(id)
+    if(detalleAdquisicionAux){
+      const insumoDepartamento = await this.insumoDepartamentoService.findOne(detalleAdquisicionAux.insumoDepartamento.id)
+      // Actualizar la existencia del insumo departamento
+      await this.insumoDepartamentoService.update(
+        insumoDepartamento.id,
+        {
+          existencia: insumoDepartamento.existencia - detalleAdquisicionAux.cantidad
+        }
+      );
+    }
+    const detalleAdquisicion = await this.detalleAdquisicionService.softDelete(detalleAdquisicionAux.id)
+    return {adquisicion, detalleAdquisicion}
   }
 }

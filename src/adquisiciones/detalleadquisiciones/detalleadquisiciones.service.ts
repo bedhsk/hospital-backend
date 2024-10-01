@@ -66,7 +66,25 @@ export class DetalleadquisicionesService {
     });
     if (!detalleAdquisicion) {
       throw new NotFoundException(
-        `Insumo con ID ${id} no encontrado o desactivado`,
+        `Insumo departamento con ID ${id} no encontrado o desactivado`,
+      );
+    }
+    return detalleAdquisicion;
+  }
+
+  // Método para obtener un solo detalle de adquisicion por el ID de adquisicion si está activo
+  async findOneByAdquisicionId(id: string) {
+    const detalleAdquisicion = await this.detalleAdquisicionesRepository.findOne({
+      where: {
+        adquisicion: { id },
+        is_active: true,
+      },
+      relations: ['adquisicion', 'insumoDepartamento'],
+    });
+  
+    if (!detalleAdquisicion) {
+      throw new NotFoundException(
+        `Insumo departamento con ID de adquisición ${id} no encontrado o desactivado`,
       );
     }
     return detalleAdquisicion;
@@ -109,7 +127,7 @@ export class DetalleadquisicionesService {
     }
     
     const insumoDepartamento = await this.insumoDepartamentosService.findOne(
-      updateDetalleAdquisicionDto.insumoDepartamentoId,
+      detalleAdquisicion.insumoDepartamento.id,
     );
     
     if (!insumoDepartamento) {
@@ -117,8 +135,14 @@ export class DetalleadquisicionesService {
         `Insumo departamento con id ${updateDetalleAdquisicionDto.insumoDepartamentoId} no encontrado`,
       );
     }
+    await this.insumoDepartamentosService.update(
+      insumoDepartamento.id,
+      {
+        existencia: insumoDepartamento.existencia  + updateDetalleAdquisicionDto.cantidad - detalleAdquisicion.cantidad
+      }
+    );
 
-    this.detalleAdquisicionesRepository.merge(detalleAdquisicion, updateDetalleAdquisicionDto);
+    this.detalleAdquisicionesRepository.merge(detalleAdquisicion, {cantidad: updateDetalleAdquisicionDto.cantidad});
     return await this.detalleAdquisicionesRepository.save(detalleAdquisicion);
   }
 
