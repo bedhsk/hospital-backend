@@ -12,6 +12,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import Retiro from 'src/retiros/entities/retiro.entity';
 import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 
 @Entity('users')
@@ -78,6 +79,10 @@ export default class User {
     description: 'Contraseña de acceso para el usuario',
   })
   password: string;
+
+  @OneToMany(()=> Retiro,(retiro)=> retiro.user)
+  retiros:Retiro[];
+  
     ordenesLaboratorio: any;
   @BeforeInsert()
   async hashPassword() {
