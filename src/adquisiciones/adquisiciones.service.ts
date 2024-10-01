@@ -7,6 +7,7 @@ import { UsersService } from 'src/users/users.service';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
 import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
+import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
 
 @Injectable()
 export class AdquisicionesService {
@@ -18,30 +19,31 @@ export class AdquisicionesService {
     private readonly insumoDepartamentoService: InsumoDepartamentosService,
   ) {}
 
-  /*// Método para obtener todos los insumos que están activos
-  async findAll(query: QueryInsumoDto) {
+  // Método para obtener todos los insumos que están activos
+  async findAll(query: QueryAdquisicionDto) {
     const { q, filter, page, limit } = query;
     const queryBuilder = this.adquisicionRepository
-      .createQueryBuilder('insumo')
-      .where({ is_active: true })
-      .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .createQueryBuilder('adquisicion')
+      .leftJoinAndSelect('adquisicion.usuario', 'usuario')
+      .leftJoinAndSelect('adquisicion.detalleAdquisicion', 'detalleAdquisicion')
+      .leftJoinAndSelect('detalleAdquisicion.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .where('adquisicion.is_active = true')
       .select([
-        'insumo.id',
-        'insumo.codigo',
-        'insumo.nombre',
-        'insumo.trazador',
-        'insumo.categoriaId',
-        'categoria.id',
-        'categoria.nombre',
-      ]);
+        'adquisicion', // Todos los campos de adquisicion
+        'usuario.id', 'usuario.username', // Solo ID y username del usuario
+        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad', // Solo ID y cantidad del detalle de adquisición
+        'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
+        'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
+      ])
 
     if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere('usuario.username LIKE :username', { username: `%${q}%` });
     }
 
     if (filter) {
-      queryBuilder.andWhere('categoria.nombre = :categoria', {
-        categoria: `${filter}`,
+      queryBuilder.andWhere('departamento.nombre = :departamento', {
+        departamento: `${filter}`,
       });
     }
 
@@ -59,27 +61,33 @@ export class AdquisicionesService {
       totalPages,
       page,
     };
-  }*/
-
-  async findAll(){
-    const adquisiciones = await this.adquisicionRepository.find({
-      where: { is_active: true },
-      relations: ['usuario'],
-    })
-    return adquisiciones
   }
 
   // Método para obtener una sola adquisicion por ID si está activa
   async findOne(id: string) {
-    const adquisicion = await this.adquisicionRepository.findOne({
-      where: { id, is_active: true },
-      relations: ['usuario'],
-    });
+    const adquisicion = await this.adquisicionRepository
+      .createQueryBuilder('adquisicion')
+      .leftJoinAndSelect('adquisicion.usuario', 'usuario')
+      .leftJoinAndSelect('adquisicion.detalleAdquisicion', 'detalleAdquisicion')
+      .leftJoinAndSelect('detalleAdquisicion.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .where('adquisicion.id = :id', { id })
+      .andWhere('adquisicion.is_active = true')
+      .select([
+        'adquisicion', // Todos los campos de adquisicion
+        'usuario.id', 'usuario.username', // Solo ID y username del usuario
+        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad', // Solo ID y cantidad del detalle de adquisición
+        'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
+        'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
+      ])
+      .getOne();
+  
     if (!adquisicion) {
       throw new NotFoundException(
-        `Insumo con ID ${id} no encontrado o desactivado`,
+        `Adquisición con ID ${id} no encontrada o desactivada`,
       );
     }
+  
     return adquisicion;
   }
 

@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { AdquisicionesService } from './adquisiciones.service';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
+import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
 
+@ApiTags('Adquisiciones y detalleAdquisicion')
 @Controller('adquisiciones')
 export class AdquisicionesController {
   constructor(
@@ -138,20 +140,20 @@ export class AdquisicionesController {
     summary: 'Obtiene todas las adquisiciones',
     description:
       'Este endpoint sirve para retornar todos los insumos activos en la base de datos.',
-  })/*
+  })
   @ApiQuery({
     name: 'q',
     type: String,
     required: false,
-    description: 'Nombre del insumo para filtrar.',
-    example: 'Insumo X',
+    description: 'Nombre del usuario para filtrar.',
+    example: 'admin',
   })
   @ApiQuery({
     name: 'filter',
     type: String,
     required: false,
-    description: 'Filtro por categoría del insumo.',
-    example: 'Categoria Y',
+    description: 'Filtro por nombre del departamento.',
+    example: 'departamento1',
   })
   @ApiQuery({
     name: 'page',
@@ -166,35 +168,129 @@ export class AdquisicionesController {
     required: false,
     description: 'Número de elementos por página para la paginación.',
     example: 10,
-  })*/
+  })
   @ApiResponse({
     status: 200,
-    description: 'Insumos obtenidos exitosamente.',
+    description: 'Adquisiciones con su detalle y departamento obtenidas exitosamente.',
     schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174001',
-          },
-          nombre: { type: 'string', example: 'Insumo X' },
-          codigo: { type: 'string', example: 'INS-001' },
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                example: 'bdda2e12-acae-4c14-8ca3-f009715a2012',
+                description: 'ID de la adquisición'
+              },
+              created_at: {
+                type: 'string',
+                format: 'date-time',
+                example: '2024-10-01T05:19:07.624Z',
+                description: 'Fecha de creación de la adquisición'
+              },
+              descripcion: {
+                type: 'string',
+                example: 'Prueba de actualización',
+                description: 'Descripción de la adquisición'
+              },
+              is_active: {
+                type: 'boolean',
+                example: true,
+                description: 'Indica si la adquisición está activa'
+              },
+              usuario: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
+                    description: 'ID del usuario'
+                  },
+                  username: {
+                    type: 'string',
+                    example: 'Admin',
+                    description: 'Nombre de usuario del responsable de la adquisición'
+                  }
+                }
+              },
+              detalleAdquisicion: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'string',
+                      example: '18198df1-8a64-409c-9acb-1432cc173864',
+                      description: 'ID del detalle de adquisición'
+                    },
+                    cantidad: {
+                      type: 'number',
+                      example: 20,
+                      description: 'Cantidad adquirida del insumo'
+                    },
+                    insumoDepartamento: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          type: 'string',
+                          example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                          description: 'ID del insumo en el departamento'
+                        },
+                        existencia: {
+                          type: 'number',
+                          example: 220,
+                          description: 'Cantidad actual del insumo en el departamento'
+                        },
+                        departamento: {
+                          type: 'object',
+                          properties: {
+                            id: {
+                              type: 'string',
+                              example: '0c54e39a-44dd-4ff6-8aed-fc03790ac3af',
+                              description: 'ID del departamento'
+                            },
+                            nombre: {
+                              type: 'string',
+                              example: 'departamento1',
+                              description: 'Nombre del departamento al que pertenece el insumo'
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
-      },
-    },
+        totalItems: {
+          type: 'number',
+          example: 1,
+          description: 'Número total de adquisiciones'
+        },
+        totalPages: {
+          type: 'number',
+          example: 1,
+          description: 'Número total de páginas'
+        },
+        page: {
+          type: 'number',
+          example: 1,
+          description: 'Página actual de los resultados'
+        }
+      }
+    }
   })
   @ApiResponse({
     status: 403,
     description: 'Acceso denegado.',
   })
-  /*
-  findAll(@Query() query: QueryInsumoDto) {
-    return this.insumosService.findAll(query);
-  }*/
-  findAll() {
-    return this.adquisicionService.findAll();
+  findAll(@Query() query: QueryAdquisicionDto) {
+    return this.adquisicionService.findAll(query);
   }
 
   @AuthorizedRoles()
@@ -218,29 +314,89 @@ export class AdquisicionesController {
       properties: {
         id: {
           type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174000',
+          example: 'bdda2e12-acae-4c14-8ca3-f009715a2012',
+          description: 'ID de la adquisición'
         },
-        categoriaId: {
+        created_at: {
           type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174001',
+          format: 'date-time',
+          example: '2024-10-01T05:19:07.624Z',
+          description: 'Fecha de creación de la adquisición'
         },
-        codigo: {
+        descripcion: {
           type: 'string',
-          example: 'INS-001',
-        },
-        nombre: {
-          type: 'string',
-          example: 'Insumo X',
-        },
-        trazador: {
-          type: 'boolean',
-          example: false,
+          example: 'Prueba de actualización',
+          description: 'Descripción de la adquisición'
         },
         is_active: {
           type: 'boolean',
           example: true,
+          description: 'Indica si la adquisición está activa'
         },
-      },
+        usuario: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
+              description: 'ID del usuario'
+            },
+            username: {
+              type: 'string',
+              example: 'Admin',
+              description: 'Nombre de usuario del responsable de la adquisición'
+            }
+          }
+        },
+        detalleAdquisicion: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                example: '18198df1-8a64-409c-9acb-1432cc173864',
+                description: 'ID del detalle de adquisición'
+              },
+              cantidad: {
+                type: 'number',
+                example: 20,
+                description: 'Cantidad adquirida del insumo'
+              },
+              insumoDepartamento: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                    description: 'ID del insumo en el departamento'
+                  },
+                  existencia: {
+                    type: 'number',
+                    example: 220,
+                    description: 'Cantidad actual del insumo en el departamento'
+                  },
+                  departamento: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        example: '0c54e39a-44dd-4ff6-8aed-fc03790ac3af',
+                        description: 'ID del departamento'
+                      },
+                      nombre: {
+                        type: 'string',
+                        example: 'departamento1',
+                        description: 'Nombre del departamento al que pertenece el insumo'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
   })
   @ApiResponse({
@@ -271,21 +427,13 @@ export class AdquisicionesController {
     schema: {
       type: 'object',
       properties: {
-        categoriaId: {
+        descripcion: {
           type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174001',
+          example: 'Descripcion de prueba',
         },
-        codigo: {
-          type: 'string',
-          example: 'INS-001',
-        },
-        nombre: {
-          type: 'string',
-          example: 'Insumo X',
-        },
-        trazador: {
-          type: 'boolean',
-          example: false,
+        cantidad: {
+          type: 'number',
+          example: 20,
         },
       },
     },
@@ -300,26 +448,6 @@ export class AdquisicionesController {
           type: 'string',
           example: '123e4567-e89b-12d3-a456-426614174000',
         },
-        categoriaId: {
-          type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174001',
-        },
-        codigo: {
-          type: 'string',
-          example: 'INS-001',
-        },
-        nombre: {
-          type: 'string',
-          example: 'Insumo X',
-        },
-        trazador: {
-          type: 'boolean',
-          example: false,
-        },
-        is_active: {
-          type: 'boolean',
-          example: true,
-        },
       },
     },
   })
@@ -332,7 +460,7 @@ export class AdquisicionesController {
   @ApiOperation({
     summary: 'Eliminar (soft delete) una adquisicion',
     description:
-      'Este endpoint sirve para eliminar una adquisicion sin borrarlo físicamente de la base de datos',
+      'Este endpoint sirve para eliminar una adquisicion y su detalle sin borrarlo físicamente de la base de datos',
   })
   @ApiParam({
     name: 'id',
@@ -342,11 +470,11 @@ export class AdquisicionesController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Insumo desactivado exitosamente',
+    description: 'Adquisicion y detalleAdquisicion desactivados exitosamente',
   })
   @ApiResponse({
     status: 404,
-    description: 'Insumo no encontrado o ya desactivado',
+    description: 'Adquisicion y/o detalleAdquisicion no encontrado o ya desactivado',
   })
   @ApiResponse({
     status: 403,
