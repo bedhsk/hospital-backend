@@ -12,6 +12,8 @@ import * as Joi from 'joi';
 import { InsumoDepartamentosModule } from './insumo_departamentos/insumo_departamentos.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { InsumosModule } from './insumos/insumos.module';
+import { RetirosModule } from './retiros/retiros.module';
+
 import { AdquisicionesModule } from './adquisiciones/adquisiciones.module';
 
 @Module({
@@ -47,6 +49,7 @@ import { AdquisicionesModule } from './adquisiciones/adquisiciones.module';
     DepartamentosModule,
     LotesModule,
     InsumoDepartamentosModule,
+    RetirosModule,
     AdquisicionesModule,
   ],
   controllers: [AppController],
