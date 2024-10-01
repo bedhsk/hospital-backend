@@ -10,7 +10,7 @@ class InsumoExamen {
   @Column({ type: 'int', default: 0 })  // Cantidad de insumos utilizados en el examen
   cantidad: number;
 
-  @ManyToOne(() => Insumo, (insumo) => insumo.insumoExamen, { nullable: false })  // Relación con Insumo
+  @ManyToOne(() => Insumo, (insumo) => insumo.insumoExamenes, { nullable: false })  // Relación con Insumo
   insumo: Insumo;
 
   @ManyToOne(() => Examen, (examen) => examen.insumoExamen, { nullable: false })  // Relación con Examen
