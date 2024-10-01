@@ -17,35 +17,109 @@ export class AdquisicionesController {
     summary: 'Crear nueva adquisicion',
     description: 'Este endpoint sirve para crear nuevas adquisiciones',
   })
-  @ApiResponse({
-    status: 201,
-    description: 'La adquisicion ha sido creada exitosamente',
+  @ApiBody({
+    description: 'Datos de la adquisición a crear',
     schema: {
       type: 'object',
       properties: {
-        id: {
+        usuarioId: {
           type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174000',
+          example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
         },
-        categoriaId: {
+        descripcion: {
           type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174001',
+          example: 'Prueba de adquisicion',
         },
-        codigo: {
+        insumoDepartamentoId: {
           type: 'string',
-          example: 'INS-001',
+          example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
         },
-        nombre: {
-          type: 'string',
-          example: 'Insumo X',
+        cantidad: {
+          type: 'number',
+          example: 10,
         },
-        trazador: {
-          type: 'boolean',
-          example: false,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'La adquisición y el detalle han sido creados exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        adquisicion: {
+          type: 'object',
+          properties: {
+            descripcion: {
+              type: 'string',
+              example: 'Prueba de adquisicion',
+            },
+            is_active: {
+              type: 'boolean',
+              example: true,
+            },
+            usuario: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
+                },
+                username: {
+                  type: 'string',
+                  example: 'Admin',
+                },
+              },
+            },
+            id: {
+              type: 'string',
+              example: 'c33f4205-3eeb-435f-b3c9-ec056f170275',
+            },
+            created_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-10-01T01:46:28.654Z',
+            },
+          },
         },
-        is_active: {
-          type: 'boolean',
-          example: true,
+        detalleAdquisicion: {
+          type: 'object',
+          properties: {
+            is_active: {
+              type: 'boolean',
+              example: true,
+            },
+            cantidad: {
+              type: 'number',
+              example: 10,
+            },
+            adquisicion: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: 'c33f4205-3eeb-435f-b3c9-ec056f170275',
+                },
+              },
+            },
+            insumoDepartamento: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                },
+                existencia: {
+                  type: 'number',
+                  example: 210,
+                },
+              },
+            },
+            id: {
+              type: 'string',
+              example: '052770b9-97c9-460f-9240-7364661373dc',
+            },
+          },
         },
       },
     },

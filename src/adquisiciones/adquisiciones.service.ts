@@ -69,7 +69,7 @@ export class AdquisicionesService {
     return adquisiciones
   }
 
-  // Método para obtener un solo insumo por ID si está activo
+  // Método para obtener una sola adquisicion por ID si está activa
   async findOne(id: string) {
     const adquisicion = await this.adquisicionRepository.findOne({
       where: { id, is_active: true },
@@ -83,7 +83,7 @@ export class AdquisicionesService {
     return adquisicion;
   }
 
-  // Crear un nuevo insumo
+  // Crear adquisicion
   async create(createAdquisicion: CreateAdquisicionDto) {
     const { usuarioId, insumoDepartamentoId, ...rest } = createAdquisicion;
     const usuario = await this.usuarioService.findOne(
@@ -111,8 +111,24 @@ export class AdquisicionesService {
       ...rest,
       usuario: {id: usuario.id, username: usuario.username}, // Relacionar el insumo con la categoría encontrada
     });
-    
+    // Guarda la adquisicion 
     const adquisicion = await this.adquisicionRepository.save(adquisicionCreate)
+
+    if (!adquisicion) {
+      throw new NotFoundException(
+        `Adquisicion no fue creada con exito!`,
+      );
+    }
+    
+    if (adquisicion) {
+      // Actualizar la existencia del insumo departamento
+      await this.insumoDepartamentoService.update(
+        insumoDepartamento.id,
+        {
+          existencia: insumoDepartamento.existencia + createAdquisicion.cantidad 
+        }
+      );
+    }
     // Crear el detalle con la cantidad y insumo departamento relacionado
     const detalleAdquisicion = await this.detalleAdquisicionService.create({
       adquisicionId: adquisicion.id,
@@ -124,7 +140,7 @@ export class AdquisicionesService {
     return {adquisicion, detalleAdquisicion};
   }
 
-  // Actualizar un insumo existente, si está activo
+  // Actualizar una adquisicion existente, si está activa
   async update(id: string, updateInsumoDto: UpdateAdquisicionDto) {
     const adquisicion = await this.findOne(id);
     if (!adquisicion) {
