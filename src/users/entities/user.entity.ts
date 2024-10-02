@@ -76,6 +76,7 @@ export default class User {
     description: 'Contraseña de acceso para el usuario',
   })
   password: string;
+    ordenesLaboratorio: any;
   @BeforeInsert()
   async hashPassword() {
     const saltOrRounds = 10;
