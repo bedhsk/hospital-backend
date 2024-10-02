@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity('examen')
 class Examen {
@@ -14,7 +15,8 @@ class Examen {
   @Column({ type: 'boolean', default: true })  // Campo para el soft delete, se inicializa como true (activo)
   is_active: boolean;
     insumoExamen: any;
-    ordenesLaboratorio: any;
-}
 
+    @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.examen)
+    ordenesLaboratorio: OrdenLaboratorio[];
+}
 export default Examen;
