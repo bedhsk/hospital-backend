@@ -81,6 +81,7 @@ export default class User {
 
   @OneToMany(()=> Retiro,(retiro)=> retiro.user)
   retiros:Retiro[];
+    ordenesLaboratorio: any;
   
   @BeforeInsert()
   async hashPassword() {

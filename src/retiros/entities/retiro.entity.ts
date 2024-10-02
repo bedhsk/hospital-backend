@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import User from "src/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import DetalleRetiro from "./detalleRetiro.entity";
+import OrdenLaboratorio from "src/orden_laboratorios/entities/orden_laboratorio.entity";
 
 @Entity('retiros')
 export default  class Retiro{
@@ -44,5 +45,7 @@ export default  class Retiro{
 
     @OneToMany( () => DetalleRetiro, (detalleRetiro) => detalleRetiro.retiro)
     detalleRetiro: DetalleRetiro[];
-    ordenesLaboratorio: any;
+    
+    @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.retiro)
+    ordenesLaboratorio: OrdenLaboratorio[];
 }

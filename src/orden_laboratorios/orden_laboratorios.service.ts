@@ -11,7 +11,7 @@ import Examen from '../examenes/entities/examen.entity';
 import Retiro from '../retiros/entities/retiro.entity';
 
 @Injectable()
-export class OrdenLaboratorioService {
+export class OrdenLaboratoriosService {
   constructor(
     @InjectRepository(OrdenLaboratorio)
     private readonly ordenLaboratorioRepository: Repository<OrdenLaboratorio>,

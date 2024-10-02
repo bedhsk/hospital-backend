@@ -11,6 +11,7 @@ import Retiro from './entities/retiro.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
+import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.entity';
 
 @Module({
 
@@ -21,6 +22,7 @@ import { RoleGuard } from 'src/auth/role.guard';
       DetalleRetiro,
       InsumoDepartamento,
       Retiro,
+      OrdenLaboratorio
     ]),
   ],
   providers: [RetirosService, DetalleretirosService
