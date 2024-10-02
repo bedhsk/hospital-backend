@@ -5,8 +5,8 @@ import Paciente from '../pacientes/entities/paciente.entity';
 import Examen from '../examenes/entities/examen.entity';
 import Retiro from '../retiros/entities/retiro.entity';
 import User from 'src/users/entities/user.entity';
-import { OrdenLaboratorioService } from './orden_laboratorios.service';
-import { OrdenLaboratorioController } from './orden_laboratorios.controller';
+import { OrdenLaboratoriosService } from './orden_laboratorios.service';
+import { OrdenLaboratoriosController } from './orden_laboratorios.controller';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { OrdenLaboratorioController } from './orden_laboratorios.controller';
       Retiro             // Entidad Retiro (FK opcional en OrdenLaboratorio)
     ]),
   ],
-  providers: [OrdenLaboratorioService],  // Servicio de OrdenLaboratorio
-  controllers: [OrdenLaboratorioController],  // Controlador de OrdenLaboratorio
+  providers: [OrdenLaboratoriosService],  // Servicio de OrdenLaboratorio
+  controllers: [OrdenLaboratoriosController],  // Controlador de OrdenLaboratorio
 })
 export class OrdenLaboratorioModule {}

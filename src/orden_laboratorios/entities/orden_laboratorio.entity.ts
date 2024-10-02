@@ -12,12 +12,12 @@ class OrdenLaboratorio {
     @ApiProperty()
     id: string;
 
-    @Column({ type: 'string' })
+    @Column({ type: 'text' })
     @ApiProperty()
     @IsString()
     descripcion: string;
 
-    @Column({ type: 'string' })
+    @Column({ type: 'varchar' })
     @ApiProperty()
     @IsString()
     estado: string;

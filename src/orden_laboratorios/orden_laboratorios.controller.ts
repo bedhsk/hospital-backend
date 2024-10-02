@@ -8,7 +8,7 @@ import {
     Delete,
     Query,
   } from '@nestjs/common';
-  import { OrdenLaboratorioService } from './orden_laboratorios.service';
+  import { OrdenLaboratoriosService } from './orden_laboratorios.service';
   import CreateOrdenLaboratorioDto from './dtos/create-orden-laboratorio.dto';
   import UpdateOrdenLaboratorioDto from './dtos/update-orden-laboratorio.dto';
   import QueryOrdenLaboratorioDto from './dtos/query-orden-laboratorio.dto';
@@ -24,8 +24,8 @@ import {
   
   @ApiTags('OrdenLaboratorio')
   @Controller('orden-laboratorio')
-  export class OrdenLaboratorioController {
-    constructor(private readonly ordenLaboratorioService: OrdenLaboratorioService) {}
+  export class OrdenLaboratoriosController {
+    constructor(private readonly ordenLaboratorioService: OrdenLaboratoriosService) {}
   
     @Post()
     @ApiOperation({

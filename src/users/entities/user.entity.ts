@@ -82,6 +82,7 @@ export default class User {
 
   @OneToMany(()=> Retiro,(retiro)=> retiro.user)
   retiros:Retiro[];
+    ordenesLaboratorio: any;
   
     ordenesLaboratorio: any;
   @BeforeInsert()
