@@ -12,8 +12,6 @@ import * as Joi from 'joi';
 import { InsumoDepartamentosModule } from './insumo_departamentos/insumo_departamentos.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { InsumosModule } from './insumos/insumos.module';
-import { RetirosModule } from './retiros/retiros.module';
-
 
 @Module({
   imports: [
@@ -48,7 +46,6 @@ import { RetirosModule } from './retiros/retiros.module';
     DepartamentosModule,
     LotesModule,
     InsumoDepartamentosModule,
-    RetirosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
