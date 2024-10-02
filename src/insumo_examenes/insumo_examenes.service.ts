@@ -97,7 +97,7 @@ export class InsumoExamenesService {
   }
 
   // Soft Delete: desactivar una relación entre insumo y examen
-  async remove(id: string) {
+  async softDelete(id: string) {
     const insumoExamen = await this.findOne(id);
 
     insumoExamen.is_active = false;  // Desactivar el registro

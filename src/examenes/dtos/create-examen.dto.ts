@@ -1,11 +1,6 @@
 import { IsUUID, IsString, MaxLength, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export default class CreateExamenDto {
-  
-  @IsUUID() // Validación para que sea un UUID
-  @IsNotEmpty() // Validación para que no esté vacío
-  id: string;
-
   @IsString() // Validación para que sea un string
   @MaxLength(50) // Longitud máxima de 50 caracteres
   @IsNotEmpty() // Validación para que no esté vacío

@@ -62,7 +62,7 @@ export class ExamenesService {
   }
 
   // Soft delete para un examen (solo cambia el campo is_active a false)
-  async remove(id: string) {
+  async softDelete(id: string) {
     const examen = await this.findOne(id); // Validamos que el examen existe y está activo
 
     // Cambiamos el estado a inactivo en lugar de eliminar el registro físicamente
