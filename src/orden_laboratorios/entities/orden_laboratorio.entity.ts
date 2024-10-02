@@ -31,8 +31,9 @@ class OrdenLaboratorio {
     @ManyToOne(() => Paciente, (paciente) => paciente.ordenesLaboratorio)
     paciente: Paciente;
 
-    @ManyToOne(() => Examen, (examen) => examen.ordenesLaboratorio)
+    @ManyToOne(() => Examen, (examen) => examen.ordenesLaboratorio, { nullable: false })
     examen: Examen;
+
 
     @Column({ type: 'boolean', default: true })
     @ApiProperty()

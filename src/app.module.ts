@@ -12,6 +12,10 @@ import * as Joi from 'joi';
 import { InsumoDepartamentosModule } from './insumo_departamentos/insumo_departamentos.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { InsumosModule } from './insumos/insumos.module';
+import { ExamenesModule } from './examenes/examenes.module';
+import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
+import { RetirosModule } from './retiros/retiros.module';
+import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.module';
 
 @Module({
   imports: [
@@ -46,6 +50,11 @@ import { InsumosModule } from './insumos/insumos.module';
     DepartamentosModule,
     LotesModule,
     InsumoDepartamentosModule,
+    ExamenesModule,
+    InsumoExamenesModule,
+    RetirosModule,
+    OrdenLaboratorioModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],
