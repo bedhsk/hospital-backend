@@ -118,4 +118,25 @@ export class InsumosService {
     insumo.is_active = false;
     return await this.insumoRepository.save(insumo);
   }
+
+  async getInsumosWithTotalCantidadActual(): Promise<any> {
+    const query = `
+      SELECT 
+        "insumoDepartamento"."insumoId",
+        "insumo"."nombre",
+        SUM("lote"."cantidadActual") AS "totalCantidadActual"
+      FROM 
+        "lote"
+      JOIN 
+        "insumoDepartamento" 
+        ON "lote"."insumoDepartamentoId" = "insumoDepartamento"."id"
+      JOIN 
+        "insumo"
+        ON "insumoDepartamento"."insumoId" = "insumo"."id"
+      GROUP BY 
+        "insumoDepartamento"."insumoId",
+        "insumo"."nombre";
+    `;
+    return await this.insumoRepository.query(query);
+  }
 }
