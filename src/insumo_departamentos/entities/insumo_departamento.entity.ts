@@ -3,6 +3,8 @@ import { IsNumber, IsBoolean } from 'class-validator';
 import Departamento from 'src/departamentos/entities/departamento.entity';
 import Insumo from 'src/insumos/entities/insumo.entity';
 import Lote from 'src/lotes/entities/lote.entity';
+import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
+
 import {
   Column,
   Entity,
@@ -42,4 +44,8 @@ export class InsumoDepartamento {
   @ApiProperty()
   @IsBoolean()
   is_active: boolean;
+
+  @OneToMany(() => DetalleRetiro, (detalleRetiro) => detalleRetiro.insumoDepartamento,)
+  detalleRetiro: DetalleRetiro[];
+
 }
