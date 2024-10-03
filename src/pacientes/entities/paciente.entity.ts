@@ -91,4 +91,5 @@ export default class Paciente {
         description: 'Relacion entre Paciente y Antecedentes. Un paciente puede tener varios antecedentes',
       })
     antecedentes: Antecedente[];
+    ordenesLaboratorio: any;
 }

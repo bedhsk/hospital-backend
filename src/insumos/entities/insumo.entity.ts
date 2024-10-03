@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsBoolean } from 'class-validator';
 import Categoria from 'src/categorias/entities/categoria.entity';
 import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
 import {
   PrimaryGeneratedColumn,
   Column,
@@ -46,6 +47,9 @@ export class Insumo {
     (insumoDepartamento) => insumoDepartamento.insumo,
   )
   insumosDepartamentos: InsumoDepartamento[];
+
+  @OneToMany(() => InsumoExamen, (insumoExamen) => insumoExamen.insumo)
+  insumoExamenes: InsumoExamen[];
 }
 
 export default Insumo;
