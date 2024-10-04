@@ -134,6 +134,16 @@ export class InsumosController {
   findAll(@Query() query: QueryInsumoDto) {
     return this.insumosService.findAll(query);
   }
+  @AuthorizedRoles()
+  @Get('insumos-cantidad')
+  @ApiOperation({
+    summary: 'Buscar cantidad actual de cada insumo',
+    description:
+      'Este endpoint sirve ver la cantidad de existencias de cada insumo',
+  })
+  async getInsumosWithTotalCantidadActual() {
+    return await this.insumosService.getInsumosWithTotalCantidadActual();
+  }
 
   @AuthorizedRoles()
   @Get(':id')
