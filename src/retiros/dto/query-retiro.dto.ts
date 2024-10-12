@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { IsNumber, IsString, IsOptional } from "class-validator";
 
-class QueryAntecedenteDto {
+class QueryRetiroDto {
    
     @IsOptional()
     @IsString()
@@ -9,7 +9,7 @@ class QueryAntecedenteDto {
 
     @IsOptional()
     @IsString()
-    filterID?: string;
+    filterDepartamento?: string;
     
     @IsOptional()
     @IsNumber()
@@ -22,4 +22,4 @@ class QueryAntecedenteDto {
     limit: number = 10;
 }
 
-export default QueryAntecedenteDto;
+export default QueryRetiroDto;
