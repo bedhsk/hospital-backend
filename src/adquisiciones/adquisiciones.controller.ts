@@ -5,12 +5,14 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
 import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
 import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
+import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
 
 @ApiTags('Adquisiciones y detalleAdquisicion')
 @Controller('adquisiciones')
 export class AdquisicionesController {
   constructor(
     private readonly adquisicionService: AdquisicionesService,
+    private readonly detalleAdquisicionService: DetalleadquisicionesService
   ) {}
 
   @AuthorizedRoles()
@@ -483,5 +485,11 @@ export class AdquisicionesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.adquisicionService.softDelete(id);
+  }
+
+  @AuthorizedRoles()
+  @Get('/:id/detalles-de-adquisicion')
+  findAllDetallesByAdquisicionId(@Param('id') id: string){
+    return this.detalleAdquisicionService.findAllByAdquisicionId(id);
   }
 }

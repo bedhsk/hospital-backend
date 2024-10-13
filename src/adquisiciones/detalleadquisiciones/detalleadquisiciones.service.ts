@@ -14,49 +14,6 @@ export class DetalleadquisicionesService {
     private readonly detalleAdquisicionesRepository: Repository<detalleAdquisicion>,
     private readonly insumoDepartamentosService: InsumoDepartamentosService,
   ) {}
-
-  /*// Método para obtener todos los insumos que están activos
-  async findAll(query: QueryInsumoDto) {
-    const { q, filter, page, limit } = query;
-    const queryBuilder = this.adquisicionRepository
-      .createQueryBuilder('insumo')
-      .where({ is_active: true })
-      .leftJoinAndSelect('insumo.categoria', 'categoria')
-      .select([
-        'insumo.id',
-        'insumo.codigo',
-        'insumo.nombre',
-        'insumo.trazador',
-        'insumo.categoriaId',
-        'categoria.id',
-        'categoria.nombre',
-      ]);
-
-    if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
-    }
-
-    if (filter) {
-      queryBuilder.andWhere('categoria.nombre = :categoria', {
-        categoria: `${filter}`,
-      });
-    }
-
-    const totalItems = await queryBuilder.getCount();
-    const insumos = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
-
-    const totalPages = Math.ceil(totalItems / limit);
-
-    return {
-      data: insumos,
-      totalItems,
-      totalPages,
-      page,
-    };
-  }*/
   
   // Método para obtener un solo detalle de adquisicion por ID si está activo
   async findOne(id: string) {
@@ -105,7 +62,7 @@ export class DetalleadquisicionesService {
         `Insumo departamento con ID de adquisición ${id} no encontrado o desactivado`,
       );
     }
-    
+
     return detalleAdquisicion;
   }
 
