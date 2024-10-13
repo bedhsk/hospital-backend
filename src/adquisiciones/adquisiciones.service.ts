@@ -32,7 +32,7 @@ export class AdquisicionesService {
       .select([
         'adquisicion', // Todos los campos de adquisicion
         'usuario.id', 'usuario.username', // Solo ID y username del usuario
-        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad', // Solo ID y cantidad del detalle de adquisición
+        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad', 'detalleAdquisicion.is_active', // Solo ID y cantidad del detalle de adquisición
         'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
         'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
       ])
@@ -76,7 +76,7 @@ export class AdquisicionesService {
       .select([
         'adquisicion', // Todos los campos de adquisicion
         'usuario.id', 'usuario.username', // Solo ID y username del usuario
-        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad, detalleAdquisicion.is_active', // Solo ID y cantidad del detalle de adquisición
+        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad', 'detalleAdquisicion.is_active', // Solo ID y cantidad del detalle de adquisición
         'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
         'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
       ])

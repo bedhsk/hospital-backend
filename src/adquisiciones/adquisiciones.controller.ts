@@ -34,13 +34,18 @@ export class AdquisicionesController {
           type: 'string',
           example: 'Prueba de adquisicion',
         },
-        insumoDepartamentoId: {
-          type: 'string',
-          example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
-        },
-        cantidad: {
-          type: 'number',
-          example: 10,
+        detalles: {
+          type: 'array',
+          example: [
+            {
+              insumoDepartamentoId: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+              cantidad: 10,
+            },
+            {
+              insumoDepartamentoId: 'b93d5cc2-03c7-4f7a-8101-49c779c1234b',
+              cantidad: 5,
+            }
+          ],
         },
       },
     },
@@ -87,43 +92,21 @@ export class AdquisicionesController {
           },
         },
         detalleAdquisicion: {
-          type: 'object',
-          properties: {
-            is_active: {
-              type: 'boolean',
-              example: true,
-            },
-            cantidad: {
-              type: 'number',
-              example: 10,
-            },
-            adquisicion: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  example: 'c33f4205-3eeb-435f-b3c9-ec056f170275',
-                },
+          type: 'array',
+          example: [
+            {
+              is_active: true,
+              cantidad: 10,
+              adquisicion: {
+                id: 'c33f4205-3eeb-435f-b3c9-ec056f170275'
               },
-            },
-            insumoDepartamento: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
-                },
-                existencia: {
-                  type: 'number',
-                  example: 210,
-                },
+              insumoDepartamento: {
+                id: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                existencia: 210
               },
-            },
-            id: {
-              type: 'string',
-              example: '052770b9-97c9-460f-9240-7364661373dc',
-            },
-          },
+              id: '052770b9-97c9-460f-9240-7364661373dc'
+            }
+          ]
         },
       },
     },
@@ -431,11 +414,16 @@ export class AdquisicionesController {
       properties: {
         descripcion: {
           type: 'string',
-          example: 'Descripcion de prueba',
+          example: 'Prueba de adquisicion',
         },
-        cantidad: {
-          type: 'number',
-          example: 20,
+        detalles: {
+          type: 'array',
+          example: [
+            {
+              insumoDepartamentoId: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+              cantidad: 20,
+            }
+          ],
         },
       },
     },
@@ -446,9 +434,57 @@ export class AdquisicionesController {
     schema: {
       type: 'object',
       properties: {
-        id: {
-          type: 'string',
-          example: '123e4567-e89b-12d3-a456-426614174000',
+        adquisicion: {
+          type: 'object',
+          properties: {
+            descripcion: {
+              type: 'string',
+              example: 'Prueba de adquisicion',
+            },
+            is_active: {
+              type: 'boolean',
+              example: true,
+            },
+            usuario: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
+                },
+                username: {
+                  type: 'string',
+                  example: 'Admin',
+                },
+              },
+            },
+            id: {
+              type: 'string',
+              example: 'c33f4205-3eeb-435f-b3c9-ec056f170275',
+            },
+            created_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-10-01T01:46:28.654Z',
+            },
+          },
+        },
+        detalleAdquisicion: {
+          type: 'array',
+          example: [
+            {
+              is_active: true,
+              cantidad: 20,
+              adquisicion: {
+                id: 'c33f4205-3eeb-435f-b3c9-ec056f170275'
+              },
+              insumoDepartamento: {
+                id: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                existencia: 220
+              },
+              id: '052770b9-97c9-460f-9240-7364661373dc'
+            }
+          ]
         },
       },
     },
