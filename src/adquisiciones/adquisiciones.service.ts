@@ -76,7 +76,7 @@ export class AdquisicionesService {
       .select([
         'adquisicion', // Todos los campos de adquisicion
         'usuario.id', 'usuario.username', // Solo ID y username del usuario
-        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad', // Solo ID y cantidad del detalle de adquisición
+        'detalleAdquisicion.id', 'detalleAdquisicion.cantidad, detalleAdquisicion.is_active', // Solo ID y cantidad del detalle de adquisición
         'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
         'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
       ])
@@ -93,7 +93,7 @@ export class AdquisicionesService {
 
   // Crear adquisicion
   async create(createAdquisicion: CreateAdquisicionDto) {
-    const { usuarioId, insumoDepartamentoId, ...rest } = createAdquisicion;
+    const { usuarioId, detalles, ...rest} = createAdquisicion;
     const usuario = await this.usuarioService.findOne(
       createAdquisicion.usuarioId,
     );
@@ -101,16 +101,6 @@ export class AdquisicionesService {
     if (!usuario) {
       throw new NotFoundException(
         `Usuario con id ${usuarioId} no encontrado`,
-      );
-    }
-
-    const insumoDepartamento = await this.insumoDepartamentoService.findOne(
-      createAdquisicion.insumoDepartamentoId,
-    );
-
-    if (!insumoDepartamento) {
-      throw new NotFoundException(
-        `Insumo departamento con id ${insumoDepartamentoId} no encontrado`,
       );
     }
 
@@ -127,43 +117,49 @@ export class AdquisicionesService {
         `Adquisicion no fue creada con exito!`,
       );
     }
-    
-    if (adquisicion) {
-      // Actualizar la existencia del insumo departamento
-      await this.insumoDepartamentoService.update(
-        insumoDepartamento.id,
-        {
-          existencia: insumoDepartamento.existencia + createAdquisicion.cantidad 
-        }
-      );
-    }
-    // Crear el detalle con la cantidad y insumo departamento relacionado
-    const detalleAdquisicion = await this.detalleAdquisicionService.create({
-      adquisicionId: adquisicion.id,
-      insumoDepartamentoId: insumoDepartamentoId,
-      is_active: true,
-      cantidad: createAdquisicion.cantidad,
-    })
 
+    const detallePromises = detalles.map(async element => {
+      const { insumoDepartamentoId, cantidad } = element;
+
+      return await this.detalleAdquisicionService.create({
+        adquisicionId: adquisicion.id,
+        insumoDepartamentoId,
+        is_active: true,
+        cantidad,
+      });
+    });
+
+    await Promise.all(detallePromises);
+
+    const detalleAdquisicion = await this.detalleAdquisicionService.findAllByAdquisicionId(adquisicion.id);
+    
     return {adquisicion, detalleAdquisicion};
   }
 
   // Actualizar una adquisicion existente, si está activa
   async update(id: string, updateInsumoDto: UpdateAdquisicionDto) {
-    const adquisicion = await this.findOne(id);
-    if (!adquisicion) {
+    const adquisicionAux = await this.findOne(id);
+    if (!adquisicionAux) {
       throw new NotFoundException(
         `Adquisicion con ID ${id} no encontrado o desactivado`,
       );
     }
+
     if(updateInsumoDto.descripcion){
-      this.adquisicionRepository.merge(adquisicion, {descripcion: updateInsumoDto.descripcion});
+      this.adquisicionRepository.merge(adquisicionAux, {descripcion: updateInsumoDto.descripcion});
+      await this.adquisicionRepository.save(adquisicionAux);
     }
-    if(updateInsumoDto.cantidad){
-      const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionId(id)
-      await this.detalleAdquisicionService.update(detalleAdquisicionAux.id, {cantidad: updateInsumoDto.cantidad})
-    }
-    return await this.adquisicionRepository.save(adquisicion);
+    
+    const detallePromises = updateInsumoDto.detalles.map(async element => {
+      if (element.cantidad) {
+        const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionIdAndInsumoDepartamentoId(id, element.insumoDepartamentoId)
+        await this.detalleAdquisicionService.update(detalleAdquisicionAux.id, { cantidad: element.cantidad })
+      }
+    });
+    
+    await Promise.all(detallePromises);
+
+    return await this.findOne(id);
   }
 
   // Realiza el soft delete cambiando el campo is_active a false
@@ -176,20 +172,14 @@ export class AdquisicionesService {
     }
     // Cambiamos el campo is_active a false para realizar el soft delete
     adquisicionAux.is_active = false;
-    const adquisicion = await this.adquisicionRepository.save(adquisicionAux);
 
-    const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionId(id)
-    if(detalleAdquisicionAux){
-      const insumoDepartamento = await this.insumoDepartamentoService.findOne(detalleAdquisicionAux.insumoDepartamento.id)
-      // Actualizar la existencia del insumo departamento
-      await this.insumoDepartamentoService.update(
-        insumoDepartamento.id,
-        {
-          existencia: insumoDepartamento.existencia - detalleAdquisicionAux.cantidad
-        }
-      );
-    }
-    const detalleAdquisicion = await this.detalleAdquisicionService.softDelete(detalleAdquisicionAux.id)
-    return {adquisicion, detalleAdquisicion}
+    const detallesAdquisicion = await this.detalleAdquisicionService.findAllByAdquisicionId(adquisicionAux.id)
+    const detallePromises = detallesAdquisicion.map(async element => {
+      await this.detalleAdquisicionService.softDelete(element.id)
+    });
+    
+    await Promise.all(detallePromises);
+
+    return await this.adquisicionRepository.save(adquisicionAux);
   }
 }

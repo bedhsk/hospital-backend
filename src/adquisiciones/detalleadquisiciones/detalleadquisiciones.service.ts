@@ -73,8 +73,8 @@ export class DetalleadquisicionesService {
   }
 
   // Método para obtener un solo detalle de adquisicion por el ID de adquisicion si está activo
-  async findOneByAdquisicionId(id: string) {
-    const detalleAdquisicion = await this.detalleAdquisicionesRepository.findOne({
+  async findAllByAdquisicionId(id: string) {
+    const detalleAdquisicion = await this.detalleAdquisicionesRepository.find({
       where: {
         adquisicion: { id },
         is_active: true,
@@ -87,6 +87,25 @@ export class DetalleadquisicionesService {
         `Insumo departamento con ID de adquisición ${id} no encontrado o desactivado`,
       );
     }
+    return detalleAdquisicion;
+  }
+
+  // Método para obtener un solo detalle de adquisicion por el ID de adquisicion si está activo
+  async findOneByAdquisicionIdAndInsumoDepartamentoId(id: string, insumoDepartamentoId: string) {
+    const detalleAdquisicion = await this.detalleAdquisicionesRepository.findOne({
+      where: {
+        adquisicion: { id },
+        insumoDepartamento: { id: insumoDepartamentoId},
+        is_active: true,
+      },
+    });
+  
+    if (!detalleAdquisicion) {
+      throw new NotFoundException(
+        `Insumo departamento con ID de adquisición ${id} no encontrado o desactivado`,
+      );
+    }
+    
     return detalleAdquisicion;
   }
 
@@ -103,6 +122,14 @@ export class DetalleadquisicionesService {
         `Insumo departamento con id ${insumoDepartamentoId} no encontrado`,
       );
     }
+
+    // Actualizar la existencia del insumo departamento
+    await this.insumoDepartamentosService.update(
+      insumoDepartamento.id,
+      {
+        existencia: insumoDepartamento.existencia + createDetalleAdquisicion.cantidad 
+      }
+    );
 
     // Crear el nuevo detalle adquisicion con sus respectivas relaciones
     const detalleAdquisicion = this.detalleAdquisicionesRepository.create({
@@ -132,7 +159,7 @@ export class DetalleadquisicionesService {
     
     if (!insumoDepartamento) {
       throw new NotFoundException(
-        `Insumo departamento con id ${updateDetalleAdquisicionDto.insumoDepartamentoId} no encontrado`,
+        `Insumo departamento con id ${detalleAdquisicion.insumoDepartamento.id} no encontrado`,
       );
     }
     await this.insumoDepartamentosService.update(
@@ -152,6 +179,17 @@ export class DetalleadquisicionesService {
     if (!detalleAdquisicion) {
       throw new NotFoundException(
         `Detalle Adquisicion con ID ${id} no encontrado o ya desactivado`,
+      );
+    }
+
+    if(detalleAdquisicion){
+      const insumoDepartamento = await this.insumoDepartamentosService.findOne(detalleAdquisicion.insumoDepartamento.id)
+      // Actualizar la existencia del insumo departamento
+      await this.insumoDepartamentosService.update(
+        insumoDepartamento.id,
+        {
+          existencia: insumoDepartamento.existencia - detalleAdquisicion.cantidad
+        }
       );
     }
     // Cambiamos el campo is_active a false para realizar el soft delete
