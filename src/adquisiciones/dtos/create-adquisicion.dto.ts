@@ -1,4 +1,15 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from "class-validator";
+
+class DetalleAdquisicionDto {
+  @IsUUID()
+  @IsNotEmpty()
+  insumoDepartamentoId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  cantidad: number;
+}
 
 export default class CreateAdquisicionDto {
   @IsString()
@@ -12,15 +23,12 @@ export default class CreateAdquisicionDto {
   @IsString()
   @MinLength(1)
   @MaxLength(255)
-  descripcion: string; 
+  descripcion: string;
 
   // Atributos para crear detalle adquisicion
-
-  @IsString()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DetalleAdquisicionDto)
   @IsNotEmpty()
-  insumoDepartamentoId: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  cantidad: number;
+  detalles: DetalleAdquisicionDto[];
 }
