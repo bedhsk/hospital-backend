@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import Antecedente from "./antecedente.entity";
 
 @Entity('pacientes')
@@ -86,10 +86,12 @@ export default class Paciente {
     })
     vicios?: string;
 
-    @OneToMany(() => Antecedente, (antecedente) => antecedente.paciente)
+    @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, { cascade: true })
+    @JoinColumn()
     @ApiProperty({
-        description: 'Relacion entre Paciente y Antecedentes. Un paciente puede tener varios antecedentes',
+        description: 'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
       })
-    antecedentes: Antecedente[];
+    antecedente: Antecedente;
+
     ordenesLaboratorio: any;
 }

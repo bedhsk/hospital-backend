@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import Retiro from 'src/retiros/entities/retiro.entity';
+import Departamento from 'src/departamentos/entities/departamento.entity';
 import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 
 @Entity('users')
@@ -82,8 +83,15 @@ export default class User {
 
   @OneToMany(() => Retiro, (retiro) => retiro.user)
   retiros: Retiro[];
-
   ordenesLaboratorio: any;
+
+  @ManyToOne(() => Departamento, (departamento) => departamento.users)
+  @JoinColumn({ name: 'departamentoId' })
+  @ApiProperty({
+    description:
+      'Relación entre Usuario y Departamento. Un usuario puede pertenecer a un departamento',
+  })
+  departamento: Departamento;
 
   @BeforeInsert()
   async hashPassword() {
