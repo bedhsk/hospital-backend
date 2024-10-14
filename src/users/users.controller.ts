@@ -105,6 +105,19 @@ export class UsersController {
               },
             },
           },
+          department: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                example: '234567a9-e4ca-4434-8064-048a094ec8dc',
+              },
+              name: {
+                type: 'string',
+                example: 'Recursos Humanos',
+              },
+            },
+          },
         },
       },
     },
@@ -225,6 +238,10 @@ export class UsersController {
           type: 'string',
           example: '59271b3e-e4ca-4434-8064-048a094ec8dc'
         },
+        departmentId: {
+          type: 'string',
+          example: '234567a9-e4ca-4434-8064-048a094ec8dc',
+        },
       },
     },
   })
@@ -276,6 +293,19 @@ export class UsersController {
             name: {
               type: 'string',
               example: 'Admin',
+            },
+          },
+        },
+        departamento: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '234567a9-e4ca-4434-8064-048a094ec8dc',
+            },
+            name: {
+              type: 'string',
+              example: 'Recursos Humanos',
             },
           },
         },
@@ -335,6 +365,10 @@ export class UsersController {
           type: 'string',
           example: '59271b3e-e4ca-4434-8064-048a094ec8dc'
         },
+        departmentId: {  // Añadir el nuevo campo
+          type: 'string',
+          example: '234567a9-e4ca-4434-8064-048a094ec8dc',
+        },
       },
     },
   })
@@ -386,6 +420,19 @@ export class UsersController {
             name: {
               type: 'string',
               example: 'Admin',
+            },
+          },
+        },
+        departamento: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '234567a9-e4ca-4434-8064-048a094ec8dc',
+            },
+            name: {
+              type: 'string',
+              example: 'Recursos Humanos',
             },
           },
         },
