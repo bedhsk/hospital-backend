@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsBoolean } from 'class-validator';
+import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
 import Departamento from 'src/departamentos/entities/departamento.entity';
 import Insumo from 'src/insumos/entities/insumo.entity';
 import Lote from 'src/lotes/entities/lote.entity';
@@ -45,7 +46,15 @@ export class InsumoDepartamento {
   @IsBoolean()
   is_active: boolean;
 
-  @OneToMany(() => DetalleRetiro, (detalleRetiro) => detalleRetiro.insumoDepartamento,)
-  detalleRetiro: DetalleRetiro[];
+  @OneToMany(
+    () => detalleAdquisicion,
+    (detalleAdquisicion) => detalleAdquisicion.insumoDepartamento,
+  )
+  detalleAdquisicion: detalleAdquisicion[];
 
+  @OneToMany(
+    () => DetalleRetiro,
+    (detalleRetiro) => detalleRetiro.insumoDepartamento,
+  )
+  detalleRetiro: DetalleRetiro[];
 }

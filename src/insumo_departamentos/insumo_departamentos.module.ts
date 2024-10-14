@@ -9,8 +9,8 @@ import Insumo from 'src/insumos/entities/insumo.entity';
 import { InsumosService } from 'src/insumos/insumos.service';
 import Categoria from 'src/categorias/entities/categoria.entity';
 import { CategoriasService } from 'src/categorias/categorias.service';
+import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
 import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
-
 
 @Module({
   imports: [
@@ -19,7 +19,8 @@ import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
       Insumo,
       Categoria,
       Departamento,
-      DetalleRetiro
+      detalleAdquisicion,
+      DetalleRetiro,
     ]),
   ],
   controllers: [InsumoDepartamentosController],
