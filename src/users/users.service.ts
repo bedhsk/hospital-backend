@@ -20,8 +20,8 @@ export class UsersService {
     private readonly rolesService: RolesService,
   ) {}
 
-  async findAll(q: QueryUserDto) {
-    const { query, filter, page, limit } = q;
+  async findAll(queryDto: QueryUserDto) {
+    const { q, filter, page, limit } = queryDto;
     const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .where({ is_Active: true })
@@ -38,10 +38,10 @@ export class UsersService {
         'role.name',
       ]);
 
-    if (query) {
+    if (q) {
       queryBuilder.andWhere(
-        '(user.name ILIKE :query OR user.lastname ILIKE :query OR user.username ILIKE :query OR user.email ILIKE :query)',
-        { query: `%${query}%` },
+        '(user.name ILIKE :query OR user.username ILIKE :query OR user.email ILIKE :query)',
+        { query: `%${q}%` },
       );
     }
 
