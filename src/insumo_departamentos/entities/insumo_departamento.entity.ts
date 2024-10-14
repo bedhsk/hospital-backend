@@ -53,10 +53,4 @@ export class InsumoDepartamento {
 
   @OneToMany(() => DetalleRetiro, (detalleRetiro) => detalleRetiro.insumoDepartamento,)
   detalleRetiro: DetalleRetiro[];
-
-  
-  @OneToMany(
-    () => detalleAdquisicion, (detalleAdquisicion) => detalleAdquisicion.insumoDepartamento,
-  )
-  detalleAdquisicion: detalleAdquisicion[];
 }

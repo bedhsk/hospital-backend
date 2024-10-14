@@ -14,7 +14,6 @@ import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 import Retiro from 'src/retiros/entities/retiro.entity';
-import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 
 @Entity('users')
 export default class User {
@@ -83,9 +82,9 @@ export default class User {
 
   @OneToMany(()=> Retiro,(retiro)=> retiro.user)
   retiros:Retiro[];
-    ordenesLaboratorio: any;
   
-    ordenesLaboratorio: any;
+  ordenesLaboratorio: any;
+  
   @BeforeInsert()
   async hashPassword() {
     const saltOrRounds = 10;

@@ -17,11 +17,6 @@ import { ExamenesModule } from './examenes/examenes.module';
 import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
 import { RetirosModule } from './retiros/retiros.module';
 import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.module';
-import { RetirosModule } from './retiros/retiros.module';
-
-import { AdquisicionesModule } from './adquisiciones/adquisiciones.module';
-import { ExamenesModule } from './examenes/examenes.module';
-import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
 
 @Module({
   imports: [

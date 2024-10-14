@@ -12,8 +12,6 @@ import { CategoriasService } from 'src/categorias/categorias.service';
 import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
 import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
 
-import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -23,7 +21,6 @@ import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.e
       Departamento,
       detalleAdquisicion,
       DetalleRetiro
-      detalleAdquisicion,
     ]),
   ],
   controllers: [InsumoDepartamentosController],
