@@ -20,7 +20,7 @@ import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
       Categoria,
       Departamento,
       detalleAdquisicion,
-      DetalleRetiro
+      DetalleRetiro,
     ]),
   ],
   controllers: [InsumoDepartamentosController],

@@ -45,12 +45,16 @@ export class InsumoDepartamento {
   @ApiProperty()
   @IsBoolean()
   is_active: boolean;
-  
+
   @OneToMany(
-    () => detalleAdquisicion, (detalleAdquisicion) => detalleAdquisicion.insumoDepartamento,
+    () => detalleAdquisicion,
+    (detalleAdquisicion) => detalleAdquisicion.insumoDepartamento,
   )
   detalleAdquisicion: detalleAdquisicion[];
 
-  @OneToMany(() => DetalleRetiro, (detalleRetiro) => detalleRetiro.insumoDepartamento,)
+  @OneToMany(
+    () => DetalleRetiro,
+    (detalleRetiro) => detalleRetiro.insumoDepartamento,
+  )
   detalleRetiro: DetalleRetiro[];
 }

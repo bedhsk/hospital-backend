@@ -12,8 +12,8 @@ import {
 import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 import Retiro from 'src/retiros/entities/retiro.entity';
+import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 
 @Entity('users')
 export default class User {
@@ -80,21 +80,22 @@ export default class User {
   })
   password: string;
 
-  @OneToMany(()=> Retiro,(retiro)=> retiro.user)
-  retiros:Retiro[];
-  
+  @OneToMany(() => Retiro, (retiro) => retiro.user)
+  retiros: Retiro[];
+
   ordenesLaboratorio: any;
-  
+
   @BeforeInsert()
   async hashPassword() {
     const saltOrRounds = 10;
     const hash = await bcrypt.hash(this.password, saltOrRounds);
     this.password = hash;
   }
-  
+
   @OneToMany(() => Adquisicion, (adquisicion) => adquisicion.usuario)
   @ApiProperty({
-      description: 'Relacion entre usuarios y adquisicion, un usuario pueden tenerlo varias adquisiciones',
-    })
+    description:
+      'Relacion entre usuarios y adquisicion, un usuario pueden tenerlo varias adquisiciones',
+  })
   adquisiciones: Adquisicion[];
 }

@@ -56,7 +56,6 @@ import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.
     InsumoExamenesModule,
     RetirosModule,
     OrdenLaboratorioModule,
-    AdquisicionesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
