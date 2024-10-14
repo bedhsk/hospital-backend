@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import User from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,11 +18,12 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly rolesService: RolesService,
-  ) { }
+  ) {}
 
-  async findAll(query: QueryUserDto) {
-    const { q, filter, page, limit } = query;
-    const queryBuilder = this.usersRepository.createQueryBuilder('user')
+  async findAll(q: QueryUserDto) {
+    const { query, filter, page, limit } = q;
+    const queryBuilder = this.usersRepository
+      .createQueryBuilder('user')
       .where({ is_Active: true })
       .leftJoinAndSelect('user.role', 'role')
       .select([
@@ -30,11 +35,14 @@ export class UsersService {
         'user.createdAt',
         'user.updatedAt',
         'role.id',
-        'role.name'
+        'role.name',
       ]);
 
-    if (q) {
-      queryBuilder.andWhere('user.name LIKE :name', { name: `${q}` });
+    if (query) {
+      queryBuilder.andWhere(
+        '(user.name ILIKE :query OR user.lastname ILIKE :query OR user.username ILIKE :query OR user.email ILIKE :query)',
+        { query: `%${query}%` },
+      );
     }
 
     if (filter) {
@@ -59,7 +67,10 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const record = await this.usersRepository.findOne({ where: { id, is_Active: true }, relations: ['role'] });
+    const record = await this.usersRepository.findOne({
+      where: { id, is_Active: true },
+      relations: ['role'],
+    });
     if (record === null) {
       throw new NotFoundException(`Usuario #${id} no encontrado`);
     }
@@ -67,7 +78,10 @@ export class UsersService {
   }
 
   async findOneByUsername(username: string) {
-    const record = await this.usersRepository.findOne({ where: { username, is_Active: true }, relations: ['role'] });
+    const record = await this.usersRepository.findOne({
+      where: { username, is_Active: true },
+      relations: ['role'],
+    });
     if (record === null) {
       throw new NotFoundException(`Usuario #${username} no encontrado`);
     }
@@ -78,7 +92,9 @@ export class UsersService {
     const { roleId, username, ...userData } = createUserDto;
     const role = await this.rolesService.findOne(createUserDto.roleId);
 
-    const existingUser = await this.usersRepository.findOne({ where: { username } });
+    const existingUser = await this.usersRepository.findOne({
+      where: { username },
+    });
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
@@ -97,7 +113,9 @@ export class UsersService {
 
     // Verificar si el username existe y es diferente al del usuario actual
     if (username && username !== user.username) {
-      const existingUser = await this.usersRepository.findOne({ where: { username } });
+      const existingUser = await this.usersRepository.findOne({
+        where: { username },
+      });
       if (existingUser) {
         throw new ConflictException('Username already exists');
       }
