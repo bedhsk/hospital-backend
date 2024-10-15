@@ -6,19 +6,21 @@ import { RetirosService } from './retiros.service';
 import QueryRetiroDto from './dto/query-retiro.dto';
 import UpdateRetiroDto from './dto/update-retiro.dto';
 import Retiro from './entities/retiro.entity';
+import { DetalleretirosService } from './detalleretiros/detalleretiros.service';
 
 @ApiTags('Retiros y detalleRetiro')
 @Controller('retiros')
 export class RetirosController {
     constructor(
         private readonly retiroService: RetirosService,
+        private readonly detalleRetiroService: DetalleretirosService,
       ) {}
     
 
       @AuthorizedRoles()
       @Post()
       @ApiBody({
-        description: 'Datos de la retiro a crear',
+        description: 'Datos de el retiro a crear',
         schema: {
           type: 'object',
           properties: {
@@ -30,13 +32,18 @@ export class RetirosController {
               type: 'string',
               example: 'Prueba de retiro',
             },
-            insumoDepartamentoId: {
-              type: 'string',
-              example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
-            },
-            cantidad: {
-              type: 'number',
-              example: 10,
+            detalles: {
+              type: 'array',
+              example: [
+                {
+                  insumoDepartamentoId: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                  cantidad: 10,
+                },
+                {
+                  insumoDepartamentoId: 'b93d5cc2-03c7-4f7a-8101-49c779c1234b',
+                  cantidad: 5,
+                }
+              ],
             },
           },
         },
@@ -44,7 +51,7 @@ export class RetirosController {
       @ApiOperation({ summary: 'Crear un nuevo retiro' })
       @ApiResponse({
         status: 201,
-        description: 'La retiro y el detalle han sido creados exitosamente',
+        description: 'el retiro y el detalle han sido creados exitosamente',
         schema: {
           type: 'object',
           properties: {
@@ -83,43 +90,21 @@ export class RetirosController {
               },
             },
             detalleRetiro: {
-              type: 'object',
-              properties: {
-                is_active: {
-                  type: 'boolean',
-                  example: true,
-                },
-                cantidad: {
-                  type: 'number',
-                  example: 10,
-                },
-                Retiro: {
-                  type: 'object',
-                  properties: {
-                    id: {
-                      type: 'string',
-                      example: 'c33f4205-3eeb-435f-b3c9-ec056f170275',
-                    },
+              type: 'array',
+              example: [
+                {
+                  is_active: true,
+                  cantidad: 10,
+                  retiro: {
+                    id: 'c33f4205-3eeb-435f-b3c9-ec056f170275'
                   },
-                },
-                insumoDepartamento: {
-                  type: 'object',
-                  properties: {
-                    id: {
-                      type: 'string',
-                      example: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
-                    },
-                    existencia: {
-                      type: 'number',
-                      example: 210,
-                    },
+                  insumoDepartamento: {
+                    id: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                    existencia: 210
                   },
-                },
-                id: {
-                  type: 'string',
-                  example: '052770b9-97c9-460f-9240-7364661373dc',
-                },
-              },
+                  id: '052770b9-97c9-460f-9240-7364661373dc'
+                }
+              ]
             },
           },
         },
@@ -161,7 +146,7 @@ export class RetirosController {
                   is_active: {
                     type: 'boolean',
                     example: true,
-                    description: 'Indica si el eretiro está activa'
+                    description: 'Indica si el retiro está activo'
                   },
                   user: {
                     type: 'object',
@@ -186,12 +171,12 @@ export class RetirosController {
                         id: {
                           type: 'string',
                           example: '18198df1-8a64-409c-9acb-1432cc173864',
-                          description: 'ID del detalle de Retiro'
+                          description: 'ID del detalle de retirada'
                         },
                         cantidad: {
                           type: 'number',
                           example: 20,
-                          description: 'Cantidad retirirada del insumo'
+                          description: 'Cantidad adquirida del insumo'
                         },
                         insumoDepartamento: {
                           type: 'object',
@@ -261,7 +246,7 @@ export class RetirosController {
       @Get(':id')
       @ApiResponse({
         status: 200,
-        description: 'Detalles de la retiro activa',
+        description: 'Detalles de el retiro activo',
         schema: {
           type: 'object',
           properties: {
@@ -309,12 +294,12 @@ export class RetirosController {
                   id: {
                     type: 'string',
                     example: '18198df1-8a64-409c-9acb-1432cc173864',
-                    description: 'ID del detalle Retiro'
+                    description: 'ID del detalle de retiro'
                   },
                   cantidad: {
                     type: 'number',
                     example: 20,
-                    description: 'Cantidad retriada del insumo'
+                    description: 'Cantidad adquirida del insumo'
                   },
                   insumoDepartamento: {
                     type: 'object',
@@ -354,7 +339,7 @@ export class RetirosController {
       })
       @ApiOperation({ summary: 'Obtener un retiro por ID' })
       @ApiResponse({ status: 200, description: 'Retiro encontrado' })
-      @ApiResponse({ status: 404, description: 'Retiro no encontrado o desactivada.' })
+      @ApiResponse({ status: 404, description: 'Retiro no encontrado o desactivado.' })
       @ApiParam({ name: 'id', description: 'ID del retiro' })
       findOne(@Param('id') id: string) {
           return this.retiroService.findOne(id);
@@ -364,7 +349,7 @@ export class RetirosController {
       @Patch(':id')
       @ApiOperation({ summary: 'Actualizar un retiro existente' })
       @ApiBody({
-        description: 'Datos de la retiro a actualizar',
+        description: 'Datos de el retiro a actualizar',
         schema: {
           type: 'object',
           properties: {
@@ -372,15 +357,80 @@ export class RetirosController {
               type: 'string',
               example: 'Descripcion de prueba',
             },
-            cantidad: {
-              type: 'number',
-              example: 20,
+            detalles: {
+              type: 'array',
+              example: [
+                {
+                  insumoDepartamentoId: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                  cantidad: 20,
+                }
+              ],
             },
           },
         },
       })
-      @ApiResponse({ status: 200, description: 'Retiro actualizado' })
-      @ApiResponse({ status: 404, description: 'Retiro no encontrado o desactivada.' })
+      @ApiResponse({
+        status: 201,
+        description: 'El insumo ha sido actualizado exitosamente',
+        schema: {
+          type: 'object',
+          properties: {
+            retiro: {
+              type: 'object',
+              properties: {
+                descripcion: {
+                  type: 'string',
+                  example: 'Prueba de retiro',
+                },
+                is_active: {
+                  type: 'boolean',
+                  example: true,
+                },
+                usuario: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'string',
+                      example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
+                    },
+                    username: {
+                      type: 'string',
+                      example: 'Admin',
+                    },
+                  },
+                },
+                id: {
+                  type: 'string',
+                  example: 'c33f4205-3eeb-435f-b3c9-ec056f170275',
+                },
+                created_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-10-01T01:46:28.654Z',
+                },
+              },
+            },
+            detalleRetiro: {
+              type: 'array',
+              example: [
+                {
+                  is_active: true,
+                  cantidad: 20,
+                  retiro: {
+                    id: 'c33f4205-3eeb-435f-b3c9-ec056f170275'
+                  },
+                  insumoDepartamento: {
+                    id: 'a92c4fb7-01c7-4f7a-8991-39d759b2132e',
+                    existencia: 220
+                  },
+                  id: '052770b9-97c9-460f-9240-7364661373dc'
+                }
+              ]
+            },
+          },
+        },
+      })
+      @ApiResponse({ status: 404, description: 'Retiro no encontrado o desactivado.' })
       @ApiParam({ name: 'id', description: 'ID del retiro'     ,example: '123e4567-e89b-12d3-a456-426614174000',})
       update(@Param('id') id: string, @Body() updateRetiroDto: UpdateRetiroDto) {
           return this.retiroService.update(id, updateRetiroDto);
@@ -390,9 +440,25 @@ export class RetirosController {
       @Delete(':id')
       @ApiOperation({ summary: 'Eliminar un retiro (soft delete)' })
       @ApiResponse({ status: 200, description: 'Retiro desactivado' })
-      @ApiResponse({ status: 404, description: 'Retiro no encontrado o ya desactivada.' })
+      @ApiResponse({ status: 404, description: 'Retiro no encontrado o ya desactivado.' })
       @ApiParam({ name: 'id', description: 'ID del retiro',   example: '123e4567-e89b-12d3-a456-426614174000',})
       remove(@Param('id') id: string) {
           return this.retiroService.softDelete(id);
       }
-}
+
+
+      @AuthorizedRoles()
+      @ApiParam({
+        name: 'id',
+        type: 'string',
+        description: 'ID del retiro que se desea encontrar todos sus detalles reirosr',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+      })
+      @Get('/:id/detalles-de-retiro')
+      findAllDetallesByRetiroId(@Param('id') id: string){
+        return this.detalleRetiroService.findAllRetiroId(id);
+      }
+
+      
+    }
+

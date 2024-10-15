@@ -29,7 +29,7 @@ export class RetirosService {
           .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
           .where('retiro.is_active = true')
           .select([
-            'retiro', // Todos los campos de adquisicion
+            'retiro', // Todos los campos de Retiro
             'user.id', 'user.username', // Solo ID y username del usuario
             'detalleRetiro.id', 'detalleRetiro.cantidad', // Solo ID y cantidad del detalle de reitro
             'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
@@ -73,9 +73,9 @@ export class RetirosService {
           .where('retiro.id = :id', { id })
           .andWhere('retiro.is_active = true')
           .select([
-            'retiro', // Todos los campos de adquisicion
+            'retiro', // Todos los campos de Retiro
             'user.id', 'user.username', // Solo ID y username del usuario
-            'detalleRetiro.id', 'detalleRetiro.cantidad', // Solo ID y cantidad del detalle de adquisición
+            'detalleRetiro.id', 'detalleRetiro.cantidad', 'detalleRetiro.is_active',// Solo ID y cantidad del detalle de Retiro
             'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
             'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
           ])
@@ -91,7 +91,7 @@ export class RetirosService {
       }
 
       async create(createRetiro: CreateRetiroDto) {
-        const { usuarioId, insumoDepartamentoId, ...rest } = createRetiro;
+        const { usuarioId, detalles, ...rest } = createRetiro;
         const usuario = await this.usuarioService.findOne(
             createRetiro.usuarioId,
         );
@@ -101,65 +101,62 @@ export class RetirosService {
             `Usuario con id ${usuarioId} no encontrado`,
           );
         }
-    
-        const insumoDepartamento = await this.insumoDepartamentoService.findOne(
-            createRetiro.insumoDepartamentoId,
-        );
-    
-        if (!insumoDepartamento) {
-          throw new NotFoundException(
-            `Insumo departamento con id ${insumoDepartamentoId} no encontrado`,
-          );
-        }
- 
-        const retiroCreate = this.retiroRepository.create({
-          ...rest,
-          user: {id: usuario.id, username: usuario.username}, 
-        });
-      
-        const retiro = await this.retiroRepository.save(retiroCreate)
-    
-        if (!retiro) {
-          throw new NotFoundException(
-            `Retiro no fue creada con exito!`,
-          );
-        }
         
-        if (retiro) {
-          // Actualizar la existencia del insumo departamento
-          await this.insumoDepartamentoService.update(
-            insumoDepartamento.id,
-            {
-              existencia: insumoDepartamento.existencia - createRetiro.cantidad 
-            }
-          );
-        }
-        // Crear el detalle con la cantidad y insumo departamento relacionado
-        const detalleARetiro = await this.detalleRetiroService.create({
-          retiroId: retiro.id,
-          insumoDepartamentoId: insumoDepartamentoId,
-          cantidad: createRetiro.cantidad,
-        })
+         
+    const retiroCreate = this.retiroRepository.create({
+      ...rest,
+      user: {id: usuario.id, username: usuario.username}, 
+    });
+   
+    const retiro = await this.retiroRepository.save(retiroCreate)
+
+    if (!retiro) {
+      throw new NotFoundException(
+        `Retiro no fue creada con exito!`,
+      );
+    }
+
+    const detallePromises = detalles.map(async element => {
+      const { insumoDepartamentoId, cantidad } = element;
+
+      return await this.detalleRetiroService.create({
+        retiroId: retiro.id,
+        insumoDepartamentoId,
+        cantidad,
+      });
+    });
+
+    await Promise.all(detallePromises);
+
+    const detalleRetiro = await this.detalleRetiroService.findAllRetiroId(retiro.id);
     
-        return {retiro, detalleARetiro};
+    return {retiro, detalleRetiro};
+ 
+    
       }
     
 
-      async update(id: string, updateRetiro: UpdateRetiroDto) {
-        const retiro = await this.findOne(id);
-        if (!retiro) {
+      async update(id: string, updateInsumoDto: UpdateRetiroDto) {
+        const retiroAux = await this.findOne(id);
+        if (!retiroAux) {
           throw new NotFoundException(
             `Retiro con ID ${id} no encontrado o desactivado`,
           );
         }
-        if(updateRetiro.descripcion){
-          this.retiroRepository.merge(retiro, {descripcion: updateRetiro.descripcion});
+        if(updateInsumoDto.descripcion){
+          this.retiroRepository.merge(retiroAux, {descripcion: updateInsumoDto.descripcion});
+          await this.retiroRepository.save(retiroAux);
         }
-        if(updateRetiro.cantidad){
-          const detalleRetiroAux = await this.detalleRetiroService.findOneByRetiroId(id)
-          await this.detalleRetiroService.update(detalleRetiroAux.id, {cantidad: updateRetiro.cantidad})
-        }
-        return await this.retiroRepository.save(retiro);
+        const detallePromises = updateInsumoDto.detalles.map(async element => {
+          if (element.cantidad) {
+            const detalleRetiroAux = await this.detalleRetiroService.findOneByRetiroIdAndInsumoDepartamentoId(id, element.insumoDepartamentoId)
+            await this.detalleRetiroService.update(detalleRetiroAux.id, { cantidad: element.cantidad })
+          }
+        });
+        
+        await Promise.all(detallePromises);
+    
+        return await this.findOne(id);
       }
       
       async softDelete(id: string) {
@@ -171,20 +168,14 @@ export class RetirosService {
         }
         // Cambiamos el campo is_active a false para realizar el soft delete
         retiroAux.is_active = false;
-        const retiro = await this.retiroRepository.save(retiroAux);
+
+        const detallesRetiro = await this.detalleRetiroService.findAllRetiroId(retiroAux.id)
+        const detallePromises = detallesRetiro.map(async element => {
+          await this.detalleRetiroService.softDelete(element.id)
+        });
+        
+        await Promise.all(detallePromises);
     
-        const detalleRetiroAux = await this.detalleRetiroService.findOneByRetiroId(id)
-        if(detalleRetiroAux){
-          const insumoDepartamento = await this.insumoDepartamentoService.findOne(detalleRetiroAux.insumoDepartamento.id)
-          // Actualizar la existencia del insumo departamento
-          await this.insumoDepartamentoService.update(
-            insumoDepartamento.id,
-            {
-              existencia: insumoDepartamento.existencia + detalleRetiroAux.cantidad
-            }
-          );
-        }
-        const detalleAdquisicion = await this.detalleRetiroService.softDelete(detalleRetiroAux.id)
-        return {retiro, detalleAdquisicion}
+        return await this.retiroRepository.save(retiroAux);
       }
 }

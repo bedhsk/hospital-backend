@@ -19,20 +19,20 @@ export class DetalleretirosService {
 
 
       async findOne(id: string) {
-        const detalleAdquisicion = await this.detalleRetiroRepository.findOne({
+        const detalleRetiro = await this.detalleRetiroRepository.findOne({
           where: { id, is_active: true },
           relations: ['retiro', 'insumoDepartamento'],
         });
-        if (!detalleAdquisicion) {
+        if (!detalleRetiro) {
           throw new NotFoundException(
             `Insumo con ID ${id} no encontrado o desactivado`,
           );
         }
-        return detalleAdquisicion;
+        return detalleRetiro;
       }
 
-      async findOneByRetiroId(id: string) {
-        const detalleRetiro = await this.detalleRetiroRepository.findOne({
+      async findAllRetiroId(id: string) {
+        const detalleRetiro = await this.detalleRetiroRepository.find({
           where: {
             retiro: { id },
             is_active: true,
@@ -48,6 +48,23 @@ export class DetalleretirosService {
         return detalleRetiro;
       }
 
+      async findOneByRetiroIdAndInsumoDepartamentoId(id: string, insumoDepartamentoId: string) {
+        const detalleRetiro = await this.detalleRetiroRepository.findOne({
+          where: {
+            retiro: { id },
+            insumoDepartamento: { id: insumoDepartamentoId},
+            is_active: true,
+          },
+        });
+      
+        if (!detalleRetiro) {
+          throw new NotFoundException(
+            `Insumo departamento con ID de retiro ${id} no encontrado o desactivado`,
+          );
+        }
+    
+        return detalleRetiro;
+      }
       async create(createDetalleRetiro: CreateDetalleRetiroDto) {
         const { retiroId, insumoDepartamentoId, ...rest } = createDetalleRetiro;
         
@@ -62,16 +79,26 @@ export class DetalleretirosService {
         }
     
         
-        const detalleAdquisicion = this.detalleRetiroRepository.create({
-          ...rest,
-          retiro: {id: retiroId},
-          insumoDepartamento: {
-            id: insumoDepartamento.id,
-            existencia: insumoDepartamento.existencia,
-          }, // Relacionar el detalleadquisicion con el insumoDepartamento encontrado
-        });
+      // Actualizar la existencia del insumo departamento
+      
+      await this.insumoDepartamentosService.update(
+      insumoDepartamento.id,
+      {
+      existencia: insumoDepartamento.existencia - createDetalleRetiro.cantidad 
+      }
+      );
+
+// Crear el nuevo detalle retiro con sus respectivas relaciones
+const detalleRetiro = this.detalleRetiroRepository.create({
+  ...rest,
+  retiro: {id: retiroId},
+  insumoDepartamento: {
+    id: insumoDepartamento.id,
+    existencia: insumoDepartamento.existencia,
+  }, // Relacionar el detalledetalleRetiro con el insumoDepartamento encontrado
+});
     
-        return await this.detalleRetiroRepository.save(detalleAdquisicion);
+        return await this.detalleRetiroRepository.save(detalleRetiro);
       }
 
  
@@ -109,7 +136,18 @@ export class DetalleretirosService {
     const detalleRetiro = await this.findOne(id);
     if (!detalleRetiro) {
       throw new NotFoundException(
-        `Detalle Adquisicion con ID ${id} no encontrado o ya desactivado`,
+        `Detalle Retiro con ID ${id} no encontrado o ya desactivado`,
+      );
+    }
+    // Cambiamos el campo is_active a false para realizar el soft delete
+    if(detalleRetiro){
+      const insumoDepartamento = await this.insumoDepartamentosService.findOne(detalleRetiro.insumoDepartamento.id)
+      // Actualizar la existencia del insumo departamento
+      await this.insumoDepartamentosService.update(
+        insumoDepartamento.id,
+        {
+          existencia: insumoDepartamento.existencia + detalleRetiro.cantidad
+        }
       );
     }
     // Cambiamos el campo is_active a false para realizar el soft delete
