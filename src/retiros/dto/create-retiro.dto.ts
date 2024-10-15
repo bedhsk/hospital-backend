@@ -1,4 +1,16 @@
-import { IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from "class-validator";
+
+
+class DetalleRetiroDto {
+    @IsUUID()
+    @IsNotEmpty()
+    insumoDepartamentoId: string;
+  
+    @IsNumber()
+    @IsNotEmpty()
+    cantidad: number;
+  }
 
 class CreateRetiroDto {
 
@@ -10,14 +22,15 @@ class CreateRetiroDto {
     @MaxLength(255)
     @IsOptional()
     descripcion?: string;   
+    
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => DetalleRetiroDto)
+    @IsNotEmpty()
+    detalles: DetalleRetiroDto[];
 
 
 
-    @IsString()
-    insumoDepartamentoId: string;
-
-    @IsNumber()
-    cantidad: number;
 }
 
 export default CreateRetiroDto;
