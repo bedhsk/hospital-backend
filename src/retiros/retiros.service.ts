@@ -75,7 +75,7 @@ export class RetirosService {
           .select([
             'retiro', // Todos los campos de Retiro
             'user.id', 'user.username', // Solo ID y username del usuario
-            'detalleRetiro.id', 'detalleRetiro.cantidad', // Solo ID y cantidad del detalle de Retiro
+            'detalleRetiro.id', 'detalleRetiro.cantidad', 'detalleRetiro.is_active',// Solo ID y cantidad del detalle de Retiro
             'insumoDepartamento.id', 'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
             'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
           ])
