@@ -28,7 +28,7 @@ export class UsersService {
       .createQueryBuilder('user')
       .where({ is_Active: true })
       .leftJoinAndSelect('user.role', 'role')
-      .leftJoinAndSelect('user.departamento', 'departmento') 
+      .leftJoinAndSelect('user.departamento', 'departamento') 
       .select([
         'user.id',
         'user.name',
@@ -39,8 +39,8 @@ export class UsersService {
         'user.updatedAt',
         'role.id',
         'role.name',
-        'departmento.id',
-        'departmento.name'
+        'departamento.id',
+        'departamento.nombre'
       ]);
 
     if (q) {
