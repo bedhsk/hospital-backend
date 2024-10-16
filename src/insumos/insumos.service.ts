@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInsumoDto } from './dto/create-insumo.dto';
 import UpdateInsumoDto from './dto/update-insumo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -74,7 +79,17 @@ export class InsumosService {
 
   // Crear un nuevo insumo
   async create(createInsumoDto: CreateInsumoDto) {
-    const { categoriaId, ...rest } = createInsumoDto;
+    const { categoriaId, codigo, ...rest } = createInsumoDto;
+
+    // Verificar si el código del insumo ya existe
+    const existingInsumo = await this.insumoRepository.findOne({
+      where: { codigo },
+    });
+
+    if (existingInsumo) {
+      throw new ConflictException('El código ingresado está en uso');
+    }
+
     const categoria = await this.categoriaService.findOne(
       createInsumoDto.categoriaId,
     );
@@ -86,12 +101,22 @@ export class InsumosService {
     }
 
     // Crear el nuevo insumo con la categoría relacionada
-    const insumo = this.insumoRepository.create({
-      ...rest,
-      categoria, // Relacionar el insumo con la categoría encontrada
-    });
+    try {
+      const insumo = this.insumoRepository.create({
+        ...rest,
+        codigo, // Asignar el código del insumo
+        categoria, // Relacionar el insumo con la categoría encontrada
+      });
 
-    return await this.insumoRepository.save(insumo);
+      return await this.insumoRepository.save(insumo);
+    } catch (error) {
+      // Captura detallada de cualquier error que ocurra
+      console.error('Error al crear el insumo:', error);
+      throw new InternalServerErrorException(
+        'Error al crear el insumo',
+        error.message,
+      );
+    }
   }
 
   // Actualizar un insumo existente, si está activo
