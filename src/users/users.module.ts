@@ -9,9 +9,13 @@ import Role from './entities/role.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
+import { DepartamentosModule } from 'src/departamentos/departamentos.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Role])],
+    imports: [
+        TypeOrmModule.forFeature([User, Role]),
+        DepartamentosModule
+    ],
     controllers: [UsersController, RolesController],
     providers: [
         UsersService, 

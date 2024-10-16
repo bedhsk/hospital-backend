@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import User from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -48,4 +49,11 @@ export default class Departamento {
     (insumoDepartamento) => insumoDepartamento.departamento,
   )
   insumosDepartamentos: InsumoDepartamento[];
+
+  @OneToMany(() => User, (user) => user.departamento)
+  @ApiProperty({
+    description: 'Relación entre Departamento y Usuarios. Un departamento puede tener muchos usuarios',
+  })
+  users: User[];
+  
 }

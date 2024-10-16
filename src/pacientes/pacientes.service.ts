@@ -77,7 +77,7 @@ export class PacientesService {
       
 
       async findOne(id: string) {
-        const record = await this.pacientesRepository.findOne({ where: { id, is_active: true }});
+        const record = await this.pacientesRepository.findOne({ where: { id, is_active: true }, relations: ['antecedentes'],});
         if (record === null) {
           throw new NotFoundException(`Paciente #${id} no encontrado`);
         }
@@ -114,20 +114,14 @@ export class PacientesService {
         }
         const paciente = this.pacientesRepository.create({ ...pacienteData, cui });
         return this.pacientesRepository.save(paciente);
-
-
       }
-    
 
       async update(id: string, update_paciente: UpdatePacienteDto) {
 
         console.log(id)
         console.log("Hola")
         const paciente = await this.findOne(id);
-
-  
         this.pacientesRepository.merge(paciente, update_paciente);
-    
         return this.pacientesRepository.save(paciente);
       }
 
