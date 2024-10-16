@@ -31,7 +31,8 @@ export class DepartamentosService {
       ]);
 
     if (query) {
-      queryBuilder.andWhere('departamento.nombre LIKE :nombre', { nombre: `%${query}%` });
+      queryBuilder.andWhere('departamento.nombre ILIKE :nombre',
+        { nombre: `%${query}%` });
     }
 
     const totalItems = await queryBuilder.getCount();

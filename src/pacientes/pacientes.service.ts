@@ -47,7 +47,9 @@ export class PacientesService {
           ]);
     
         if (q) {
-          queryBuilder.andWhere('paciente.nombre LIKE :nombre', { nombre: `${q}` });
+          queryBuilder.andWhere('paciente.nombre ILIKE :nombre',
+            { nombre: `%${q}%` });
+            
         }
         if (filter) {
           queryBuilder.andWhere('paciente.sexo = :sexo', { sexo: `${filter}` });

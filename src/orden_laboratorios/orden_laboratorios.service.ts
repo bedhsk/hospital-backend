@@ -82,7 +82,8 @@ export class OrdenLaboratoriosService {
 
     // Aplicar filtro de búsqueda (si se proporciona)
     if (q) {
-      queryBuilder.andWhere('paciente.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere('paciente.nombre ILIKE :nombre',
+        { nombre: `%${q}%` });
     }
 
     // Aplicar filtro por estado (si se proporciona)

@@ -37,7 +37,7 @@ export class RetirosService {
           ])
     
         if (filterUser) {
-          queryBuilder.andWhere('user.username LIKE :username', { username: `%${filterUser}%` });
+          queryBuilder.andWhere('user.username ILIKE :username', { username: `%${filterUser}%` });
         }
     
         if (filterDepartamento) {

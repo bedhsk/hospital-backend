@@ -27,7 +27,8 @@ export class ExamenesService {
       .where('examen.is_active = :isActive', { isActive: true }); // Solo exámenes activos
 
     if (nombre) {
-      queryBuilder.andWhere('examen.nombre LIKE :nombre', { nombre: `%${nombre}%` });
+      queryBuilder.andWhere('examen.nombre ILIKE :nombre', 
+        { nombre: `%${nombre}%` });
     }
 
     const [result, total] = await queryBuilder

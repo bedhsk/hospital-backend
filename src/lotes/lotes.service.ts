@@ -36,8 +36,8 @@ export class LotesService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('lote.numeroLote LIKE :numeroLote', {
-        numeroLote: `%${q}%`,
+      queryBuilder.andWhere('lote.numeroLote ILIKE :numeroLote', 
+        { numeroLote: `%${q}%`,
       });
     }
 

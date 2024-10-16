@@ -36,7 +36,8 @@ export class InsumoDepartamentosService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere('insumo.nombre ILIKE :nombre', 
+        { nombre: `%${q}%` });
     }
 
     if (filter) {
