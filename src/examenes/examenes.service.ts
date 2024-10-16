@@ -5,18 +5,40 @@ import Examen from './entities/examen.entity';
 import CreateExamenDto from './dtos/create-examen.dto';
 import UpdateExamenDto from './dtos/update-examen.dto';
 import QueryExamenDto from './dtos/query-examen.dto';
+import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
+
 
 @Injectable()
 export class ExamenesService {
   constructor(
     @InjectRepository(Examen)
     private readonly examenesRepository: Repository<Examen>,
+
+    @InjectRepository(InsumoExamen)
+    private readonly insumoExamenRepository: Repository<InsumoExamen>, // Repositorio para la relación
   ) {}
 
-  // Crear un nuevo examen
+  // Crear un nuevo examen con relación a insumos
   async create(createExamenDto: CreateExamenDto) {
-    const examen = this.examenesRepository.create(createExamenDto);
-    return this.examenesRepository.save(examen);
+    const { nombre, descripcion, insumos } = createExamenDto;
+    
+    // Crear el examen
+    const examen = this.examenesRepository.create({ nombre, descripcion });
+    await this.examenesRepository.save(examen);
+
+    // Crear las relaciones examen_insumo
+    if (insumos && insumos.length > 0) {
+      const insumoExamenEntities = insumos.map((insumoDto) => {
+        return this.insumoExamenRepository.create({
+          examen: { id: examen.id },  // ID del examen recién creado
+          insumo: { id: insumoDto.insumoId },
+          cantidad: insumoDto.cantidad,
+        });
+      });
+      await this.insumoExamenRepository.save(insumoExamenEntities);
+    }
+
+    return examen;
   }
 
   // Obtener todos los exámenes con Soft Delete (solo los que estén activos)
@@ -45,7 +67,7 @@ export class ExamenesService {
 
   // Buscar un examen por su ID
   async findOne(id: string) {
-    const examen = await this.examenesRepository.findOne({ where: { id, is_active: true } }); // Solo exámenes activos
+    const examen = await this.examenesRepository.findOne({ where: { id, is_active: true } });
     if (!examen) {
       throw new NotFoundException(`Examen con ID ${id} no encontrado o desactivado`);
     }
@@ -56,17 +78,14 @@ export class ExamenesService {
   async update(id: string, updateExamenDto: UpdateExamenDto) {
     const examen = await this.findOne(id); // Validamos que el examen existe y está activo
 
-    // Si el examen no existe o está inactivo, findOne arroja NotFoundException
     this.examenesRepository.merge(examen, updateExamenDto);
     return this.examenesRepository.save(examen);
   }
 
-  // Soft delete para un examen (solo cambia el campo is_active a false)
+  // Soft delete para un examen
   async remove(id: string) {
     const examen = await this.findOne(id); // Validamos que el examen existe y está activo
-
-    // Cambiamos el estado a inactivo en lugar de eliminar el registro físicamente
-    examen.is_active = false;
+    examen.is_active = false; // Cambiamos el estado a inactivo
     return this.examenesRepository.save(examen);
   }
 }
