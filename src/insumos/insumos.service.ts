@@ -6,6 +6,7 @@ import { CategoriasService } from 'src/categorias/categorias.service';
 import { Repository } from 'typeorm';
 import QueryInsumoDto from './dto/query-insumo.dto';
 import Insumo from './entities/insumo.entity';
+import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 
 @Injectable()
 export class InsumosService {
@@ -18,45 +19,81 @@ export class InsumosService {
   // Método para obtener todos los insumos que están activos
   async findAll(query: QueryInsumoDto) {
     const { q, filter, page, limit } = query;
-    const queryBuilder = this.insumoRepository
-      .createQueryBuilder('insumo')
-      .where({ is_active: true })
-      .leftJoinAndSelect('insumo.categoria', 'categoria')
-      .select([
-        'insumo.id',
-        'insumo.codigo',
-        'insumo.nombre',
-        'insumo.trazador',
-        'insumo.categoriaId',
-        'categoria.id',
-        'categoria.nombre',
-      ]);
 
+    const queryBuilder = this.insumoRepository
+        .createQueryBuilder('insumo')
+        .where({ is_active: true })
+        .leftJoinAndSelect('insumo.categoria', 'categoria')
+        .leftJoinAndSelect('insumo.insumosDepartamentos', 'insumoDepartamento')
+        .leftJoinAndSelect('insumoDepartamento.lotes', 'lote')
+        .select([
+            'insumo.id',
+            'insumo.codigo',
+            'insumo.nombre',
+            'insumo.trazador',
+            'insumo.categoriaId',
+            'categoria.id',
+            'categoria.nombre',
+            'insumoDepartamento.id',
+            'insumoDepartamento.existencia',
+            'lote.id',
+            'lote.numeroLote',
+            'lote.fechaEntrada',
+            'lote.fechaCaducidad',
+            'lote.cantidadInical',
+            'lote.cantidadActual',
+            'lote.status',
+        ]);
+
+    // Filtro por nombre del insumo
     if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+        queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
     }
 
+    // Filtro por categoría
     if (filter) {
-      queryBuilder.andWhere('categoria.nombre = :categoria', {
-        categoria: `${filter}`,
-      });
+        queryBuilder.andWhere('categoria.nombre = :categoria', {
+            categoria: `${filter}`,
+        });
     }
 
     const totalItems = await queryBuilder.getCount();
     const insumos = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
 
+    const result = insumos.map((insumo) => ({
+        id: insumo.id,
+        codigo: insumo.codigo,
+        nombre: insumo.nombre,
+        trazador: insumo.trazador,
+        categoria: {
+            id: insumo.categoria.id,
+            nombre: insumo.categoria.nombre,
+        },
+        lotes: (insumo.insumosDepartamentos || []).flatMap((dep) =>
+            dep.lotes ? dep.lotes.map((lote) => ({
+                id: lote.id,
+                numeroLote: lote.numeroLote,
+                fechaEntrada: lote.fechaEntrada,
+                fechaCaducidad: lote.fechaCaducidad,
+                cantidadInical: lote.cantidadInical,
+                cantidadActual: lote.cantidadActual,
+                status: lote.status,
+            })) : []
+        ),
+    }));
+
     return {
-      data: insumos,
-      totalItems,
-      totalPages,
-      page,
+        data: result,
+        totalItems,
+        totalPages,
+        page,
     };
-  }
+}
 
   // Método para obtener un solo insumo por ID si está activo
   async findOne(id: string) {
