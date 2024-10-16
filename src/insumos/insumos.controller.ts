@@ -79,7 +79,7 @@ export class InsumosController {
   @ApiOperation({
     summary: 'Obtiene todos los insumos',
     description:
-      'Este endpoint sirve para retornar todos los insumos activos en la base de datos.',
+      'Este endpoint sirve para retornar todos los insumos activos en la base de datos, incluyendo sus categorías y lotes relacionados.',
   })
   @ApiQuery({
     name: 'q',
@@ -121,8 +121,67 @@ export class InsumosController {
             type: 'string',
             example: '123e4567-e89b-12d3-a456-426614174001',
           },
-          nombre: { type: 'string', example: 'Insumo X' },
-          codigo: { type: 'string', example: 'INS-001' },
+          nombre: {
+            type: 'string',
+            example: 'Insumo X',
+          },
+          codigo: {
+            type: 'string',
+            example: 'INS-001',
+          },
+          trazador: {
+            type: 'boolean',
+            example: true,
+          },
+          categoria: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                example: '21436339-9acb-4319-b475-30c46e4ef33f',
+              },
+              nombre: {
+                type: 'string',
+                example: 'Maternidad',
+              },
+            },
+          },
+          lotes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '132e2c8e-0ffb-4566-b955-7331c94ceeac',
+                },
+                numeroLote: {
+                  type: 'string',
+                  example: 'L103',
+                },
+                fechaEntrada: {
+                  type: 'string',
+                  example: '2024-09-01',
+                },
+                fechaCaducidad: {
+                  type: 'string',
+                  example: '2025-09-01',
+                },
+                cantidadInicial: {
+                  type: 'number',
+                  example: 100,
+                },
+                cantidadActual: {
+                  type: 'number',
+                  example: 100,
+                },
+                status: {
+                  type: 'string',
+                  example: 'OK',
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -131,6 +190,7 @@ export class InsumosController {
     status: 403,
     description: 'Acceso denegado.',
   })
+  
   findAll(@Query() query: QueryInsumoDto) {
     return this.insumosService.findAll(query);
   }
