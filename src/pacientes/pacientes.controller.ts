@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import QueryPacienteDto from './dto/query-paciente.dto';
 import { PacientesService } from './pacientes.service';
-import CreatePacienteDto from './dto/create-paciente.dto';
+import { CreatePacienteDto } from './dto/create-paciente.dto';
 import UpdatePacienteDto from './dto/update-paciente.dto';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 

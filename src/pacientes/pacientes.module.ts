@@ -8,9 +8,9 @@ import Paciente from './entities/paciente.entity';
 import Antecedente from './entities/antecedente.entity';
 
 @Module({
-
-  imports: [TypeOrmModule.forFeature([Paciente, Antecedente])],
-  controllers: [PacientesController, AntecedentesController],
-  providers: [PacientesService, AntecedentesService]
+  imports: [TypeOrmModule.forFeature([Paciente, Antecedente])],  // Registrar las entidades Paciente y Antecedente
+  controllers: [PacientesController, AntecedentesController],  // Controladores a utilizar
+  providers: [PacientesService, AntecedentesService],  // Proveedores del servicio
+  exports: [PacientesService, AntecedentesService]  // Exportar los servicios para que puedan ser utilizados en otros módulos
 })
 export class PacientesModule {}
