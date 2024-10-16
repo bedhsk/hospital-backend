@@ -216,5 +216,36 @@ import {
     remove(@Param('id') id: string) {
       return this.ordenLaboratorioService.softDelete(id);
     }
+
+
+    @Post('examen')
+    @ApiOperation({
+      summary: 'Crear una nueva orden de laboratorio en funcion de un examen predeterminado',
+      description: 'Este endpoint sirve para crear una nueva orden de laboratorio',
+    })
+    @ApiResponse({
+      status: 201,
+      description: 'Orden de laboratorio creada exitosamente',
+      schema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
+          descripcion: { type: 'string', example: 'Análisis de sangre' },
+          estado: { type: 'string', example: 'pendiente' },
+          usuarioId: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174001' },
+          pacienteId: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174002' },
+          examenId: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174003' },
+          retiroId: { type: 'string', nullable: true, example: null },
+          is_active: { type: 'boolean', example: true },
+        },
+      },
+    })
+    @ApiResponse({
+      status: 400,
+      description: 'Datos inválidos, revisa los campos enviados',
+    })
+    createByExam(@Body() createOrdenLaboratorioDto: CreateOrdenLaboratorioDto) {
+      return this.ordenLaboratorioService.createByExams(createOrdenLaboratorioDto);
+    }
   }
   

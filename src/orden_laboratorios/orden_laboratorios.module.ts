@@ -7,15 +7,24 @@ import Retiro from '../retiros/entities/retiro.entity';
 import User from 'src/users/entities/user.entity';
 import { OrdenLaboratoriosService } from './orden_laboratorios.service';
 import { OrdenLaboratoriosController } from './orden_laboratorios.controller';
+import { In } from 'typeorm';
+import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
+import { InsumoExamenesModule } from 'src/insumo_examenes/insumo_examenes.module';
+import { RetirosModule } from 'src/retiros/retiros.module';
+import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
 
 @Module({
   imports: [
+    InsumoExamenesModule,
+    RetirosModule,
     TypeOrmModule.forFeature([
       OrdenLaboratorio,  // Entidad OrdenLaboratorio
       Paciente,          // Entidad Paciente (FK en OrdenLaboratorio)
       Examen,            // Entidad Examen (FK en OrdenLaboratorio)
       User,           // Entidad Usuario (FK en OrdenLaboratorio)
-      Retiro             // Entidad Retiro (FK opcional en OrdenLaboratorio)
+      Retiro,             // Entidad Retiro (FK opcional en OrdenLaboratorio)
+      InsumoExamen,      // Entidad InsumoExamen (FK en OrdenLaboratorio)
+      InsumoDepartamento,  // Entidad InsumoDepartamento (FK en OrdenLaboratorio)
     ]),
   ],
   providers: [OrdenLaboratoriosService],  // Servicio de OrdenLaboratorio
