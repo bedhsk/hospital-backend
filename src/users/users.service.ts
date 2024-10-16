@@ -28,7 +28,7 @@ export class UsersService {
       .createQueryBuilder('user')
       .where({ is_Active: true })
       .leftJoinAndSelect('user.role', 'role')
-      .leftJoinAndSelect('user.departamento', 'departmento') 
+      .leftJoinAndSelect('user.departamento', 'departmento')
       .select([
         'user.id',
         'user.name',
@@ -40,7 +40,7 @@ export class UsersService {
         'role.id',
         'role.name',
         'departmento.id',
-        'departmento.name'
+        'departmento.nombre',
       ]);
 
     if (q) {
@@ -96,7 +96,9 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { roleId, departamentoId, username, ...userData } = createUserDto;
     const role = await this.rolesService.findOne(createUserDto.roleId);
-    const departamento = await this.departamentosService.findOne(createUserDto.departamentoId);
+    const departamento = await this.departamentosService.findOne(
+      createUserDto.departamentoId,
+    );
 
     const existingUser = await this.usersRepository.findOne({
       where: { username },
@@ -113,7 +115,12 @@ export class UsersService {
       throw new NotFoundException('Department not found');
     }
 
-    const user = this.usersRepository.create({ ...userData, role, username, departamento });
+    const user = this.usersRepository.create({
+      ...userData,
+      role,
+      username,
+      departamento,
+    });
     return this.usersRepository.save(user);
   }
 
@@ -143,7 +150,8 @@ export class UsersService {
 
     // Verficar si se envió un departamentoId y actualizar solo si se envía
     if (departamentoId) {
-      const department = await this.departamentosService.findOne(departamentoId);
+      const department =
+        await this.departamentosService.findOne(departamentoId);
       if (!department) {
         throw new NotFoundException('Department not found');
       }

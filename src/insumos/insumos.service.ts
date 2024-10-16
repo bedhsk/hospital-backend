@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInsumoDto } from './dto/create-insumo.dto';
 import UpdateInsumoDto from './dto/update-insumo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -82,7 +87,7 @@ export class InsumosService {
     });
 
     if (existingInsumo) {
-      throw new ConflictException('El Codigo ya esta en uso');
+      throw new ConflictException('El código ingresado está en uso');
     }
 
     const categoria = await this.categoriaService.findOne(
@@ -96,7 +101,7 @@ export class InsumosService {
     }
 
     // Crear el nuevo insumo con la categoría relacionada
-    try{
+    try {
       const insumo = this.insumoRepository.create({
         ...rest,
         codigo, // Asignar el código del insumo
@@ -107,7 +112,10 @@ export class InsumosService {
     } catch (error) {
       // Captura detallada de cualquier error que ocurra
       console.error('Error al crear el insumo:', error);
-      throw new InternalServerErrorException('Error al crear el insumo', error.message);
+      throw new InternalServerErrorException(
+        'Error al crear el insumo',
+        error.message,
+      );
     }
   }
 
