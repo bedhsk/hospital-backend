@@ -182,16 +182,16 @@ export class OrdenLaboratoriosService {
     const insumosPromise = insumosExamen.map(async element => {
       const { insumo, cantidad } = element;
 
-      const {id} = await this.insumoDepartamentoRepository.findOne({
+      const insumoDeparamento = await this.insumoDepartamentoRepository.findOne({
         where: { insumo, departamento: usuario.departamento, is_active: true },
       });
 
-      if (!id) {
+      if (!insumoDeparamento) {
         throw new NotFoundException(`Insumo ${insumo.nombre} no encontrado en el departamento`);
       }
 
       const result:DetalleRetiroDto = {
-        insumoDepartamentoId: id,
+        insumoDepartamentoId: insumoDeparamento.id,
         cantidad: cantidad,
       }
 
@@ -203,12 +203,25 @@ export class OrdenLaboratoriosService {
     const retiroPromise:CreateRetiroDto = {
       usuarioId: usuario.id,
       descripcion: `Orden de laboratorio para el paciente ${paciente.nombre}`,
-      insumoDepartamentoId: null,
-      cantidad: null,
       detalles: insumosArray,
     }
 
+    const retiroP = this.retiroService.create(retiroPromise);
+
+    if (!retiroP) {
+      throw new NotFoundException(`No se pudo crear el retiro`);
+    }
+
+    const {retiro} = await Promise.resolve(retiroP);
     // this.retiroService.create(retiroPromise);
-    return retiroPromise
+    const nuevaOrdenLaboratorio:CreateOrdenLaboratorioDto = {
+      usuarioId: usuario.id,
+      pacienteId: paciente.id,
+      examenId: examen.id,
+      retiroId: retiro.id,
+      ...rest,
+    }
+    // Crear la nueva orden de laboratorio
+    return this.create(nuevaOrdenLaboratorio);
   }
 }
