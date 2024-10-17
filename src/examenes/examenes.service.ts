@@ -1,45 +1,55 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import Examen from './entities/examen.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import Examen from './entities/examen.entity';
 import CreateExamenDto from './dtos/create-examen.dto';
+import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service'; // Importamos el servicio
 import UpdateExamenDto from './dtos/update-examen.dto';
 import QueryExamenDto from './dtos/query-examen.dto';
-import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
-
 
 @Injectable()
 export class ExamenesService {
   constructor(
     @InjectRepository(Examen)
     private readonly examenesRepository: Repository<Examen>,
-
-    @InjectRepository(InsumoExamen)
-    private readonly insumoExamenRepository: Repository<InsumoExamen>, // Repositorio para la relación
+    private readonly insumoExamenesService: InsumoExamenesService,
   ) {}
 
-  // Crear un nuevo examen con relación a insumos
   async create(createExamenDto: CreateExamenDto) {
-    const { nombre, descripcion, insumos } = createExamenDto;
+    const { nombre, insumos, ...rest } = createExamenDto;
+  
+    console.log('Insumos recibidos:', insumos); // Verificación de insumos
+  
+    const examen = this.examenesRepository.create({
+      nombre,
+      ...rest,
+    });
     
-    // Crear el examen
-    const examen = this.examenesRepository.create({ nombre, descripcion });
-    await this.examenesRepository.save(examen);
-
-    // Crear las relaciones examen_insumo
+    const examenGuardado = await this.examenesRepository.save(examen);
+  
     if (insumos && insumos.length > 0) {
-      const insumoExamenEntities = insumos.map((insumoDto) => {
-        return this.insumoExamenRepository.create({
-          examen: { id: examen.id },  // ID del examen recién creado
-          insumo: { id: insumoDto.insumoId },
-          cantidad: insumoDto.cantidad,
+      const insumoPromises = insumos.map(async (element) => {
+        const { insumoId, cantidad } = element;
+  
+        console.log('Insumo ID:', insumoId); // Verificación de insumoId
+  
+        if (!insumoId) {
+          throw new Error('El insumoId no puede ser nulo');
+        }
+  
+        return await this.insumoExamenesService.create({
+          examenId: examenGuardado.id,
+          insumoId,
+          cantidad,
         });
       });
-      await this.insumoExamenRepository.save(insumoExamenEntities);
+  
+      await Promise.all(insumoPromises);
     }
-
-    return examen;
+  
+    return await this.findOne(examenGuardado.id);
   }
+  
 
   // Obtener todos los exámenes con Soft Delete (solo los que estén activos)
   async findAll(query: QueryExamenDto) {
@@ -65,15 +75,19 @@ export class ExamenesService {
     };
   }
 
-  // Buscar un examen por su ID
   async findOne(id: string) {
-    const examen = await this.examenesRepository.findOne({ where: { id, is_active: true } });
+    const examen = await this.examenesRepository.findOne({
+      where: { id, is_active: true },
+      relations: ['insumoExamenes'], // Cambiamos de 'insumos' a 'insumoExamenes'
+    });
+  
     if (!examen) {
       throw new NotFoundException(`Examen con ID ${id} no encontrado o desactivado`);
     }
+  
     return examen;
   }
-
+  
   // Actualizar un examen
   async update(id: string, updateExamenDto: UpdateExamenDto) {
     const examen = await this.findOne(id); // Validamos que el examen existe y está activo

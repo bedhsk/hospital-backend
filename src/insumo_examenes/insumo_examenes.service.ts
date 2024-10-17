@@ -21,28 +21,23 @@ export class InsumoExamenesService {
     private readonly examenRepository: Repository<Examen>,
   ) {}
 
-  // Crear una nueva relación entre insumo y examen
-  async create(createInsumoExamenDto: CreateInsumoExamenDto) {
-    const { insumoId, examenId, ...rest } = createInsumoExamenDto;
+  async create(createInsumoExamenDto: CreateInsumoExamenDto): Promise<InsumoExamen> {
+    const { insumoId, examenId, cantidad } = createInsumoExamenDto;
 
-    const insumo = await this.insumoRepository.findOne({ where: { id: insumoId } });
-    if (!insumo) {
-      throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
-    }
-
-    const examen = await this.examenRepository.findOne({ where: { id: examenId } });
-    if (!examen) {
-      throw new NotFoundException(`Examen con ID ${examenId} no encontrado`);
+    // Verificación adicional para evitar que insumoId sea nulo
+    if (!insumoId) {
+      throw new Error('El insumoId no puede ser nulo');
     }
 
     const insumoExamen = this.insumoExamenRepository.create({
-      ...rest,
-      insumo,
-      examen,
+      insumo: { id: insumoId }, // Relacionamos el insumo usando su ID
+      examen: { id: examenId }, // Relacionamos el examen usando su ID
+      cantidad,
     });
 
-    return this.insumoExamenRepository.save(insumoExamen);
+    return await this.insumoExamenRepository.save(insumoExamen);
   }
+
 
   // Obtener todas las relaciones activas entre insumos y exámenes con filtros y paginación
   async findAll(query: QueryInsumoExamenDto) {

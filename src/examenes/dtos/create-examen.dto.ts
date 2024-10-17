@@ -1,25 +1,32 @@
-import { IsUUID, IsString, MaxLength, IsNotEmpty, IsBoolean, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { IsUUID, IsString, MaxLength, IsNotEmpty, IsBoolean, IsOptional, IsArray, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import CreateInsumoExamenDto from 'src/insumo_examenes/dtos/create-insumo_examen.dto';
 
-
-export default class CreateExamenDto {
-  @IsString() 
+class CreateExamenDto {
+  @IsString()
   @MaxLength(50)
   @IsNotEmpty()
   nombre: string;
 
-  @IsString() 
+  @IsString()
   @MaxLength(255)
   descripcion: string;
 
   @IsBoolean()
   @IsOptional()
-  is_active: boolean = true;
+  is_active?: boolean = true;
 
-  // Aquí agregamos los insumos
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateInsumoExamenDto)
-  insumos: CreateInsumoExamenDto[]; // Array con los insumos del examen
+  @Type(() => InsumoExamenDto)
+  insumos: InsumoExamenDto[]; // Array con insumoId y cantidad
 }
+class InsumoExamenDto {
+  @IsUUID()
+  insumoId: string;
+
+  @IsNumber()
+  cantidad: number;
+}
+
+export default CreateExamenDto;
