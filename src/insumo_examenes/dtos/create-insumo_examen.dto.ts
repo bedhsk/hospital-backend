@@ -1,7 +1,6 @@
 import { IsUUID, IsNumber, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export default class CreateInsumoExamenDto {
-  
 
   @IsNumber()
   cantidad: number = 0;  // Se inicializa con 0 por defecto
