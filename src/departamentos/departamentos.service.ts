@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { isUUID } from 'class-validator';
@@ -9,10 +14,10 @@ import QueryDepartamentoDto from './dto/query-departamento.dto';
 
 @Injectable()
 export class DepartamentosService {
-    constructor(
-        @InjectRepository(Departamento)
-        private readonly departamentosRepository: Repository<Departamento>,
-    ) {}
+  constructor(
+    @InjectRepository(Departamento)
+    private readonly departamentosRepository: Repository<Departamento>,
+  ) {}
 
   create(createDepartamentoDto: CreateDepartamentoDto): Promise<Departamento> {
     const record = this.departamentosRepository.create(createDepartamentoDto);
@@ -21,7 +26,8 @@ export class DepartamentosService {
 
   async findAll(queryDto: QueryDepartamentoDto) {
     const { query, filter, page, limit } = queryDto;
-    const queryBuilder = this.departamentosRepository.createQueryBuilder('departamento')
+    const queryBuilder = this.departamentosRepository
+      .createQueryBuilder('departamento')
       .where({ is_active: true })
       .select([
         'departamento.id',
@@ -31,7 +37,9 @@ export class DepartamentosService {
       ]);
 
     if (query) {
-      queryBuilder.andWhere('departamento.nombre LIKE :nombre', { nombre: `%${query}%` });
+      queryBuilder.andWhere('departamento.nombre ILIKE :nombre', {
+        nombre: `%${query}%`,
+      });
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -42,7 +50,7 @@ export class DepartamentosService {
       .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
-    
+
     return {
       data: departamentos,
       totalItems,
@@ -68,14 +76,14 @@ export class DepartamentosService {
     return record;
   }
 
-    async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
-        const departamento = await this.findOne(id);
-        this.departamentosRepository.merge(departamento, updateDepartamentoDto);
-        return await this.departamentosRepository.save(departamento);
-    }
+  async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
+    const departamento = await this.findOne(id);
+    this.departamentosRepository.merge(departamento, updateDepartamentoDto);
+    return await this.departamentosRepository.save(departamento);
+  }
 
-    async remove(id: string) {
-        const departamento = await this.findOne(id);
-        return await this.departamentosRepository.remove(departamento);
-    }
+  async remove(id: string) {
+    const departamento = await this.findOne(id);
+    return await this.departamentosRepository.remove(departamento);
+  }
 }

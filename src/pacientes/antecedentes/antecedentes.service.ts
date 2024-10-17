@@ -11,15 +11,15 @@ import UpdateAntecedenteDto from '../dto/update-antecedente.dto';
 export class AntecedentesService {
   constructor(
     @InjectRepository(Antecedente)
-    private readonly antecedentesRepository: Repository<Antecedente>,  // Inyectar el repositorio de Antecedente
-    private readonly pacientesService: PacientesService,  // Inyectar el servicio de Pacientes
-  ) { }
-
+    private readonly antecedentesRepository: Repository<Antecedente>, // Inyectar el repositorio de Antecedente
+    private readonly pacientesService: PacientesService, // Inyectar el servicio de Pacientes
+  ) {}
 
   async findAll(query: QueryAntecedenteDto) {
     const { filter, filterCui, filterId, page = 1, limit = 10 } = query;
 
-    const queryBuilder = this.antecedentesRepository.createQueryBuilder('antecedente')
+    const queryBuilder = this.antecedentesRepository
+      .createQueryBuilder('antecedente')
       .leftJoinAndSelect('antecedente.paciente', 'paciente')
       .select([
         'antecedente.id',
@@ -38,7 +38,9 @@ export class AntecedentesService {
       ]);
 
     if (filter) {
-      queryBuilder.andWhere('paciente.name = :filterName', { filterName: filter });
+      queryBuilder.andWhere('paciente.name = :filterName', {
+        filterName: filter,
+      });
     }
 
     if (filterCui) {
@@ -65,26 +67,35 @@ export class AntecedentesService {
     };
   }
 
-
-  async create(createAntecedenteDto: CreateAntecedenteDto): Promise<Antecedente> {
+  async create(
+    createAntecedenteDto: CreateAntecedenteDto,
+  ): Promise<Antecedente> {
     const { pacienteId, ...userData } = createAntecedenteDto;
-    const paciente = await this.pacientesService.findOne(createAntecedenteDto.pacienteId);
-
+    const paciente = await this.pacientesService.findOne(
+      createAntecedenteDto.pacienteId,
+    );
 
     if (!paciente) {
       throw new NotFoundException('Paciente no encontrado');
     }
     if (paciente.sexo !== 'Femenino') {
-      throw new NotFoundException('Esta Persona no puede tener antecedentes ginecológicos');
+      throw new NotFoundException(
+        'Esta Persona no puede tener antecedentes ginecológicos',
+      );
     }
 
-    const antecedente = this.antecedentesRepository.create({ ...userData, paciente });
+    const antecedente = this.antecedentesRepository.create({
+      ...userData,
+      paciente,
+    });
     return this.antecedentesRepository.save(antecedente);
   }
 
-
   async findOne(id: string) {
-    const record = await this.antecedentesRepository.findOne({ where: { id }, relations: ['paciente'] });
+    const record = await this.antecedentesRepository.findOne({
+      where: { id },
+      relations: ['paciente'],
+    });
     if (record === null) {
       throw new NotFoundException(`Antecedente  #${id} no encontrado`);
     }
@@ -101,7 +112,9 @@ export class AntecedentesService {
         throw new NotFoundException('Paciente no encontrado');
       }
       if (paciente.sexo !== 'Femenino') {
-        throw new NotFoundException('Esta Persona no puede tener antecedentes ginecológicos');
+        throw new NotFoundException(
+          'Esta Persona no puede tener antecedentes ginecológicos',
+        );
       }
       antecedente.paciente = paciente;
     }

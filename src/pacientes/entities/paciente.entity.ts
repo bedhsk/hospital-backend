@@ -1,6 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import Antecedente from "./antecedente.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import Antecedente from './antecedente.entity';
 
 @Entity('pacientes')
 export default class Paciente {
@@ -46,7 +55,8 @@ export default class Paciente {
 
   @Column({ default: true })
   @ApiProperty({
-    description: 'Muestra si el paciente se encuetra activo (sirve para el SoftDelete)',
+    description:
+      'Muestra si el paciente se encuetra activo (sirve para el SoftDelete)',
   })
   is_active: boolean;
 
@@ -86,10 +96,13 @@ export default class Paciente {
   })
   vicios?: string;
 
-  @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, { cascade: true })
+  @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, {
+    cascade: true,
+  })
   @JoinColumn()
   @ApiProperty({
-    description: 'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
+    description:
+      'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
   })
   antecedente: Antecedente;
 

@@ -109,4 +109,4 @@ class CreatePacienteDto {
   antecedente?: AntecedenteDto;
 }
 
-export { CreatePacienteDto};
+export { CreatePacienteDto };

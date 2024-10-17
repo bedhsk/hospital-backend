@@ -2,9 +2,6 @@ import { IsUUID, IsNumber, IsNotEmpty, IsBoolean, IsOptional } from 'class-valid
 
 export default class CreateInsumoExamenDto {
   
-  @IsUUID()
-  @IsNotEmpty()
-  id: string;
 
   @IsNumber()
   cantidad: number = 0;  // Se inicializa con 0 por defecto

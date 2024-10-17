@@ -1,8 +1,7 @@
 import { Type } from "class-transformer";
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from "class-validator";
 
-
-class DetalleRetiroDto {
+ export class DetalleRetiroDto {
     @IsUUID()
     @IsNotEmpty()
     insumoDepartamentoId: string;
@@ -11,7 +10,6 @@ class DetalleRetiroDto {
     @IsNotEmpty()
     cantidad: number;
   }
-
 class CreateRetiroDto {
 
     @IsString()
@@ -28,9 +26,5 @@ class CreateRetiroDto {
     @Type(() => DetalleRetiroDto)
     @IsNotEmpty()
     detalles: DetalleRetiroDto[];
-
-
-
 }
-
 export default CreateRetiroDto;

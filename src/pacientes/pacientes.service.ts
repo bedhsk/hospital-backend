@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Paciente from './entities/paciente.entity';
 import { Repository } from 'typeorm';
@@ -46,7 +50,9 @@ export class PacientesService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('paciente.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere('paciente.nombre LIKE :nombre', {
+        nombre: `%${q}%`,
+      });
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -97,7 +103,9 @@ export class PacientesService {
       });
       await this.antecedentesRepository.save(nuevoAntecedente);
     } else if (antecedente) {
-      throw new BadRequestException('Solo los pacientes de sexo Femenino pueden tener antecedentes.');
+      throw new BadRequestException(
+        'Solo los pacientes de sexo Femenino pueden tener antecedentes.',
+      );
     }
 
     // Retornar el paciente con o sin antecedente
@@ -106,22 +114,24 @@ export class PacientesService {
   }
 
   async update(id: string, updatePacienteDto: UpdatePacienteDto) {
-    const paciente = await this.findOne(id);  // Buscar el paciente
+    const paciente = await this.findOne(id); // Buscar el paciente
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
-  
+
     const { antecedente, ...updateData } = updatePacienteDto;
-  
+
     // Actualizar los campos del paciente
     this.pacientesRepository.merge(paciente, updateData);
     await this.pacientesRepository.save(paciente);
-  
+
     // Verificar si el paciente es de sexo Femenino antes de actualizar o crear el antecedente
     if (paciente.sexo === 'Femenino' && antecedente) {
       // Buscar si ya existe un antecedente para el paciente
-      const existingAntecedente = await this.antecedentesRepository.findOne({ where: { paciente } });
-  
+      const existingAntecedente = await this.antecedentesRepository.findOne({
+        where: { paciente },
+      });
+
       if (existingAntecedente) {
         // Si ya existe un antecedente, actualízalo
         this.antecedentesRepository.merge(existingAntecedente, {
@@ -140,27 +150,32 @@ export class PacientesService {
       }
     } else if (antecedente) {
       // Si el paciente no es de sexo femenino pero se intentan pasar antecedentes, lanzar un error
-      throw new BadRequestException('Solo los pacientes de sexo Femenino pueden tener antecedentes.');
+      throw new BadRequestException(
+        'Solo los pacientes de sexo Femenino pueden tener antecedentes.',
+      );
     }
-  
+
     // Retornar el paciente actualizado
     return await this.findOne(id);
   }
 
   async remove(id: string) {
-    const paciente = await this.findOne(id);  // Buscar el paciente
+    const paciente = await this.findOne(id); // Buscar el paciente
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
-  
+
     // Eliminar el antecedente si existe
     if (paciente.antecedente) {
-      await this.antecedentesRepository.delete({ paciente: { id: paciente.id } });
+      await this.antecedentesRepository.delete({
+        paciente: { id: paciente.id },
+      });
     }
-  
+
     // Eliminar el paciente
     await this.pacientesRepository.delete(id);
-    return { message: `Paciente y su antecedente (si existía) han sido eliminados` };
+    return {
+      message: `Paciente y su antecedente (si existía) han sido eliminados`,
+    };
   }
-  
 }
