@@ -12,6 +12,6 @@ import Examen from 'src/examenes/entities/examen.entity';
   ],
   providers: [InsumoExamenesService],  // Proveedor del servicio
   controllers: [InsumoExamenesController],  // Controlador del módulo
-  exports: [InsumoExamenesService],  // Exportar el servicio si es necesario en otros módulos
+  exports: [TypeOrmModule, InsumoExamenesService],  // Exportar el TypeOrmModule y el servicio para otros módulos
 })
 export class InsumoExamenesModule {}
