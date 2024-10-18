@@ -6,14 +6,14 @@ export class CreateDepartamentoSeed {
     const departamentoRepository = dataSource.getRepository(Departamento);
 
     const departamento = [
-      { nombre: 'Medicina General' },
-      { nombre: 'Enfermería' },
+      { nombre: 'Cirugía' },
+      { nombre: 'Farmacia' },
       { nombre: 'Pediatría' },
       { nombre: 'Urgencias' },
-      { nombre: 'Cirugía' },
-      { nombre: 'Traumatología' },
-      { nombre: 'Farmacia' },
+      { nombre: 'Enfermería' },
       { nombre: 'Laboratorio' },
+      { nombre: 'Traumatología' },
+      { nombre: 'Medicina General' },
     ];
 
     await departamentoRepository.save(departamento);
