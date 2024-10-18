@@ -1,4 +1,10 @@
-import { IsUUID, IsNumber, IsNotEmpty, IsBoolean, IsOptional, IsString } from 'class-validator';
+import {
+  IsUUID,
+  IsNumber,
+  IsNotEmpty,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator';
 
 class CreateInsumoExamenDto {
   @IsUUID()
@@ -14,7 +20,7 @@ class CreateInsumoExamenDto {
 
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean = true; 
+  is_active?: boolean = true;
 }
 
 export default CreateInsumoExamenDto;

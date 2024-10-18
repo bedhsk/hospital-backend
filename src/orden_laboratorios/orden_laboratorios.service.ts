@@ -9,6 +9,12 @@ import User from '../users/entities/user.entity';
 import Paciente from '../pacientes/entities/paciente.entity';
 import Examen from '../examenes/entities/examen.entity';
 import Retiro from '../retiros/entities/retiro.entity';
+import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
+import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
+import { RetirosService } from 'src/retiros/retiros.service';
+import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import CreateRetiroDto from 'src/retiros/dto/create-retiro.dto';
+import { DetalleRetiroDto } from 'src/retiros/dto/create-retiro.dto';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -27,6 +33,14 @@ export class OrdenLaboratoriosService {
 
     @InjectRepository(Retiro)
     private readonly retiroRepository: Repository<Retiro>,
+
+    @InjectRepository(InsumoDepartamento)
+    private readonly insumoDepartamentoRepository: Repository<InsumoDepartamento>,
+    
+    private readonly insumoExamenService: InsumoExamenesService,
+
+    private readonly retiroService: RetirosService,
+
   ) {}
 
   // Método para crear una nueva orden de laboratorio
@@ -138,5 +152,76 @@ export class OrdenLaboratoriosService {
     ordenLaboratorio.is_active = false;
 
     return this.ordenLaboratorioRepository.save(ordenLaboratorio);
+  }
+
+  // Método para crear una nueva orden de laboratorio segun examenes
+  async createByExams(createOrdenLaboratorioDto: CreateOrdenLaboratorioDto) {
+    const { usuarioId, retiroId, pacienteId, examenId, ...rest } = createOrdenLaboratorioDto;
+
+    // Verifica que el usuario existe
+    const usuario = await this.usuarioRepository.findOne({ where: { id: usuarioId } });
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${usuarioId} no encontrado`);
+    }
+
+    // Verifica que el paciente existe
+    const paciente = await this.pacienteRepository.findOne({ where: { id: pacienteId } });
+    if (!paciente) {
+      throw new NotFoundException(`Paciente con ID ${pacienteId} no encontrado`);
+    }
+
+    // Verifica que el examen existe
+    const examen = await this.examenRepository.findOne({ where: { id: examenId } });
+    if (!examen) {
+      throw new NotFoundException(`Examen con ID ${examenId} no encontrado`);
+
+    }
+
+    const insumosExamen = (await this.insumoExamenService.findAll({ examenId: examenId })).data;
+
+    const insumosPromise = insumosExamen.map(async element => {
+      const { insumo, cantidad } = element;
+
+      const insumoDeparamento = await this.insumoDepartamentoRepository.findOne({
+        where: { insumo, departamento: usuario.departamento, is_active: true },
+      });
+
+      if (!insumoDeparamento) {
+        throw new NotFoundException(`Insumo ${insumo.nombre} no encontrado en el departamento`);
+      }
+
+      const result:DetalleRetiroDto = {
+        insumoDepartamentoId: insumoDeparamento.id,
+        cantidad: cantidad,
+      }
+
+      return result;
+    })
+
+    const insumosArray: DetalleRetiroDto[] = await Promise.all(insumosPromise);
+
+    const retiroPromise:CreateRetiroDto = {
+      usuarioId: usuario.id,
+      descripcion: `Orden de laboratorio para el paciente ${paciente.nombre}`,
+      detalles: insumosArray,
+    }
+
+    const retiroP = this.retiroService.create(retiroPromise);
+
+    if (!retiroP) {
+      throw new NotFoundException(`No se pudo crear el retiro`);
+    }
+
+    const {retiro} = await Promise.resolve(retiroP);
+    // this.retiroService.create(retiroPromise);
+    const nuevaOrdenLaboratorio:CreateOrdenLaboratorioDto = {
+      usuarioId: usuario.id,
+      pacienteId: paciente.id,
+      examenId: examen.id,
+      retiroId: retiro.id,
+      ...rest,
+    }
+    // Crear la nueva orden de laboratorio
+    return this.create(nuevaOrdenLaboratorio);
   }
 }
