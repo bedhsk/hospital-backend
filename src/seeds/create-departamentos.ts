@@ -1,4 +1,3 @@
-
 import Departamento from 'src/departamentos/entities/departamento.entity';
 import { DataSource } from 'typeorm';
 
@@ -7,11 +6,14 @@ export class CreateDepartamentoSeed {
     const departamentoRepository = dataSource.getRepository(Departamento);
 
     const departamento = [
-      { nombre: 'Deparatamento1' },
-      { nombre: 'Deparatamento2' },
-      { nombre: 'Deparatamento3' },
-      { nombre: 'Deparatamento4' },
-
+      { nombre: 'Medicina General' },
+      { nombre: 'Enfermería' },
+      { nombre: 'Pediatría' },
+      { nombre: 'Urgencias' },
+      { nombre: 'Cirugía' },
+      { nombre: 'Traumatología' },
+      { nombre: 'Farmacia' },
+      { nombre: 'Laboratorio' },
     ];
 
     await departamentoRepository.save(departamento);
