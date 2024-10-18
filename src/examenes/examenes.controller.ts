@@ -13,7 +13,7 @@ export class ExamenesController {
   @Post()
   @ApiOperation({
     summary: 'Crear un nuevo examen',
-    description: 'Este endpoint crea un nuevo examen en la base de datos',
+    description: 'Este endpoint crea un nuevo examen con su relación a insumos en la base de datos',
   })
   @ApiResponse({
     status: 201,
