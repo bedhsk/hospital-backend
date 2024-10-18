@@ -21,7 +21,9 @@ export class InsumoExamenesService {
     private readonly examenRepository: Repository<Examen>,
   ) {}
 
-  async create(createInsumoExamenDto: CreateInsumoExamenDto): Promise<InsumoExamen> {
+  async create(
+    createInsumoExamenDto: CreateInsumoExamenDto,
+  ): Promise<InsumoExamen> {
     const { insumoId, examenId, cantidad } = createInsumoExamenDto;
 
     // Verificación adicional para evitar que insumoId sea nulo
@@ -38,12 +40,22 @@ export class InsumoExamenesService {
     return await this.insumoExamenRepository.save(insumoExamen);
   }
 
+  async removeByExamenId(examenId: string): Promise<void> {
+    await this.insumoExamenRepository.delete({ examen: { id: examenId } });
+  }
 
   // Obtener todas las relaciones activas entre insumos y exámenes con filtros y paginación
   async findAll(query: QueryInsumoExamenDto) {
-    const { insumoId, examenId, page = 1, limit = 10, is_active = true } = query;
+    const {
+      insumoId,
+      examenId,
+      page = 1,
+      limit = 10,
+      is_active = true,
+    } = query;
 
-    const queryBuilder = this.insumoExamenRepository.createQueryBuilder('insumoExamen')
+    const queryBuilder = this.insumoExamenRepository
+      .createQueryBuilder('insumoExamen')
       .leftJoinAndSelect('insumoExamen.insumo', 'insumo')
       .leftJoinAndSelect('insumoExamen.examen', 'examen')
       .where('insumoExamen.is_active = :is_active', { is_active });
@@ -77,7 +89,9 @@ export class InsumoExamenesService {
     });
 
     if (!insumoExamen) {
-      throw new NotFoundException(`InsumoExamen con ID ${id} no encontrado o desactivado`);
+      throw new NotFoundException(
+        `InsumoExamen con ID ${id} no encontrado o desactivado`,
+      );
     }
 
     return insumoExamen;
@@ -86,7 +100,7 @@ export class InsumoExamenesService {
   // Actualizar una relación entre insumo y examen
   async update(id: string, updateInsumoExamenDto: UpdateInsumoExamenDto) {
     const insumoExamen = await this.findOne(id);
-    
+
     this.insumoExamenRepository.merge(insumoExamen, updateInsumoExamenDto);
     return this.insumoExamenRepository.save(insumoExamen);
   }
@@ -95,7 +109,7 @@ export class InsumoExamenesService {
   async remove(id: string) {
     const insumoExamen = await this.findOne(id);
 
-    insumoExamen.is_active = false;  // Desactivar el registro
+    insumoExamen.is_active = false; // Desactivar el registro
     return this.insumoExamenRepository.save(insumoExamen);
   }
 }
