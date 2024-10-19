@@ -21,66 +21,81 @@ export class InsumosService {
     private readonly categoriaService: CategoriasService,
   ) {}
 
-  // Método para obtener todos los insumos que están activos
-  async findAll(query: QueryInsumoDto) {
-    const { q, filter, page, limit } = query;
+// Método para obtener todos los insumos que están activos con el total de cantidad actual
+async findAll(query: QueryInsumoDto) {
+  const { q, filter, page, limit } = query;
 
-    const queryBuilder = this.insumoRepository
-        .createQueryBuilder('insumo')
-        .where({ is_active: true })
-        .leftJoinAndSelect('insumo.categoria', 'categoria')
-        .leftJoinAndSelect('insumo.insumosDepartamentos', 'insumoDepartamento')
-        .leftJoinAndSelect('insumoDepartamento.lotes', 'lote')
-        .select([
-            'insumo.id',
-            'insumo.codigo',
-            'insumo.nombre',
-            'insumo.trazador',
-            'insumo.categoriaId',
-            'categoria.id',
-            'categoria.nombre',
-            'insumoDepartamento.id',
-            'insumoDepartamento.existencia',
-            'lote.id',
-            'lote.numeroLote',
-            'lote.fechaEntrada',
-            'lote.fechaCaducidad',
-            'lote.cantidadInical',
-            'lote.cantidadActual',
-            'lote.status',
-        ]);
+  // Ejecutamos primero la consulta que obtiene el total de la cantidad actual por insumo
+  const insumosConTotalCantidad = await this.getInsumosWithTotalCantidadActual();
 
-    // Filtro por nombre del insumo
-    if (q) {
-        queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
-    }
+  const queryBuilder = this.insumoRepository
+    .createQueryBuilder('insumo')
+    .where({ is_active: true })
+    .leftJoinAndSelect('insumo.categoria', 'categoria')
+    .leftJoinAndSelect('insumo.insumosDepartamentos', 'insumoDepartamento')
+    .leftJoinAndSelect('insumoDepartamento.lotes', 'lote')
+    .select([
+      'insumo.id',
+      'insumo.codigo',
+      'insumo.nombre',
+      'insumo.trazador',
+      'insumo.categoriaId',
+      'categoria.id',
+      'categoria.nombre',
+      'insumoDepartamento.id',
+      'insumoDepartamento.existencia',
+      'lote.id',
+      'lote.numeroLote',
+      'lote.fechaEntrada',
+      'lote.fechaCaducidad',
+      'lote.cantidadInical',
+      'lote.cantidadActual',
+      'lote.status',
+    ]);
 
-    // Filtro por categoría
-    if (filter) {
-        queryBuilder.andWhere('categoria.nombre = :categoria', {
-            categoria: `${filter}`,
-        });
-    }
+  // Filtro por nombre del insumo
+  if (q) {
+    queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+  }
 
-    const totalItems = await queryBuilder.getCount();
-    const insumos = await queryBuilder
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getMany();
+  // Filtro por categoría
+  if (filter) {
+    queryBuilder.andWhere('categoria.nombre = :categoria', {
+      categoria: `${filter}`,
+    });
+  }
 
-    const totalPages = Math.ceil(totalItems / limit);
+  const totalItems = await queryBuilder.getCount();
+  const insumos = await queryBuilder
+    .skip((page - 1) * limit)
+    .take(limit)
+    .getMany();
 
-    const result = insumos.map((insumo) => ({
-        id: insumo.id,
-        codigo: insumo.codigo,
-        nombre: insumo.nombre,
-        trazador: insumo.trazador,
-        categoria: {
-            id: insumo.categoria.id,
-            nombre: insumo.categoria.nombre,
-        },
-        lotes: (insumo.insumosDepartamentos || []).flatMap((dep) =>
-            dep.lotes ? dep.lotes.map((lote) => ({
+  const totalPages = Math.ceil(totalItems / limit);
+
+  // Mapeamos los insumos y agregamos el total de cantidad actual usando los resultados de la otra consulta
+  const result = insumos.map((insumo) => {
+    // Buscamos el total de cantidad actual para el insumo actual
+    const totalCantidad = insumosConTotalCantidad.find(
+      (i) => i.insumoId === insumo.id
+    )?.totalCantidadActual || 0; // Si no se encuentra, se asigna 0
+
+    return {
+      id: insumo.id,
+      codigo: insumo.codigo,
+      nombre: insumo.nombre,
+      trazador: insumo.trazador,
+      categoria: {
+        id: insumo.categoria.id,
+        nombre: insumo.categoria.nombre,
+      },
+      totalCantidadActual: totalCantidad, // Agregamos el total de cantidad actual
+      // Filtramos los lotes para excluir aquellos cuya cantidadActual sea 0
+      lotes: (insumo.insumosDepartamentos || []).flatMap((dep) =>
+        dep.lotes
+          ? dep.lotes
+              .filter((lote) => lote.cantidadActual > 0) // Excluir lotes con cantidadActual = 0
+              .map((lote) => ({
                 id: lote.id,
                 numeroLote: lote.numeroLote,
                 fechaEntrada: lote.created_at,
@@ -88,17 +103,20 @@ export class InsumosService {
                 cantidadInical: lote.cantidadInical,
                 cantidadActual: lote.cantidadActual,
                 status: lote.status,
-            })) : []
-        ),
-    }));
-
-    return {
-        data: result,
-        totalItems,
-        totalPages,
-        page,
+              }))
+          : []
+      ),
     };
+  });
+
+  return {
+    data: result,
+    totalItems,
+    totalPages,
+    page,
+  };
 }
+
 
   // Método para obtener un solo insumo por ID si está activo
   async findOne(id: string) {
