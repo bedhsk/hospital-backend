@@ -1,7 +1,11 @@
-
+import 'module-alias/register';
 import { dataSource } from '../../typeorm.config';
 import { CreateRolesSeed } from './create-role';
 import { CreateUsersSeed } from './create-user';
+import { CreateInsumoSeed } from './create-insumo';
+import { CreateDepartamentoSeed } from './create-departamentos';
+import { CreateInsumoDepartamentoSeed } from './create-insumo_departamentos';
+import { CreateCategoriaSeed } from './create-categoria';
 
 async function runSeeds() {
   await dataSource.initialize();
@@ -11,6 +15,18 @@ async function runSeeds() {
 
   const createUsersSeed = new CreateUsersSeed();
   await createUsersSeed.run(dataSource);
+
+  const createCategoriaSeed = new CreateCategoriaSeed();
+  await createCategoriaSeed.run(dataSource);
+
+  const createInsumoSeed = new CreateInsumoSeed();
+  await createInsumoSeed.run(dataSource);
+
+  const createDepartamentoSeed = new CreateDepartamentoSeed();
+  await createDepartamentoSeed.run(dataSource);
+
+  const createInsumoDepartamentoSeed = new CreateInsumoDepartamentoSeed();
+  await createInsumoDepartamentoSeed.run(dataSource);
 
   await dataSource.destroy();
 }

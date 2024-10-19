@@ -3,7 +3,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -94,7 +96,7 @@ export default class Paciente {
     description: 'Nombre de los vicios que tiene el paciente',
   })
   vicios?: string;
-
+  
   @OneToMany(() => Antecedente, (antecedente) => antecedente.paciente)
   @ApiProperty({
     description:
@@ -108,4 +110,15 @@ export default class Paciente {
       'Relacion entre Paciente y Recetas. Un paciente puede tener varias recetas',
   })
   recetas: Receta[];
+  @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'antecedenteId' })
+  @ApiProperty({
+    description:
+      'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
+  })
+  antecedente: Antecedente;
+
+  ordenesLaboratorio: any;
 }

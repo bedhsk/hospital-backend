@@ -1,47 +1,42 @@
-import { Type } from "class-transformer";
-import { IsDate, IsInt, IsOptional, IsString } from "class-validator";
+import { Type } from 'class-transformer';
+import { IsDate, IsInt, IsOptional, IsString, IsUUID } from 'class-validator';
 
 class CreateAntecedenteDto {
+  @IsUUID()
+  pacienteId: string;
 
-    @IsString()
-    pacienteId: string;
-    
-    @IsInt()
-    @IsOptional()
-    gestas?: number;
-    
-    @IsInt()
-    @IsOptional()
-    hijos_vivos?: number;
-    
-    @IsInt()
-    @IsOptional()
-    hijos_muertos?: number;
+  @IsInt()
+  @IsOptional()
+  gestas?: number;
 
-    @IsInt()
-    @IsOptional()
-    abortos?: number;
+  @IsInt()
+  @IsOptional()
+  hijos_vivos?: number;
 
-    
-    @Type(() => Date) 
-    @IsDate()
-    @IsOptional()
-    ultima_regla?: Date;
+  @IsInt()
+  @IsOptional()
+  hijos_muertos?: number;
 
-    @IsInt()
-    @IsOptional()
-    planificacion_familiar?: number;
+  @IsInt()
+  @IsOptional()
+  abortos?: number;
 
-    @IsInt()
-    @IsOptional()
-    partos?: number;
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  ultima_regla?: Date;
 
+  @IsInt()
+  @IsOptional()
+  planificacion_familiar?: number;
 
-    @IsInt()
-    @IsOptional()
-    cesareas?: number;
+  @IsInt()
+  @IsOptional()
+  partos?: number;
 
-
+  @IsInt()
+  @IsOptional()
+  cesareas?: number;
 }
 
 export default CreateAntecedenteDto;

@@ -1,14 +1,24 @@
-import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 import { DepartamentosModule } from './departamentos/departamentos.module';
+import { Module } from '@nestjs/common';
 import { PacientesModule } from './pacientes/pacientes.module';
 import { RecetasModule } from './recetas/recetas.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersModule } from './users/users.module';
+import { LotesModule } from './lotes/lotes.module';
+
 import * as Joi from 'joi';
+import { InsumoDepartamentosModule } from './insumo_departamentos/insumo_departamentos.module';
+import { CategoriasModule } from './categorias/categorias.module';
+import { InsumosModule } from './insumos/insumos.module';
+import { AdquisicionesModule } from './adquisiciones/adquisiciones.module';
+import { ExamenesModule } from './examenes/examenes.module';
+import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
+import { RetirosModule } from './retiros/retiros.module';
+import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.module';
 
 @Module({
   imports: [
@@ -32,13 +42,24 @@ import * as Joi from 'joi';
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
-    UsersModule,
     AuthModule,
-    DepartamentosModule,
+    UsersModule,
     PacientesModule,
     RecetasModule,
+    InsumosModule,
+    CategoriasModule,
+    InsumoDepartamentosModule,
+    DepartamentosModule,
+    LotesModule,
+    InsumoDepartamentosModule,
+    AdquisicionesModule,
+    ExamenesModule,
+    InsumoExamenesModule,
+    RetirosModule,
+    OrdenLaboratorioModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],
