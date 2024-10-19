@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import Antecedente from './antecedente.entity';
+import Receta from 'src/recetas/entities/receta.entity';
 
 @Entity('pacientes')
 export default class Paciente {
@@ -95,7 +96,20 @@ export default class Paciente {
     description: 'Nombre de los vicios que tiene el paciente',
   })
   vicios?: string;
+  
+  @OneToMany(() => Antecedente, (antecedente) => antecedente.paciente)
+  @ApiProperty({
+    description:
+      'Relacion entre Paciente y Antecedentes. Un paciente puede tener varios antecedentes',
+  })
+  antecedentes: Antecedente[];
 
+  @OneToMany(() => Receta, (Receta) => Receta.user)
+  @ApiProperty({
+    description:
+      'Relacion entre Paciente y Recetas. Un paciente puede tener varias recetas',
+  })
+  recetas: Receta[];
   @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, {
     cascade: true,
   })
