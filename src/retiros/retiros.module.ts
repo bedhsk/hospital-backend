@@ -12,17 +12,23 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
 import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.entity';
+import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
+import { AdquisicionesModule } from 'src/adquisiciones/adquisiciones.module';
+import { DepartamentosModule } from 'src/departamentos/departamentos.module';
 
 @Module({
 
   imports: [
     InsumoDepartamentosModule,
     UsersModule,
+    AdquisicionesModule,
+    DepartamentosModule,
     TypeOrmModule.forFeature([
       DetalleRetiro,
       InsumoDepartamento,
       Retiro,
-      OrdenLaboratorio
+      OrdenLaboratorio,
+      Adquisicion
     ]),
   ],
   providers: [RetirosService, DetalleretirosService
