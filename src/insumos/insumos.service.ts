@@ -121,6 +121,7 @@ export class InsumosService {
     // Verificar si el código del insumo ya existe
     const existingInsumo = await this.insumoRepository.findOne({
       where: { codigo },
+      withDeleted: true,
     });
 
     if (existingInsumo) {
@@ -164,6 +165,19 @@ export class InsumosService {
         `Insumo con ID ${id} no encontrado o desactivado`,
       );
     }
+
+    // Verificar si el código del insumo ya existe
+    const existingInsumo = await this.insumoRepository.findOne({
+      where: { codigo: updateInsumoDto.codigo },
+      withDeleted: true,
+    });
+
+    if (existingInsumo) {
+      throw new ConflictException(
+        `El código de insumo ${updateInsumoDto.codigo} ya está en uso.`,
+      );
+    }
+    
     this.insumoRepository.merge(insumo, updateInsumoDto);
     return await this.insumoRepository.save(insumo);
   }
