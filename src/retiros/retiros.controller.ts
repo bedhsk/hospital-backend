@@ -7,6 +7,7 @@ import QueryRetiroDto from './dto/query-retiro.dto';
 import UpdateRetiroDto from './dto/update-retiro.dto';
 import Retiro from './entities/retiro.entity';
 import { DetalleretirosService } from './detalleretiros/detalleretiros.service';
+import CreateTransaccionDepartamentoDto from './dto/transaccion_departamento.dto';
 
 @ApiTags('Retiros y detalleRetiro')
 @Controller('retiros')
@@ -459,6 +460,11 @@ export class RetirosController {
         return this.detalleRetiroService.findAllRetiroId(id);
       }
 
-      
+      @AuthorizedRoles()
+      @Post('/transaccion')
+      @ApiResponse({ status: 404, description: 'Usuario o insumo departamento no encontrado.' })
+      createTrans(@Body() createTransDto: CreateTransaccionDepartamentoDto) {
+          return this.retiroService.transaccionDepartamento(createTransDto);
+      }
     }
 
