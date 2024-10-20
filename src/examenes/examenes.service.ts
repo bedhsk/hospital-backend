@@ -58,6 +58,7 @@ export class ExamenesService {
       .createQueryBuilder('examen')
       .leftJoinAndSelect('examen.insumoExamenes', 'insumoExamen')
       .leftJoinAndSelect('insumoExamen.insumo', 'insumo')
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
       .where('examen.is_active = :isActive', { isActive: true });
 
     if (nombre) {
