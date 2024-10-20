@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -19,10 +20,9 @@ export default class Antecedente {
   id: string;
 
   @OneToOne(() => Paciente, (paciente) => paciente.antecedente)
-  @JoinColumn({ name: 'pacienteId' })
   @ApiProperty({
     description:
-      'Relación entre Paciente y Antecedentes. Un antecedente pertenece a un solo paciente',
+      'Relaciòn entre Paciente y Antecedentes. Un antecedente pertenece a un solo paciente',
   })
   paciente: Paciente;
 
