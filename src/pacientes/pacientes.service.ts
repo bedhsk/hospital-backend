@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { CreatePacienteDto } from './dto/create-paciente.dto';
 import Antecedente from './entities/antecedente.entity';
 import UpdatePacienteDto from './dto/update-paciente.dto';
+import { now } from 'moment';
 
 @Injectable()
 export class PacientesService {
@@ -77,13 +78,51 @@ export class PacientesService {
   async findOne(id: string) {
     const paciente = await this.pacientesRepository.findOne({
       where: { id, is_active: true },
-      relations: ['antecedente', 'recetas'],
+      relations: ['antecedente'],
     });
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
     return paciente;
   }
+
+  async findOneWithRetiros(id: string) {
+    const paciente = await this.pacientesRepository.createQueryBuilder('paciente')
+      .leftJoinAndSelect('paciente.recetas', 'recetas')
+      .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+      .where('paciente.id = :id', { id })
+      .andWhere('paciente.is_active = true')
+      .orderBy('recetas.updatedAt', 'DESC')
+      .getOne();
+
+    if (!paciente) {
+      throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
+    }
+
+    const retiros = [
+      ...paciente.recetas.map(receta => ({
+        ...receta,
+        tipo: 'receta'  // Identificamos que este es del tipo receta
+      })),
+      ...paciente.ordenesLaboratorio.map(orden => ({
+        ...orden,
+        updatedAt: new Date().toISOString(),
+
+        tipo: 'ordenLaboratorio'  // Identificamos que este es del tipo ordenLaboratorio
+      }))
+    ];
+
+    // Ordenar los retiros por fecha de creación
+    retiros.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    const { recetas, ordenesLaboratorio, ...pacienteSinRelaciones } = paciente;
+
+    return {...pacienteSinRelaciones,
+      retiros
+    };
+  }
+
+
 
   async create(createPacienteDto: CreatePacienteDto) {
     const { nombre, sexo, antecedente, ...rest } = createPacienteDto;
