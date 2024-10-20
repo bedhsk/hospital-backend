@@ -11,10 +11,19 @@ import { RolesService } from 'src/users/roles/roles.service';
 import Role from 'src/users/entities/role.entity';
 import Departamento from 'src/departamentos/entities/departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import Antecedente from 'src/pacientes/entities/antecedente.entity';
+import { AntecedentesService } from 'src/pacientes/antecedentes/antecedentes.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Receta, User, Paciente, Role, Departamento]),
+    TypeOrmModule.forFeature([
+      Receta,
+      User,
+      Paciente,
+      Role,
+      Departamento,
+      Antecedente,
+    ]),
   ],
   controllers: [RecetasController],
   providers: [
@@ -23,6 +32,7 @@ import { DepartamentosService } from 'src/departamentos/departamentos.service';
     PacientesService,
     RolesService,
     DepartamentosService,
+    AntecedentesService,
   ],
 })
 export class RecetasModule {}

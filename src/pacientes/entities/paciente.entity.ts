@@ -96,20 +96,7 @@ export default class Paciente {
     description: 'Nombre de los vicios que tiene el paciente',
   })
   vicios?: string;
-  
-  @OneToMany(() => Antecedente, (antecedente) => antecedente.paciente)
-  @ApiProperty({
-    description:
-      'Relacion entre Paciente y Antecedentes. Un paciente puede tener varios antecedentes',
-  })
-  antecedentes: Antecedente[];
 
-  @OneToMany(() => Receta, (Receta) => Receta.user)
-  @ApiProperty({
-    description:
-      'Relacion entre Paciente y Recetas. Un paciente puede tener varias recetas',
-  })
-  recetas: Receta[];
   @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, {
     cascade: true,
   })
@@ -119,6 +106,13 @@ export default class Paciente {
       'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
   })
   antecedente: Antecedente;
+
+  @OneToMany(() => Receta, (Receta) => Receta.user)
+  @ApiProperty({
+    description:
+      'Relacion entre Paciente y Recetas. Un paciente puede tener varias recetas',
+  })
+  recetas: Receta[];
 
   ordenesLaboratorio: any;
 }
