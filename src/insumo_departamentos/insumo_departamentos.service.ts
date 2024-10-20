@@ -131,4 +131,26 @@ export class InsumoDepartamentosService {
     insumoDepartamento.is_active = false;
     return await this.insumodepartamentoService.save(insumoDepartamento);
   }
+
+  async findByInsumoDepartamentoId(insumoId: string, departamentoId: string) {
+    const departamento = await this.departamentoService.findOne(departamentoId);
+    if (!departamento) {
+      throw new NotFoundException(
+        `Departamento con ID ${departamentoId} no encontrado`,
+      );
+    }
+    const insumo = await this.insumoService.findOne(insumoId);
+    if (!insumo) {
+      throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
+    }
+    const insumoDepartamento = await this.insumodepartamentoService.findOne({
+      where: { insumo: {id: insumo.id, nombre: insumo.nombre ,trazador: insumo.trazador}, departamento: {id: departamento.id, nombre: departamento.nombre}, is_active: true },
+    });
+    if (!insumoDepartamento) {
+      throw new NotFoundException(
+        `InsumoDepartamento con insumo ID ${insumoId} y departamento ID ${departamentoId} no encontrado`,
+      );
+    }
+    return insumoDepartamento;
+  }
 }

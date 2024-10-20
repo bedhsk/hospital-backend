@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from "class-validator";
 
-class DetalleAdquisicionDto {
+export class DetalleAdquisicionDto {
   @IsUUID()
   @IsNotEmpty()
   insumoDepartamentoId: string;

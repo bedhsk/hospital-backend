@@ -15,6 +15,8 @@ import { RetirosService } from 'src/retiros/retiros.service';
 import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
 import CreateRetiroDto from 'src/retiros/dto/create-retiro.dto';
 import { DetalleRetiroDto } from 'src/retiros/dto/create-retiro.dto';
+import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import { log } from 'console';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -40,6 +42,8 @@ export class OrdenLaboratoriosService {
     private readonly insumoExamenService: InsumoExamenesService,
 
     private readonly retiroService: RetirosService,
+
+    private readonly departamentoService: DepartamentosService,
 
   ) {}
 
@@ -170,6 +174,11 @@ export class OrdenLaboratoriosService {
       throw new NotFoundException(`Paciente con ID ${pacienteId} no encontrado`);
     }
 
+    const laboratorio = await this.departamentoService.findOneByName('Laboratorio');
+    if (!laboratorio) {
+      throw new NotFoundException(`Departamento con nombre Laboratorio no encontrado`);
+    }
+
     // Verifica que el examen existe
     const examen = await this.examenRepository.findOne({ where: { id: examenId } });
     if (!examen) {
@@ -183,7 +192,7 @@ export class OrdenLaboratoriosService {
       const { insumo, cantidad } = element;
 
       const insumoDeparamento = await this.insumoDepartamentoRepository.findOne({
-        where: { insumo, departamento: usuario.departamento, is_active: true },
+        where: { insumo, departamento: {id: laboratorio.id, nombre: laboratorio.nombre}, is_active: true },
       });
 
       if (!insumoDeparamento) {
