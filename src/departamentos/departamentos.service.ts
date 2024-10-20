@@ -76,6 +76,19 @@ export class DepartamentosService {
     return record;
   }
 
+  async findOneByName(nombre: string) {
+    const record = await this.departamentosRepository.findOne({
+      where: { nombre, is_active: true },
+    });
+
+    if (!record) {
+      Logger.warn(`Departamento ${nombre} no encontrado`);
+      throw new NotFoundException(`Departamento ${nombre} no encontrado`);
+    }
+
+    return record;
+  }
+
   async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
     const departamento = await this.findOne(id);
     this.departamentosRepository.merge(departamento, updateDepartamentoDto);
