@@ -6,6 +6,7 @@ import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
 import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
 import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
+import CreateAdquisicionLoteDto from './dtos/create-adquisicion-lote.dto';
 
 @ApiTags('Adquisiciones y detalleAdquisicion')
 @Controller('adquisiciones')
@@ -528,4 +529,14 @@ export class AdquisicionesController {
   findAllDetallesByAdquisicionId(@Param('id') id: string){
     return this.detalleAdquisicionService.findAllByAdquisicionId(id);
   }
+
+
+  // ------------------------------------------ ENDPOINTS PARA CREAR LOTES -----------------------------//
+  
+  @AuthorizedRoles(['Bodeguero'])
+  @Post('/lotes')
+  createAdquisicionLote(@Body() createAdquisicionLote: CreateAdquisicionLoteDto) {
+    return this.adquisicionService.createAdquisicionLote(createAdquisicionLote);
+  }
+
 }
