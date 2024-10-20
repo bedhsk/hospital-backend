@@ -100,22 +100,16 @@ export class InsumosService {
           id: insumo.categoria.id,
           nombre: insumo.categoria.nombre,
         },
-        totalCantidadActual: totalCantidad,
-        departamentos,
-        lotes: insumo.insumosDepartamentos.flatMap((dep) =>
-          dep.lotes
-            ? dep.lotes
-                .filter((lote) => lote.cantidadActual > 0)
-                .map((lote) => ({
-                  id: lote.id,
-                  numeroLote: lote.numeroLote,
-                  fechaEntrada: lote.created_at,
-                  fechaCaducidad: lote.fechaCaducidad,
-                  cantidadInical: lote.cantidadInical,
-                  cantidadActual: lote.cantidadActual,
-                  status: lote.status,
-                }))
-            : [],
+        lotes: (insumo.insumosDepartamentos || []).flatMap((dep) =>
+            dep.lotes ? dep.lotes.map((lote) => ({
+                id: lote.id,
+                numeroLote: lote.numeroLote,
+                fechaEntrada: lote.created_at,
+                fechaCaducidad: lote.fechaCaducidad,
+                cantidadInical: lote.cantidadInical,
+                cantidadActual: lote.cantidadActual,
+                status: lote.status,
+            })) : []
         ),
       };
     });
