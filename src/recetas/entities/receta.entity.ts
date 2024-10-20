@@ -56,7 +56,7 @@ export default class Receta {
   @JoinColumn({ name: 'pacienteId' })
   @ApiProperty({
     description:
-      'Relaciòn entre Pacientes y Recetas. Un paciente puede tener varias recetas',
+      'Relación entre Pacientes y Recetas. Un paciente puede tener varias recetas',
   })
   paciente: Paciente;
 }

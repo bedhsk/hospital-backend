@@ -19,10 +19,8 @@ export class RecetasService {
 
   async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
     const { userId, pacienteId, ...recetaData } = createRecetaDto;
-    const user = await this.usersService.findOne(createRecetaDto.userId);
-    const paciente = await this.pacientesService.findOne(
-      createRecetaDto.pacienteId,
-    );
+    const user = await this.usersService.findOne(userId);
+    const paciente = await this.pacientesService.findOne(pacienteId);
 
     if (!user) {
       throw new NotFoundException('User not found, cannot create receta');
@@ -34,42 +32,56 @@ export class RecetasService {
 
     const receta = this.recetasRepository.create({
       ...recetaData,
-      user,
-      paciente,
+      user: { id: user.id },
+      paciente: { id: paciente.id },
     });
-    return this.recetasRepository.save(receta);
+
+    const savedReceta = await this.recetasRepository.save(receta);
+
+    // Retornar solo la información necesaria
+    return {
+      id: savedReceta.id,
+      descripcion: savedReceta.descripcion,
+      createdAt: savedReceta.createdAt,
+      user: { id: user.id, name: user.name },
+      paciente: { id: paciente.id, nombre: paciente.nombre },
+    } as Receta;
   }
 
   async findAll(query: QueryRecetaDto) {
-    const { q, filter, page, limit } = query;
+    const { q, filter, page = 1, limit = 10 } = query;
     const queryBuilder = this.recetasRepository
       .createQueryBuilder('receta')
-      .where({ is_Active: true })
       .leftJoinAndSelect('receta.user', 'user')
       .leftJoinAndSelect('receta.paciente', 'paciente')
-      .select([
-        'receta.id',
-        'receta.descripcion',
-        'user.id',
-        'user.name',
-        'paciente.id',
-        'paciente.nombre',
-      ]);
+      .where('receta.is_Active = :isActive', { isActive: true });
 
     if (q) {
-      queryBuilder.andWhere('user.name LIKE :name', { name: `${q}` });
+      queryBuilder.andWhere(
+        '(user.name LIKE :name OR paciente.nombre LIKE :nombre)',
+        { name: `%${q}%`, nombre: `%${q}%` },
+      );
     }
 
     if (filter) {
       queryBuilder.andWhere(
-        'user.name = :user OR paciente.nombre = :paciente',
-        { user: `${filter}`, paciente: `${filter}` },
+        '(user.name = :user OR paciente.nombre = :paciente)',
+        { user: filter, paciente: filter },
       );
     }
 
     const totalItems = await queryBuilder.getCount();
 
-    const users = await queryBuilder
+    const recetas = await queryBuilder
+      .select([
+        'receta.id',
+        'receta.descripcion',
+        'receta.createdAt',
+        'user.id',
+        'user.name',
+        'paciente.id',
+        'paciente.nombre',
+      ])
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
@@ -77,7 +89,7 @@ export class RecetasService {
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      data: users,
+      data: recetas,
       totalItems,
       totalPages,
       page,

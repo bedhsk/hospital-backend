@@ -100,17 +100,17 @@ export default class Paciente {
   @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, {
     cascade: true,
   })
-  @JoinColumn({ name: 'antecedenteId' })
+  @JoinColumn()
   @ApiProperty({
     description:
       'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
   })
   antecedente: Antecedente;
 
-  @OneToMany(() => Receta, (Receta) => Receta.user)
+  @OneToMany(() => Receta, (receta) => receta.paciente)
   @ApiProperty({
     description:
-      'Relacion entre Paciente y Recetas. Un paciente puede tener varias recetas',
+      'Relación entre Paciente y Recetas. Un paciente puede tener varias recetas',
   })
   recetas: Receta[];
 

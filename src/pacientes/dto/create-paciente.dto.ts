@@ -108,12 +108,6 @@ class CreatePacienteDto {
   @ValidateNested()
   @Type(() => AntecedenteDto)
   antecedente?: AntecedenteDto;
-
-  // Atributos receta
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => Receta)
-  receta?: Receta;
 }
 
 export { CreatePacienteDto };
