@@ -11,11 +11,13 @@ import { UsersModule } from 'src/users/users.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
+import { LotesModule } from 'src/lotes/lotes.module';
 
 @Module({
   imports: [
     InsumoDepartamentosModule,
     UsersModule,
+    LotesModule,
     TypeOrmModule.forFeature([
       detalleAdquisicion,
       InsumoDepartamento,
