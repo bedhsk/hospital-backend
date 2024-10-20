@@ -72,7 +72,7 @@ export default class Antecedente {
   @ApiProperty({
     description: 'Planificacion familiar del paciente',
   })
-  planificacion_familiar?: number;
+  planificacion_familiar?: string;
 
   @Column({ type: 'int', nullable: true })
   @IsOptional()

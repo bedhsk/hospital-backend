@@ -13,6 +13,7 @@ export class CreateDepartamentoSeed {
       { nombre: 'Enfermería' },
       { nombre: 'Laboratorio' },
       { nombre: 'Traumatología' },
+      { nombre: 'Administración' },
       { nombre: 'Medicina General' },
     ];
 

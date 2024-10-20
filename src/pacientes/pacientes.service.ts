@@ -10,6 +10,7 @@ import { Not, Repository } from 'typeorm';
 import { CreatePacienteDto } from './dto/create-paciente.dto';
 import Antecedente from './entities/antecedente.entity';
 import UpdatePacienteDto from './dto/update-paciente.dto';
+import { now } from 'moment';
 
 @Injectable()
 export class PacientesService {
@@ -26,6 +27,7 @@ export class PacientesService {
     const queryBuilder = this.pacientesRepository
       .createQueryBuilder('paciente')
       .leftJoinAndSelect('paciente.antecedente', 'antecedente')
+      .leftJoinAndSelect('paciente.recetas', 'recetas')
       .where('paciente.is_active = true')
       .select([
         'paciente.id',
@@ -48,6 +50,8 @@ export class PacientesService {
         'antecedente.planificacion_familiar',
         'antecedente.partos',
         'antecedente.cesareas',
+        'recetas.id',
+        'recetas.descripcion',
       ]);
 
     if (q) {
@@ -83,6 +87,44 @@ export class PacientesService {
     return paciente;
   }
 
+  async findOneWithRetiros(id: string) {
+    const paciente = await this.pacientesRepository.createQueryBuilder('paciente')
+      .leftJoinAndSelect('paciente.recetas', 'recetas')
+      .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+      .where('paciente.id = :id', { id })
+      .andWhere('paciente.is_active = true')
+      .orderBy('recetas.updatedAt', 'DESC')
+      .getOne();
+
+    if (!paciente) {
+      throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
+    }
+
+    const retiros = [
+      ...paciente.recetas.map(receta => ({
+        ...receta,
+        tipo: 'receta'  // Identificamos que este es del tipo receta
+      })),
+      ...paciente.ordenesLaboratorio.map(orden => ({
+        ...orden,
+        updatedAt: new Date().toISOString(),
+
+        tipo: 'ordenLaboratorio'  // Identificamos que este es del tipo ordenLaboratorio
+      }))
+    ];
+
+    // Ordenar los retiros por fecha de creación
+    retiros.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    const { recetas, ordenesLaboratorio, ...pacienteSinRelaciones } = paciente;
+
+    return {...pacienteSinRelaciones,
+      retiros
+    };
+  }
+
+
+
   async create(createPacienteDto: CreatePacienteDto) {
     const { nombre, nacimiento, sexo, antecedente, ...rest } = createPacienteDto;
 
@@ -105,25 +147,17 @@ export class PacientesService {
       ...rest,
     });
 
-    const savedPaciente = await this.pacientesRepository.save(paciente);
-
-    // Solo crear el antecedente si el paciente es de sexo 'Femenino'
     if (sexo === 'Femenino' && antecedente) {
-      const nuevoAntecedente = this.antecedentesRepository.create({
-        ...antecedente,
-        planificacion_familiar: Number(antecedente.planificacion_familiar),
-        paciente: savedPaciente, // Relacionar el antecedente con el paciente recién creado
-      });
-      await this.antecedentesRepository.save(nuevoAntecedente);
+      const nuevoAntecedente = this.antecedentesRepository.create(antecedente);
+      paciente.antecedente = nuevoAntecedente;
     } else if (antecedente) {
       throw new BadRequestException(
         'Solo los pacientes de sexo Femenino pueden tener antecedentes.',
       );
     }
 
-    // Retornar el paciente con o sin antecedente
-    const pacienteConAntecedente = await this.findOne(savedPaciente.id);
-    return pacienteConAntecedente;
+    const savedPaciente = await this.pacientesRepository.save(paciente);
+    return savedPaciente;
   }
 
   async update(id: string, updatePacienteDto: UpdatePacienteDto) {
@@ -167,14 +201,14 @@ export class PacientesService {
         // Si ya existe un antecedente, actualízalo
         this.antecedentesRepository.merge(existingAntecedente, {
           ...antecedente,
-          planificacion_familiar: Number(antecedente.planificacion_familiar),
+          planificacion_familiar: antecedente.planificacion_familiar,
         });
         await this.antecedentesRepository.save(existingAntecedente);
       } else {
         // Si no existe, crear uno nuevo
         const nuevoAntecedente = this.antecedentesRepository.create({
           ...antecedente,
-          planificacion_familiar: Number(antecedente.planificacion_familiar),
+          planificacion_familiar: antecedente.planificacion_familiar,
           paciente,
         });
         await this.antecedentesRepository.save(nuevoAntecedente);

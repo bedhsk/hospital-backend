@@ -198,6 +198,17 @@ export class PacientesController {
   }
 
   @AuthorizedRoles()
+  @Get(':id/historialmedico')
+  @ApiResponse({
+    status: 404,
+    description: 'Paciente no encontrado.',
+  })
+  findOneWithRetiros(@Param('id') id: string) {
+    console.log(id);
+    return this.pacientesService.findOneWithRetiros(id);
+  }
+
+  @AuthorizedRoles()
   @Post()
   @ApiOperation({
     summary: 'Crea un nuevo paciente',
