@@ -83,7 +83,7 @@ export class InsumosService {
             dep.lotes ? dep.lotes.map((lote) => ({
                 id: lote.id,
                 numeroLote: lote.numeroLote,
-                fechaEntrada: lote.fechaEntrada,
+                fechaEntrada: lote.created_at,
                 fechaCaducidad: lote.fechaCaducidad,
                 cantidadInical: lote.cantidadInical,
                 cantidadActual: lote.cantidadActual,
