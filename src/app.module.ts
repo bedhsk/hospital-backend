@@ -5,9 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import { DepartamentosModule } from './departamentos/departamentos.module';
 import { Module } from '@nestjs/common';
 import { PacientesModule } from './pacientes/pacientes.module';
+import { RecetasModule } from './recetas/recetas.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { LotesModule } from './lotes/lotes.module';
+
 import * as Joi from 'joi';
 import { InsumoDepartamentosModule } from './insumo_departamentos/insumo_departamentos.module';
 import { CategoriasModule } from './categorias/categorias.module';
@@ -45,6 +47,7 @@ import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.
     AuthModule,
     UsersModule,
     PacientesModule,
+    RecetasModule,
     InsumosModule,
     CategoriasModule,
     InsumoDepartamentosModule,
@@ -56,6 +59,7 @@ import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.
     InsumoExamenesModule,
     RetirosModule,
     OrdenLaboratorioModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],

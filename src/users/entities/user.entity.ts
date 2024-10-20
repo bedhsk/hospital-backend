@@ -12,6 +12,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import Role from './role.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import Receta from 'src/recetas/entities/receta.entity';
 import Retiro from 'src/retiros/entities/retiro.entity';
 import Departamento from 'src/departamentos/entities/departamento.entity';
 import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
@@ -74,6 +75,13 @@ export default class User {
       'Relaciòn entre Usarios y Roles. Un usuario puede tener solo un rol',
   })
   role: Role;
+
+  @OneToMany(() => Receta, (Receta) => Receta.user)
+  @ApiProperty({
+    description:
+      'Relaciòn entre Usuarios y Recetas. Un usuario puede generar varias recetas',
+  })
+  recetas: Receta[];
 
   @Column({ type: 'varchar' })
   @ApiProperty({

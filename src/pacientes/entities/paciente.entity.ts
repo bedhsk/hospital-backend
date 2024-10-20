@@ -10,6 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import Antecedente from './antecedente.entity';
+import Receta from 'src/recetas/entities/receta.entity';
+import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.entity';
 
 @Entity('pacientes')
 export default class Paciente {
@@ -99,12 +101,24 @@ export default class Paciente {
   @OneToOne(() => Antecedente, (antecedente) => antecedente.paciente, {
     cascade: true,
   })
-  @JoinColumn({ name: 'antecedenteId' })
+  @JoinColumn()
   @ApiProperty({
     description:
       'Relacion entre Paciente y Antecedentes. Un paciente tiene un único antecedente.',
   })
   antecedente: Antecedente;
 
-  ordenesLaboratorio: any;
+  @OneToMany(() => Receta, (receta) => receta.paciente)
+  @ApiProperty({
+    description:
+      'Relación entre Paciente y Recetas. Un paciente puede tener varias recetas',
+  })
+  recetas: Receta[];
+
+  @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.paciente)
+  @ApiProperty({
+    description:
+      'Relación entre Paciente y Recetas. Un paciente puede tener varias recetas',
+  })
+  ordenesLaboratorio: OrdenLaboratorio[];
 }
