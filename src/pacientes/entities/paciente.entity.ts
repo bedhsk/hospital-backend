@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import Antecedente from './antecedente.entity';
 import Receta from 'src/recetas/entities/receta.entity';
+import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.entity';
 
 @Entity('pacientes')
 export default class Paciente {
@@ -114,5 +115,10 @@ export default class Paciente {
   })
   recetas: Receta[];
 
-  ordenesLaboratorio: any;
+  @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.paciente)
+  @ApiProperty({
+    description:
+      'Relación entre Paciente y Recetas. Un paciente puede tener varias recetas',
+  })
+  ordenesLaboratorio: OrdenLaboratorio[];
 }
