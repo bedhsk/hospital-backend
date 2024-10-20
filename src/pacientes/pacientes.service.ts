@@ -25,6 +25,7 @@ export class PacientesService {
     const queryBuilder = this.pacientesRepository
       .createQueryBuilder('paciente')
       .leftJoinAndSelect('paciente.antecedente', 'antecedente')
+      .leftJoinAndSelect('paciente.recetas', 'recetas')
       .where('paciente.is_active = true')
       .select([
         'paciente.id',
@@ -47,6 +48,8 @@ export class PacientesService {
         'antecedente.planificacion_familiar',
         'antecedente.partos',
         'antecedente.cesareas',
+        'recetas.id',
+        'recetas.descripcion',
       ]);
 
     if (q) {
@@ -74,7 +77,7 @@ export class PacientesService {
   async findOne(id: string) {
     const paciente = await this.pacientesRepository.findOne({
       where: { id, is_active: true },
-      relations: ['antecedente'],
+      relations: ['antecedente', 'recetas'],
     });
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
@@ -85,32 +88,23 @@ export class PacientesService {
   async create(createPacienteDto: CreatePacienteDto) {
     const { nombre, sexo, antecedente, ...rest } = createPacienteDto;
 
-    // Crear el paciente
     const paciente = this.pacientesRepository.create({
       nombre,
       sexo,
       ...rest,
     });
 
-    const savedPaciente = await this.pacientesRepository.save(paciente);
-
-    // Solo crear el antecedente si el paciente es de sexo 'Femenino'
     if (sexo === 'Femenino' && antecedente) {
-      const nuevoAntecedente = this.antecedentesRepository.create({
-        ...antecedente,
-        planificacion_familiar: Number(antecedente.planificacion_familiar),
-        paciente: savedPaciente, // Relacionar el antecedente con el paciente recién creado
-      });
-      await this.antecedentesRepository.save(nuevoAntecedente);
+      const nuevoAntecedente = this.antecedentesRepository.create(antecedente);
+      paciente.antecedente = nuevoAntecedente;
     } else if (antecedente) {
       throw new BadRequestException(
         'Solo los pacientes de sexo Femenino pueden tener antecedentes.',
       );
     }
 
-    // Retornar el paciente con o sin antecedente
-    const pacienteConAntecedente = await this.findOne(savedPaciente.id);
-    return pacienteConAntecedente;
+    const savedPaciente = await this.pacientesRepository.save(paciente);
+    return savedPaciente;
   }
 
   async update(id: string, updatePacienteDto: UpdatePacienteDto) {
@@ -136,14 +130,14 @@ export class PacientesService {
         // Si ya existe un antecedente, actualízalo
         this.antecedentesRepository.merge(existingAntecedente, {
           ...antecedente,
-          planificacion_familiar: Number(antecedente.planificacion_familiar),
+          planificacion_familiar: antecedente.planificacion_familiar,
         });
         await this.antecedentesRepository.save(existingAntecedente);
       } else {
         // Si no existe, crear uno nuevo
         const nuevoAntecedente = this.antecedentesRepository.create({
           ...antecedente,
-          planificacion_familiar: Number(antecedente.planificacion_familiar),
+          planificacion_familiar: antecedente.planificacion_familiar,
           paciente,
         });
         await this.antecedentesRepository.save(nuevoAntecedente);

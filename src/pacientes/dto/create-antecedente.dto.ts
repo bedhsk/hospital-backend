@@ -28,7 +28,7 @@ class CreateAntecedenteDto {
 
   @IsInt()
   @IsOptional()
-  planificacion_familiar?: number;
+  planificacion_familiar?: string;
 
   @IsInt()
   @IsOptional()
