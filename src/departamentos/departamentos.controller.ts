@@ -86,7 +86,7 @@ export class DepartamentosController {
     description: 'Acceso denegado',
   })
   findOne(@Param('id') id: string) {
-    return this.departamentosService.findOne(id);
+    return this.departamentosService.findOneWithDepartamentos(id);
   }
 
   @AuthorizedRoles()

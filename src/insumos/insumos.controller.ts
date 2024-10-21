@@ -190,7 +190,6 @@ export class InsumosController {
     status: 403,
     description: 'Acceso denegado.',
   })
-  
   findAll(@Query() query: QueryInsumoDto) {
     return this.insumosService.findAll(query);
   }
@@ -260,7 +259,7 @@ export class InsumosController {
     description: 'Acceso denegado',
   })
   findOne(@Param('id') id: string) {
-    return this.insumosService.findOne(id);
+    return this.insumosService.findOneWithDepartamentosAndLotes(id);
   }
 
   @AuthorizedRoles()

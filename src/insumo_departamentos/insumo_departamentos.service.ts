@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInsumoDepartamentoDto } from './dto/create-insumo_departamento.dto';
 import UpdateInsumoDepartamentoDto from './dto/update-insumo_departamento.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,8 +18,9 @@ export class InsumoDepartamentosService {
   constructor(
     @InjectRepository(InsumoDepartamento)
     private readonly insumodepartamentoService: Repository<InsumoDepartamento>,
-    private readonly insumoService: InsumosService,
     private readonly departamentoService: DepartamentosService,
+    @Inject(forwardRef(() => InsumosService))
+    private readonly insumoService: InsumosService,
   ) {}
 
   async findAll(query: QueryIsumoDepartamentoDto) {
@@ -144,7 +150,15 @@ export class InsumoDepartamentosService {
       throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
     }
     const insumoDepartamento = await this.insumodepartamentoService.findOne({
-      where: { insumo: {id: insumo.id, nombre: insumo.nombre ,trazador: insumo.trazador}, departamento: {id: departamento.id, nombre: departamento.nombre}, is_active: true },
+      where: {
+        insumo: {
+          id: insumo.id,
+          nombre: insumo.nombre,
+          trazador: insumo.trazador,
+        },
+        departamento: { id: departamento.id, nombre: departamento.nombre },
+        is_active: true,
+      },
     });
     if (!insumoDepartamento) {
       throw new NotFoundException(

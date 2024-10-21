@@ -4,7 +4,21 @@ import {
   IsNotEmpty,
   IsBoolean,
   IsUUID,
+  IsArray,
+  ValidateNested,
+  IsNumber,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class DepartamentoAsociacionDto {
+  @IsUUID()
+  @IsNotEmpty()
+  departamentoId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  existencia: number;
+}
 
 export class CreateInsumoDto {
   @IsString()
@@ -23,6 +37,11 @@ export class CreateInsumoDto {
   @IsUUID()
   @IsNotEmpty()
   categoriaId: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DepartamentoAsociacionDto)
+  departamentos: DepartamentoAsociacionDto[];
 }
 
 export default CreateInsumoDto;

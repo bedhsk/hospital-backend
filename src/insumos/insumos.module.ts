@@ -1,18 +1,21 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { InsumosService } from './insumos.service';
 import { InsumosController } from './insumos.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import Insumo from './entities/insumo.entity';
-import Categoria from 'src/categorias/entities/categoria.entity';
-import { CategoriasService } from 'src/categorias/categorias.service';
-import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
-import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
-import Lote from 'src/lotes/entities/lote.entity';
+import { CategoriasModule } from '../categorias/categorias.module';
+import { DepartamentosModule } from '../departamentos/departamentos.module';
+import { InsumoDepartamentosModule } from '../insumo_departamentos/insumo_departamentos.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Insumo, Categoria, InsumoExamen, InsumoDepartamento, Lote])],
+  imports: [
+    TypeOrmModule.forFeature([Insumo]),
+    CategoriasModule,
+    DepartamentosModule,
+    forwardRef(() => InsumoDepartamentosModule),
+  ],
   controllers: [InsumosController],
-  providers: [InsumosService, CategoriasService],
+  providers: [InsumosService],
   exports: [InsumosService],
 })
 export class InsumosModule {}

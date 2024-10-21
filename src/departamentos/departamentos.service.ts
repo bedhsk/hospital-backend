@@ -25,16 +25,16 @@ export class DepartamentosService {
   }
 
   async findAll(queryDto: QueryDepartamentoDto) {
-    const { query, filter, page, limit } = queryDto;
+    const { query, filter, page = 1, limit = 10 } = queryDto;
+
     const queryBuilder = this.departamentosRepository
       .createQueryBuilder('departamento')
-      .where({ is_active: true })
-      .select([
-        'departamento.id',
-        'departamento.nombre',
-        'departamento.createdAt',
-        'departamento.updatedAt',
-      ]);
+      .leftJoinAndSelect(
+        'departamento.insumosDepartamentos',
+        'insumoDepartamento',
+      )
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .where('departamento.is_active = :isActive', { isActive: true });
 
     if (query) {
       queryBuilder.andWhere('departamento.nombre ILIKE :nombre', {
@@ -49,10 +49,32 @@ export class DepartamentosService {
       .take(limit)
       .getMany();
 
+    const departamentosConInsumos = departamentos.map((departamento) => {
+      const insumosUnicos = new Map();
+      departamento.insumosDepartamentos.forEach((insumoDepartamento) => {
+        if (insumoDepartamento.insumo) {
+          insumosUnicos.set(insumoDepartamento.insumo.id, {
+            id: insumoDepartamento.insumo.id,
+            codigo: insumoDepartamento.insumo.codigo,
+            nombre: insumoDepartamento.insumo.nombre,
+            existencia: insumoDepartamento.existencia,
+          });
+        }
+      });
+
+      return {
+        id: departamento.id,
+        nombre: departamento.nombre,
+        createdAt: departamento.createdAt,
+        updatedAt: departamento.updatedAt,
+        insumos: Array.from(insumosUnicos.values()),
+      };
+    });
+
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      data: departamentos,
+      data: departamentosConInsumos,
       totalItems,
       totalPages,
       page,
@@ -74,6 +96,40 @@ export class DepartamentosService {
     }
 
     return record;
+  }
+
+  async findOneWithDepartamentos(departamentoId: string) {
+    if (!isUUID(departamentoId)) {
+      throw new BadRequestException('ID de departamento inválido');
+    }
+
+    const departamento = await this.departamentosRepository.findOne({
+      where: { id: departamentoId, is_active: true },
+      relations: ['insumosDepartamentos', 'insumosDepartamentos.insumo'],
+    });
+
+    if (!departamento) {
+      throw new NotFoundException(
+        `Departamento con ID ${departamentoId} no encontrado`,
+      );
+    }
+
+    const insumos = departamento.insumosDepartamentos.map(
+      (insumoDepartamento) => ({
+        id: insumoDepartamento.insumo.id,
+        codigo: insumoDepartamento.insumo.codigo,
+        nombre: insumoDepartamento.insumo.nombre,
+        existencia: insumoDepartamento.existencia,
+      }),
+    );
+
+    return {
+      departamento: {
+        id: departamento.id,
+        nombre: departamento.nombre,
+      },
+      insumos,
+    };
   }
 
   async findOneByName(nombre: string) {
