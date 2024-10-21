@@ -2,10 +2,11 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Paciente from './entities/paciente.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { CreatePacienteDto } from './dto/create-paciente.dto';
 import Antecedente from './entities/antecedente.entity';
 import UpdatePacienteDto from './dto/update-paciente.dto';
@@ -125,11 +126,24 @@ export class PacientesService {
 
 
   async create(createPacienteDto: CreatePacienteDto) {
-    const { nombre, sexo, antecedente, ...rest } = createPacienteDto;
+    const { nombre, nacimiento, sexo, antecedente, ...rest } = createPacienteDto;
 
+    // Verificar si el paciente ya existe
+    const pacienteExistente = await this.pacientesRepository.findOne({
+      where: { nombre, nacimiento },
+    });
+
+    if (pacienteExistente) {
+      throw new ConflictException(
+        `Ya existe un paciente con el mismo nombre "${nombre}" y fecha de nacimiento.`,
+      );
+    }
+    
+    // Crear el paciente
     const paciente = this.pacientesRepository.create({
       nombre,
       sexo,
+      nacimiento,
       ...rest,
     });
 
@@ -152,7 +166,25 @@ export class PacientesService {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
 
-    const { antecedente, ...updateData } = updatePacienteDto;
+    const { antecedente, nacimiento, nombre, ...updateData } = updatePacienteDto;
+
+    // Verificar si ya existe otro paciente con el mismo nombre y fecha de nacimiento
+    if (nombre && nacimiento) {
+      const pacienteDuplicado = await this.pacientesRepository.findOne({
+        where: {
+          nombre,
+          nacimiento,
+          id: Not(id),  // Excluir el paciente actual de la búsqueda
+        },
+      });
+
+      if (pacienteDuplicado) {
+        throw new ConflictException(
+          `Ya existe un paciente con el nombre "${nombre}" y fecha de nacimiento.`
+        );
+      }
+    }
+    
 
     // Actualizar los campos del paciente
     this.pacientesRepository.merge(paciente, updateData);
