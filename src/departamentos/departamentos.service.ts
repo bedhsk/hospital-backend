@@ -89,6 +89,97 @@ export class DepartamentosService {
     return record;
   }
 
+  async findInsumosForDepartamento(departamentoId: string) {
+    if (!isUUID(departamentoId)) {
+      throw new BadRequestException('ID de departamento inválido');
+    }
+
+    const departamento = await this.departamentosRepository.findOne({
+      where: { id: departamentoId, is_active: true },
+      relations: ['insumosDepartamentos', 'insumosDepartamentos.insumo'],
+    });
+
+    if (!departamento) {
+      throw new NotFoundException(
+        `Departamento con ID ${departamentoId} no encontrado`,
+      );
+    }
+
+    const insumos = departamento.insumosDepartamentos.map(
+      (insumoDepartamento) => ({
+        id: insumoDepartamento.insumo.id,
+        codigo: insumoDepartamento.insumo.codigo,
+        nombre: insumoDepartamento.insumo.nombre,
+        existencia: insumoDepartamento.existencia,
+      }),
+    );
+
+    return {
+      departamento: {
+        id: departamento.id,
+        nombre: departamento.nombre,
+      },
+      insumos,
+    };
+  }
+
+  async findAllWithInsumos(queryDto: QueryDepartamentoDto) {
+    const { query, filter, page = 1, limit = 10 } = queryDto;
+
+    const queryBuilder = this.departamentosRepository
+      .createQueryBuilder('departamento')
+      .leftJoinAndSelect(
+        'departamento.insumosDepartamentos',
+        'insumoDepartamento',
+      )
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .where('departamento.is_active = :isActive', { isActive: true });
+
+    if (query) {
+      queryBuilder.andWhere('departamento.nombre ILIKE :nombre', {
+        nombre: `%${query}%`,
+      });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+
+    const departamentos = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const departamentosConInsumos = departamentos.map((departamento) => {
+      const insumosUnicos = new Map();
+      departamento.insumosDepartamentos.forEach((insumoDepartamento) => {
+        if (insumoDepartamento.insumo) {
+          insumosUnicos.set(insumoDepartamento.insumo.id, {
+            id: insumoDepartamento.insumo.id,
+            codigo: insumoDepartamento.insumo.codigo,
+            nombre: insumoDepartamento.insumo.nombre,
+            existencia: insumoDepartamento.existencia,
+          });
+        }
+      });
+
+      return {
+        id: departamento.id,
+        nombre: departamento.nombre,
+        createdAt: departamento.createdAt,
+        updatedAt: departamento.updatedAt,
+        insumos: Array.from(insumosUnicos.values()),
+      };
+    });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: departamentosConInsumos,
+      totalItems,
+      totalPages,
+      page,
+    };
+  }
+
   async update(id: string, updateDepartamentoDto: UpdateDepartamentoDto) {
     const departamento = await this.findOne(id);
     this.departamentosRepository.merge(departamento, updateDepartamentoDto);
