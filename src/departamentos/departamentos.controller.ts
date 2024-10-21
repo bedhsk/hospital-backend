@@ -75,6 +75,18 @@ export class DepartamentosController {
     return this.departamentosService.findAll(query);
   }
 
+  @Get('with-insumos')
+  @ApiOperation({
+    summary: 'Obtener todos los departamentos con sus insumos asociados',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de departamentos con sus insumos',
+  })
+  async findAllWithInsumos(@Query() queryDto: QueryDepartamentoDto) {
+    return this.departamentosService.findAllWithInsumos(queryDto);
+  }
+
   @AuthorizedRoles()
   @Get(':id')
   @ApiOperation({
@@ -87,6 +99,17 @@ export class DepartamentosController {
   })
   findOne(@Param('id') id: string) {
     return this.departamentosService.findOne(id);
+  }
+
+  @AuthorizedRoles()
+  @Get('with-insumo/:id')
+  @ApiOperation({ summary: 'Obtener insumos de un departamento' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de insumos del departamento',
+  })
+  async findInsumosForDepartamento(@Param('id') id: string) {
+    return this.departamentosService.findInsumosForDepartamento(id);
   }
 
   @AuthorizedRoles()
