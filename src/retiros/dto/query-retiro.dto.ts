@@ -5,7 +5,7 @@ class QueryRetiroDto {
    
     @IsOptional()
     @IsString()
-    filterUser?: string;
+    q?: string;
 
     @IsOptional()
     @IsString()
