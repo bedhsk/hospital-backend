@@ -13,6 +13,7 @@ import { DetalleAdquisicionDto } from 'src/adquisiciones/dtos/create-adquisicion
 import { AdquisicionesService } from 'src/adquisiciones/adquisiciones.service';
 import { throws } from 'assert';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import { elementAt } from 'rxjs';
 
 @Injectable()
 export class RetirosService {
@@ -24,10 +25,11 @@ export class RetirosService {
         private readonly insumoDepartamentoService: InsumoDepartamentosService,
         private readonly adquisicionService: AdquisicionesService,
         private readonly departamentoService: DepartamentosService,
+        
       ) {}
 
       async findAll(query: QueryRetiroDto) {
-        const { filterUser, filterDepartamento, page, limit } = query;
+        const { q, filterDepartamento, page, limit } = query;
         const queryBuilder = this.retiroRepository
           .createQueryBuilder('retiro')
           .leftJoinAndSelect('retiro.user', 'user')
@@ -43,8 +45,8 @@ export class RetirosService {
             'departamento.id', 'departamento.nombre', // Id y nombre del departamento.
           ])
     
-        if (filterUser) {
-          queryBuilder.andWhere('user.username LIKE :username', { username: `%${filterUser}%` });
+        if (q) {
+          queryBuilder.andWhere('user.username LIKE :username', { username: `%${q}%` });
         }
     
         if (filterDepartamento) {
@@ -123,6 +125,26 @@ export class RetirosService {
       );
     }
 
+    for (const elemntcheck of detalles) {
+      try {
+        const { insumoDepartamentoId, cantidad } = elemntcheck;
+        
+      
+        const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
+
+        if (insumoDepartamento.existencia < cantidad) {
+          throw new NotFoundException(
+            `Insumo departamento con id ${insumoDepartamento.id} no cuenta con la cantidad en existencia (${insumoDepartamento.existencia}) que se necesita para crear el retiro (${cantidad})`
+          );
+        }
+
+    
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    
     const detallePromises = detalles.map(async element => {
       const { insumoDepartamentoId, cantidad } = element;
 
@@ -154,6 +176,31 @@ export class RetirosService {
           this.retiroRepository.merge(retiroAux, {descripcion: updateInsumoDto.descripcion});
           await this.retiroRepository.save(retiroAux);
         }
+        
+        
+
+          
+    
+    for (const elemntcheck of updateInsumoDto.detalles) {
+      try {
+        const { insumoDepartamentoId, cantidad } = elemntcheck;
+        
+      
+        const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
+
+        if (insumoDepartamento.existencia < cantidad) {
+          throw new NotFoundException(
+            `Insumo departamento con id ${insumoDepartamento.id} no cuenta con la cantidad en existencia (${insumoDepartamento.existencia}) que se necesita para actualizar el retiro (${cantidad})`
+          );
+        }
+
+    
+      } catch (error) {
+        throw error;
+      }
+    }
+
+        
         const detallePromises = updateInsumoDto.detalles.map(async element => {
           if (element.cantidad) {
             const detalleRetiroAux = await this.detalleRetiroService.findOneByRetiroIdAndInsumoDepartamentoId(id, element.insumoDepartamentoId)
