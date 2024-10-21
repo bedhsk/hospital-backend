@@ -102,7 +102,9 @@ export class UsersService {
 
     const existingUser = await this.usersRepository.findOne({
       where: { username },
+      withDeleted: true,
     });
+
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
@@ -132,6 +134,7 @@ export class UsersService {
     if (username && username !== user.username) {
       const existingUser = await this.usersRepository.findOne({
         where: { username },
+        withDeleted: true,
       });
       if (existingUser) {
         throw new ConflictException('Username already exists');
