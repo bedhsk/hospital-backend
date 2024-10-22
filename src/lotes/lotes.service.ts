@@ -77,23 +77,6 @@ export class LotesService {
     return lote;
   }
 
-  // Obtener el lote proximo a vencer.
-  async getLoteProximoVencer(insumoDepartamentoId: string) {
-    const lote = await this.loteRepository
-      .createQueryBuilder('lote')
-      .where('lote.is_active = true')
-      .andWhere('lote.insumoDepartamentoId = :insumoDepartamentoId', { insumoDepartamentoId })
-      .andWhere('lote.cantidadActual > 0')
-      .orderBy('lote.fechaCaducidad', 'ASC')
-      .getOne();
-
-    if (!lote) {
-      throw new NotFoundException(`No se encontró un lote con cantidad disponible para el insumoDepartamentoId ${insumoDepartamentoId}`);
-    }
-
-    return lote;
-  }
-
   // Crear un nuevo lote
   async create(createLoteDto: CreateLoteDto) {
     const { insumoDepartamentoId, cantidadInical, cantidadActual, ...rest } =
@@ -131,38 +114,6 @@ export class LotesService {
     this.loteRepository.merge(lote, updateLoteDto);
     return await this.loteRepository.save(lote);
   }
-
-  // Logica para descontar del lote proximo a vencer
-  async updateRetiroLote(insumoDepartamentoId: string, cantdad: number) {
-    let cantidadRestante = cantdad;
-    const lotes = []
-    while (cantidadRestante > 0) {
-      const lote = await this.getLoteProximoVencer(insumoDepartamentoId);
-  
-      if (!lote) {
-        throw new NotFoundException(
-          lotes,
-          `No hay suficientes lotes disponibles para completar el retiro de ${cantdad}. Restante: ${cantidadRestante}`
-        );
-      }
-  
-      if (lote.cantidadActual <= cantidadRestante) {
-        cantidadRestante -= lote.cantidadActual;
-        lote.cantidadActual = 0;
-      }
-      else {
-        lote.cantidadActual -= cantidadRestante;
-        cantidadRestante = 0;
-      }
-      
-      await this.loteRepository.save(lote);
-      const loteaux = this.findOne(lote.id);
-      lotes.push(loteaux)
-    }
-  
-    return lotes;
-  }
-
 
   // Soft delete para un lote
   async softDelete(id: string) {

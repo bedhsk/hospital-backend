@@ -6,13 +6,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import Retiro from './retiro.entity';
 import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
-import movimientoLote from 'src/lotes/entities/movimiento-lote.entity';
 
 @Entity('detalleRetiro')
 export default class DetalleRetiro {
@@ -54,10 +52,4 @@ export default class DetalleRetiro {
   )
   @JoinColumn({ name: 'insumoDepartamentoId' })
   insumoDepartamento: InsumoDepartamento;
-
-  @OneToMany(
-    () => movimientoLote,
-    (movimientoLote) => movimientoLote.detalleRetiro,
-  )
-  movimientoLote: movimientoLote[];
 }
