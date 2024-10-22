@@ -7,8 +7,10 @@ import {
   ManyToOne,
   JoinColumn,
   Entity,
+  OneToMany,
 } from 'typeorm';
 import Adquisicion from './adquisicion.entity';
+import movimientoLote from 'src/lotes/entities/movimiento-lote.entity';
 
 
 @Entity('detalleAdquisicion')
@@ -34,5 +36,11 @@ export default class detalleAdquisicion {
   @ManyToOne(() => InsumoDepartamento, (insumoDepartamento) => insumoDepartamento.lotes,)
   @JoinColumn({ name: 'insumoDepartamentoId' })
   insumoDepartamento: InsumoDepartamento; // Relación con InsumoDepartamento
+
+  @OneToMany(
+    () => movimientoLote,
+    (movimientoLote) => movimientoLote.detalleAdquisicion,
+  )
+  movimientoLote: movimientoLote[];
 
 }
