@@ -7,7 +7,10 @@ import {
   ManyToOne,
   Entity,
   JoinColumn,
+  CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import movimientoLote from './movimiento-lote.entity';
 
 @Entity('lote')
 export default class Lote {
@@ -20,10 +23,10 @@ export default class Lote {
   @IsString()
   numeroLote: string;
 
-  @Column({ type: 'date' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   @ApiProperty()
   @IsDate()
-  fechaEntrada: Date;
+  created_at: Date;
 
   @Column({ type: 'date' })
   @ApiProperty()
@@ -56,4 +59,10 @@ export default class Lote {
   )
   @JoinColumn({ name: 'insumoDepartamentoId' })
   insumoDepartamento: InsumoDepartamento; // Relación con InsumoDepartamento
+
+  @OneToMany(
+    () => movimientoLote,
+    (movimientoLote) => movimientoLote.lote,
+  )
+  movimientoLote: movimientoLote[];
 }
