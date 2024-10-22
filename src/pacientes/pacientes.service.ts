@@ -123,10 +123,8 @@ export class PacientesService {
     };
   }
 
-
-
   async create(createPacienteDto: CreatePacienteDto) {
-    const { nombre, nacimiento, sexo, antecedente, ...rest } = createPacienteDto;
+    const { nombre, nacimiento, sexo, antecedente, cui, ...rest } = createPacienteDto;
 
     // Verificar si el paciente ya existe
     const pacienteExistente = await this.pacientesRepository.findOne({
@@ -138,12 +136,23 @@ export class PacientesService {
         `Ya existe un paciente con el mismo nombre "${nombre}" y fecha de nacimiento.`,
       );
     }
+
+    const pacienteExistentePorCui = await this.pacientesRepository.findOne({
+      where: { cui },
+    });
+  
+    if (pacienteExistentePorCui) {
+      throw new ConflictException(
+        `Ya existe un paciente con el CUI "${cui}".`,
+      );
+    }
     
     // Crear el paciente
     const paciente = this.pacientesRepository.create({
       nombre,
       sexo,
       nacimiento,
+      cui,
       ...rest,
     });
 
