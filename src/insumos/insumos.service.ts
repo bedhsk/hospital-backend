@@ -55,7 +55,7 @@ export class InsumosService {
         'departamento.nombre',
         'lote.id',
         'lote.numeroLote',
-        'lote.fechaEntrada',
+        'lote.created_at',
         'lote.fechaCaducidad',
         'lote.cantidadInical',
         'lote.cantidadActual',
@@ -96,12 +96,15 @@ export class InsumosService {
         codigo: insumo.codigo,
         nombre: insumo.nombre,
         trazador: insumo.trazador,
+        total_en_bodega: totalCantidad,
         categoria: {
           id: insumo.categoria.id,
           nombre: insumo.categoria.nombre,
         },
+        departamentos,
         lotes: (insumo.insumosDepartamentos || []).flatMap((dep) =>
-            dep.lotes ? dep.lotes.map((lote) => ({
+          dep.lotes
+            ? dep.lotes.map((lote) => ({
                 id: lote.id,
                 numeroLote: lote.numeroLote,
                 fechaEntrada: lote.created_at,
@@ -109,7 +112,8 @@ export class InsumosService {
                 cantidadInical: lote.cantidadInical,
                 cantidadActual: lote.cantidadActual,
                 status: lote.status,
-            })) : []
+              }))
+            : [],
         ),
       };
     });
