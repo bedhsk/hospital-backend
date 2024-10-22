@@ -15,6 +15,7 @@ import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.
 import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 import { AdquisicionesModule } from 'src/adquisiciones/adquisiciones.module';
 import { DepartamentosModule } from 'src/departamentos/departamentos.module';
+import { LotesModule } from 'src/lotes/lotes.module';
 
 @Module({
 
@@ -23,6 +24,7 @@ import { DepartamentosModule } from 'src/departamentos/departamentos.module';
     UsersModule,
     AdquisicionesModule,
     DepartamentosModule,
+    LotesModule,
     TypeOrmModule.forFeature([
       DetalleRetiro,
       InsumoDepartamento,
