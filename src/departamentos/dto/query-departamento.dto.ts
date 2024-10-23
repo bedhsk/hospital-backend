@@ -4,7 +4,7 @@ import { IsOptional, IsString, IsNumber } from 'class-validator';
 class QueryDepartamentoDto {
   @IsOptional()
   @IsString()
-  query?: string;
+  q?: string;
 
   @IsOptional()
   @IsString()
