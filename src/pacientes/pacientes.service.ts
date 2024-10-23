@@ -55,9 +55,8 @@ export class PacientesService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('paciente.nombre LIKE :nombre', {
-        nombre: `%${q}%`,
-      });
+      queryBuilder.andWhere('paciente.nombre ILIKE :nombre OR paciente.cui ILIKE :cui', {
+        nombre: `%${q}%`, cui: `%${q}%` });
     }
 
     const totalItems = await queryBuilder.getCount();

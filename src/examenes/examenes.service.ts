@@ -62,7 +62,7 @@ export class ExamenesService {
       .where('examen.is_active = :isActive', { isActive: true });
 
     if (nombre) {
-      queryBuilder.andWhere('examen.nombre LIKE :nombre', {
+      queryBuilder.andWhere('examen.nombre ILIKE :nombre', {
         nombre: `%${nombre}%`,
       });
     }

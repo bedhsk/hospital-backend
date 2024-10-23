@@ -58,10 +58,11 @@ export class RecetasService {
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.name LIKE :name OR paciente.nombre LIKE :nombre)',
-        { name: `%${q}%`, nombre: `%${q}%` },
+        '(user.name ILIKE :name OR paciente.nombre ILIKE :nombre OR paciente.cui ILIKE :cui)',
+        { name: `%${q}%`, nombre: `%${q}%`, cui: `%${q}%` },
       );
     }
+  
 
     if (filter) {
       queryBuilder.andWhere(
