@@ -194,7 +194,7 @@ export class InsumosService {
   }
 
   async create(createInsumoDto: CreateInsumoDto) {
-    const { categoriaId, codigo, departamentos, ...rest } = createInsumoDto;
+    const { categoriaId, codigo, ...rest } = createInsumoDto;
 
     // Verificar si el código del insumo ya existe
     const existingInsumo = await this.insumoRepository.findOne({
@@ -223,27 +223,16 @@ export class InsumosService {
       });
 
       const savedInsumo = await this.insumoRepository.save(insumo);
-
-      // Crear las asociaciones InsumoDepartamento
-      for (const dep of departamentos) {
-        const departamento = await this.departamentosService.findOne(
-          dep.departamentoId,
-        );
-        if (!departamento) {
-          throw new NotFoundException(
-            `Departamento con id ${dep.departamentoId} no encontrado`,
-          );
-        }
-
-        await this.insumoDepartamentosService.create({
-          insumoId: savedInsumo.id,
-          departamentoId: dep.departamentoId,
-          existencia: dep.existencia,
-        });
-      }
-
-      // Obtener el insumo con sus relaciones actualizadas
-      return this.findOneWithDepartamentosAndLotes(savedInsumo.id);
+      return {
+        id: savedInsumo.id,
+        codigo: savedInsumo.codigo,
+        nombre: savedInsumo.nombre,
+        trazador: savedInsumo.trazador,
+        categoria: {
+          id: savedInsumo.categoria.id,
+          nombre: savedInsumo.categoria.nombre,
+        },
+      };
     } catch (error) {
       console.error('Error al crear el insumo:', error);
       throw new InternalServerErrorException(
