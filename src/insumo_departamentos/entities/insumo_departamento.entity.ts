@@ -19,7 +19,6 @@ import {
 export class InsumoDepartamento {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
-  // @IsUUID()
   id: string; // UUID
 
   @Column({ type: 'float' })
@@ -34,6 +33,7 @@ export class InsumoDepartamento {
   @ManyToOne(
     () => Departamento,
     (departamento) => departamento.insumosDepartamentos,
+    { onDelete: 'CASCADE' } // Esta línea asegura la eliminación en cascada
   )
   @JoinColumn({ name: 'departamentoId' })
   departamento: Departamento; // Relación con Departamento
