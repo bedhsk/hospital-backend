@@ -5,6 +5,7 @@ import User from '../../users/entities/user.entity';
 import Retiro from '../../retiros/entities/retiro.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsString, IsBoolean } from 'class-validator';
+import { EstadoOrdenLaboratorio } from '../enum/estado-orden-laboratorio.enum';
 
 @Entity('ordenLaboratorio')
 class OrdenLaboratorio {
@@ -17,10 +18,14 @@ class OrdenLaboratorio {
     @IsString()
     descripcion: string;
 
-    @Column({ type: 'varchar' })
-    @ApiProperty()
-    @IsString()
-    estado: string;
+    @Column({ type: 'enum', enum: EstadoOrdenLaboratorio, default: EstadoOrdenLaboratorio.PENDIENTE })
+    @ApiProperty({
+        description: 'Estado de la orden de laboratorio',
+        enum: EstadoOrdenLaboratorio,
+        example: EstadoOrdenLaboratorio.PENDIENTE,
+    })
+    estado: EstadoOrdenLaboratorio;
+    
 
     @ManyToOne(() => User, (usuario) => usuario.ordenesLaboratorio)
     usuario: User;
