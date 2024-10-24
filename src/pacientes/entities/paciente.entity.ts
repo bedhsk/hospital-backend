@@ -115,7 +115,10 @@ export default class Paciente {
   })
   recetas: Receta[];
 
-  @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.paciente)
+  @OneToMany(
+    () => OrdenLaboratorio,
+    (ordenLaboratorio) => ordenLaboratorio.paciente,
+  )
   @ApiProperty({
     description:
       'Relación entre Paciente y Recetas. Un paciente puede tener varias recetas',

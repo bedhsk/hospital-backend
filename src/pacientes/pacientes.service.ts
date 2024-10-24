@@ -88,7 +88,8 @@ export class PacientesService {
   }
 
   async findOneWithRetiros(id: string) {
-    const paciente = await this.pacientesRepository.createQueryBuilder('paciente')
+    const paciente = await this.pacientesRepository
+      .createQueryBuilder('paciente')
       .leftJoinAndSelect('paciente.recetas', 'recetas')
       .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
       .where('paciente.id = :id', { id })
@@ -101,30 +102,32 @@ export class PacientesService {
     }
 
     const retiros = [
-      ...paciente.recetas.map(receta => ({
+      ...paciente.recetas.map((receta) => ({
         ...receta,
-        tipo: 'receta'  // Identificamos que este es del tipo receta
+        tipo: 'receta', // Identificamos que este es del tipo receta
       })),
-      ...paciente.ordenesLaboratorio.map(orden => ({
+      ...paciente.ordenesLaboratorio.map((orden) => ({
         ...orden,
         updatedAt: new Date().toISOString(),
 
-        tipo: 'ordenLaboratorio'  // Identificamos que este es del tipo ordenLaboratorio
-      }))
+        tipo: 'ordenLaboratorio', // Identificamos que este es del tipo ordenLaboratorio
+      })),
     ];
 
     // Ordenar los retiros por fecha de creación
-    retiros.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    retiros.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
 
     const { recetas, ordenesLaboratorio, ...pacienteSinRelaciones } = paciente;
 
-    return {...pacienteSinRelaciones,
-      retiros
-    };
+    return { ...pacienteSinRelaciones, retiros };
   }
 
   async create(createPacienteDto: CreatePacienteDto) {
-    const { nombre, nacimiento, sexo, antecedente, cui, ...rest } = createPacienteDto;
+    const { nombre, nacimiento, sexo, antecedente, cui, ...rest } =
+      createPacienteDto;
 
     // Verificar si el paciente ya existe
     const pacienteExistente = await this.pacientesRepository.findOne({
@@ -140,13 +143,11 @@ export class PacientesService {
     const pacienteExistentePorCui = await this.pacientesRepository.findOne({
       where: { cui },
     });
-  
+
     if (pacienteExistentePorCui) {
-      throw new ConflictException(
-        `Ya existe un paciente con el CUI "${cui}".`,
-      );
+      throw new ConflictException(`Ya existe un paciente con el CUI "${cui}".`);
     }
-    
+
     // Crear el paciente
     const paciente = this.pacientesRepository.create({
       nombre,
@@ -175,7 +176,8 @@ export class PacientesService {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
 
-    const { antecedente, nacimiento, nombre, ...updateData } = updatePacienteDto;
+    const { antecedente, nacimiento, nombre, ...updateData } =
+      updatePacienteDto;
 
     // Verificar si ya existe otro paciente con el mismo nombre y fecha de nacimiento
     if (nombre && nacimiento) {
@@ -183,20 +185,26 @@ export class PacientesService {
         where: {
           nombre,
           nacimiento,
-          id: Not(id),  // Excluir el paciente actual de la búsqueda
+          id: Not(id), // Excluir el paciente actual de la búsqueda
         },
       });
 
       if (pacienteDuplicado) {
         throw new ConflictException(
-          `Ya existe un paciente con el nombre "${nombre}" y fecha de nacimiento.`
+          `Ya existe un paciente con el nombre "${nombre}" y fecha de nacimiento.`,
         );
       }
     }
-    
+
+    // Incluir nombre y nacimiento en updateData si están presentes
+    const updatedPacienteData = {
+      ...updateData,
+      ...(nombre && { nombre }),
+      ...(nacimiento && { nacimiento }),
+    };
 
     // Actualizar los campos del paciente
-    this.pacientesRepository.merge(paciente, updateData);
+    this.pacientesRepository.merge(paciente, updatedPacienteData);
     await this.pacientesRepository.save(paciente);
 
     // Verificar si el paciente es de sexo Femenino antes de actualizar o crear el antecedente
