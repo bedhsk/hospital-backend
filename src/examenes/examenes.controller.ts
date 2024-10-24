@@ -1,24 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ExamenesService } from './examenes.service';
 import CreateExamenDto from './dtos/create-examen.dto';
 import UpdateExamenDto from './dtos/update-examen.dto';
 import QueryExamenDto from './dtos/query-examen.dto';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiQuery,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 
 @ApiTags('Examenes')
 @Controller('examenes')
@@ -28,8 +13,7 @@ export class ExamenesController {
   @Post()
   @ApiOperation({
     summary: 'Crear un nuevo examen',
-    description:
-      'Este endpoint crea un nuevo examen con su relación a insumos en la base de datos',
+    description: 'Este endpoint crea un nuevo examen con su relación a insumos en la base de datos',
   })
   @ApiResponse({
     status: 201,
@@ -46,8 +30,7 @@ export class ExamenesController {
   @Get()
   @ApiOperation({
     summary: 'Obtener todos los exámenes',
-    description:
-      'Este endpoint devuelve una lista de todos los exámenes activos registrados',
+    description: 'Este endpoint devuelve una lista de todos los exámenes activos registrados',
   })
   @ApiQuery({
     name: 'nombre',
@@ -85,8 +68,7 @@ export class ExamenesController {
   @Get(':id')
   @ApiOperation({
     summary: 'Obtener un examen por ID',
-    description:
-      'Devuelve un examen específico identificado por su ID, solo si está activo',
+    description: 'Devuelve un examen específico identificado por su ID, solo si está activo',
   })
   @ApiParam({
     name: 'id',
@@ -103,7 +85,7 @@ export class ExamenesController {
     description: 'Examen no encontrado o desactivado',
   })
   findOne(@Param('id') id: string) {
-    return this.examenesService.findOneWithInsumos(id);
+    return this.examenesService.findOne(id);
   }
 
   @Patch(':id')
@@ -126,8 +108,7 @@ export class ExamenesController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Eliminar (soft delete) un examen',
-    description:
-      'Este endpoint desactiva un examen sin eliminarlo físicamente de la base de datos',
+    description: 'Este endpoint desactiva un examen sin eliminarlo físicamente de la base de datos',
   })
   @ApiParam({
     name: 'id',
