@@ -55,7 +55,7 @@ export class InsumosService {
         'departamento.nombre',
         'lote.id',
         'lote.numeroLote',
-        'lote.fechaEntrada',
+        'lote.created_at',
         'lote.fechaCaducidad',
         'lote.cantidadInical',
         'lote.cantidadActual',
@@ -96,25 +96,23 @@ export class InsumosService {
         codigo: insumo.codigo,
         nombre: insumo.nombre,
         trazador: insumo.trazador,
+        total_en_bodega: totalCantidad,
         categoria: {
           id: insumo.categoria.id,
           nombre: insumo.categoria.nombre,
         },
-        totalCantidadActual: totalCantidad,
         departamentos,
-        lotes: insumo.insumosDepartamentos.flatMap((dep) =>
+        lotes: (insumo.insumosDepartamentos || []).flatMap((dep) =>
           dep.lotes
-            ? dep.lotes
-                .filter((lote) => lote.cantidadActual > 0)
-                .map((lote) => ({
-                  id: lote.id,
-                  numeroLote: lote.numeroLote,
-                  fechaEntrada: lote.fechaEntrada,
-                  fechaCaducidad: lote.fechaCaducidad,
-                  cantidadInical: lote.cantidadInical,
-                  cantidadActual: lote.cantidadActual,
-                  status: lote.status,
-                }))
+            ? dep.lotes.map((lote) => ({
+                id: lote.id,
+                numeroLote: lote.numeroLote,
+                fechaEntrada: lote.created_at,
+                fechaCaducidad: lote.fechaCaducidad,
+                cantidadInical: lote.cantidadInical,
+                cantidadActual: lote.cantidadActual,
+                status: lote.status,
+              }))
             : [],
         ),
       };
@@ -171,7 +169,7 @@ export class InsumosService {
         .map((lote) => ({
           id: lote.id,
           numeroLote: lote.numeroLote,
-          fechaEntrada: lote.fechaEntrada,
+          fechaEntrada: lote.created_at,
           fechaCaducidad: lote.fechaCaducidad,
           cantidadInical: lote.cantidadInical,
           cantidadActual: lote.cantidadActual,
@@ -194,8 +192,8 @@ export class InsumosService {
   }
 
   async create(createInsumoDto: CreateInsumoDto) {
-    const { categoriaId, codigo, departamentos, ...rest } = createInsumoDto;
-  
+    const { categoriaId, codigo, ...rest } = createInsumoDto;
+
     // Verificar si el código del insumo ya existe
     const existingInsumo = await this.insumoRepository.findOne({
       where: { codigo },
@@ -236,27 +234,16 @@ export class InsumosService {
       });
 
       const savedInsumo = await this.insumoRepository.save(insumo);
-
-      // Crear las asociaciones InsumoDepartamento
-      for (const dep of departamentos) {
-        const departamento = await this.departamentosService.findOne(
-          dep.departamentoId,
-        );
-        if (!departamento) {
-          throw new NotFoundException(
-            `Departamento con id ${dep.departamentoId} no encontrado`,
-          );
-        }
-
-        await this.insumoDepartamentosService.create({
-          insumoId: savedInsumo.id,
-          departamentoId: dep.departamentoId,
-          existencia: dep.existencia,
-        });
-      }
-
-      // Obtener el insumo con sus relaciones actualizadas
-      return this.findOneWithDepartamentosAndLotes(savedInsumo.id);
+      return {
+        id: savedInsumo.id,
+        codigo: savedInsumo.codigo,
+        nombre: savedInsumo.nombre,
+        trazador: savedInsumo.trazador,
+        categoria: {
+          id: savedInsumo.categoria.id,
+          nombre: savedInsumo.categoria.nombre,
+        },
+      };
     } catch (error) {
       console.error('Error al crear el insumo:', error);
       throw new InternalServerErrorException(
@@ -265,7 +252,6 @@ export class InsumosService {
       );
     }
   }
-  
 
   // Actualizar un insumo existente, si está activo
   async update(id: string, updateInsumoDto: UpdateInsumoDto) {

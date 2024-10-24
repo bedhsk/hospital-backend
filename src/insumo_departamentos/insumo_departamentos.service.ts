@@ -80,6 +80,53 @@ export class InsumoDepartamentosService {
     return insumoDepartamento;
   }
 
+  async findOneByInsumoAndDepartamento(
+    insumoId: string,
+    departamentoId: string,
+    isDestino: boolean = false,
+  ) {
+    const insumoDepartamento = await this.insumodepartamentoService.findOne({
+      where: {
+        insumo: { id: insumoId },
+        departamento: { id: departamentoId },
+        is_active: true,
+      },
+      relations: ['insumo', 'departamento'],
+    });
+
+    if (!insumoDepartamento) {
+      const insumo = await this.insumoService.findOne(insumoId);
+      const departamento =
+        await this.departamentoService.findOne(departamentoId);
+
+      if (!insumo) {
+        throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
+      }
+      if (!departamento) {
+        throw new NotFoundException(
+          `Departamento con ID ${departamentoId} no encontrado`,
+        );
+      }
+
+      if (isDestino) {
+        // Si es el departamento destino, creamos automáticamente el InsumoDepartamento
+        const newInsumoDepartamento = this.insumodepartamentoService.create({
+          insumo,
+          departamento,
+          existencia: 0,
+        });
+        return await this.insumodepartamentoService.save(newInsumoDepartamento);
+      } else {
+        // Si es el departamento origen, lanzamos un error
+        throw new NotFoundException(
+          `No se encontró una relación activa entre el insumo "${insumo.nombre}" y el departamento "${departamento.nombre}"`,
+        );
+      }
+    }
+
+    return insumoDepartamento;
+  }
+
   async create(createInsumoDepartamentoDto: CreateInsumoDepartamentoDto) {
     const { insumoId, departamentoId, ...rest } = createInsumoDepartamentoDto;
     const insumo = await this.insumoService.findOne(
