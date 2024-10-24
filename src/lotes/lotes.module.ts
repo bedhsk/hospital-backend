@@ -11,12 +11,6 @@ import Departamento from 'src/departamentos/entities/departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import Categoria from 'src/categorias/entities/categoria.entity';
 import { CategoriasService } from 'src/categorias/categorias.service';
-import { MovimientolotesService } from './movimientolotes/movimientolotes.service';
-import movimientoLote from './entities/movimiento-lote.entity';
-import { DetalleretirosService } from 'src/retiros/detalleretiros/detalleretiros.service';
-import { DetalleadquisicionesService } from 'src/adquisiciones/detalleadquisiciones/detalleadquisiciones.service';
-import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
-import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
 
 @Module({
   imports: [
@@ -26,9 +20,6 @@ import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.e
       Insumo,
       Departamento,
       Categoria,
-      movimientoLote,
-      DetalleRetiro,
-      detalleAdquisicion,
     ]),
   ],
   controllers: [LotesController],
@@ -38,10 +29,7 @@ import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.e
     InsumosService,
     DepartamentosService,
     CategoriasService,
-    MovimientolotesService,
-    DetalleretirosService,
-    DetalleadquisicionesService,
   ],
-  exports: [LotesService, MovimientolotesService],
+  exports: [LotesService],
 })
 export class LotesModule {}
