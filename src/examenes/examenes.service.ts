@@ -52,7 +52,7 @@ export class ExamenesService {
 
   // Obtener todos los exámenes con Soft Delete (solo los que estén activos)
   async findAll(query: QueryExamenDto) {
-    const { q, page = 1, limit = 10 } = query;
+    const { nombre, page = 1, limit = 10 } = query;
 
     const queryBuilder = this.examenesRepository
       .createQueryBuilder('examen')
@@ -61,9 +61,9 @@ export class ExamenesService {
       .leftJoinAndSelect('insumo.categoria', 'categoria')
       .where('examen.is_active = :isActive', { isActive: true });
 
-    if (q) {
-      queryBuilder.andWhere('examen.nombre ILIKE :nombre', {
-        nombre: `%${q}%`,
+    if (nombre) {
+      queryBuilder.andWhere('examen.nombre LIKE :nombre', {
+        nombre: `%${nombre}%`,
       });
     }
 
@@ -83,7 +83,7 @@ export class ExamenesService {
   async findOne(id: string) {
     const examen = await this.examenesRepository.findOne({
       where: { id, is_active: true },
-      relations: ['insumoExamenes'],
+      relations: ['insumoExamenes'], // Cambiamos de 'insumos' a 'insumoExamenes'
     });
 
     if (!examen) {
@@ -91,27 +91,6 @@ export class ExamenesService {
         `Examen con ID ${id} no encontrado o desactivado`,
       );
     }
-
-    return examen;
-  }
-
-  async findOneWithInsumos(id: string) {
-    const examen = await this.examenesRepository
-      .createQueryBuilder('examen')
-      .leftJoinAndSelect('examen.insumoExamenes', 'insumoExamen')
-      .leftJoinAndSelect('insumoExamen.insumo', 'insumo')
-      .leftJoinAndSelect('insumo.categoria', 'categoria') // Incluimos la categoría del insumo si es necesario
-      .where('examen.id = :id', { id })
-      .andWhere('examen.is_active = true')
-      .getOne();
-
-    if (!examen) {
-      throw new NotFoundException(
-        `Examen con ID ${id} no encontrado o desactivado`,
-      );
-    }
-
-    // Transformamos el resultado para incluir la información del insumo
 
     return examen;
   }

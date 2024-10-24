@@ -38,7 +38,7 @@ export class AdquisicionesService {
       ])
 
     if (q) {
-      queryBuilder.andWhere('usuario.username ILIKE :username', { username: `%${q}%` });
+      queryBuilder.andWhere('usuario.username LIKE :username', { username: `%${q}%` });
     }
 
     if (filter) {

@@ -62,11 +62,8 @@ export class InsumosService {
         'lote.status',
       ]);
 
-      
-
     if (q) {
-      queryBuilder.andWhere('insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo', 
-        { nombre: `%${q}%`, codigo: `%${q}%` });
+      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
     }
 
     if (filter) {
