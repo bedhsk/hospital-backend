@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import OrdenLaboratorio from './entities/orden_laboratorio.entity';
@@ -17,6 +17,7 @@ import CreateRetiroDto from 'src/retiros/dto/create-retiro.dto';
 import { DetalleRetiroDto } from 'src/retiros/dto/create-retiro.dto';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { log } from 'console';
+import { EstadoOrdenLaboratorio } from './enum/estado-orden-laboratorio.enum';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -174,6 +175,9 @@ export class OrdenLaboratoriosService {
   async softDelete(id: string) {
     const ordenLaboratorio = await this.findOne(id);
 
+    if (ordenLaboratorio.estado === EstadoOrdenLaboratorio.ENTREGADO) {
+      throw new BadRequestException('No se puede eliminar una orden entregada');
+    }
     // Soft delete: Cambia el campo `is_active` a false
     ordenLaboratorio.is_active = false;
 

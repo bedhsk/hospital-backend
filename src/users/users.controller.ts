@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -136,8 +137,20 @@ export class UsersController {
   })
   findAll(@Query() query: QueryUserDto) {
     console.log(query);
-    const records = this.userService.findAll(query);
-    return records;
+  
+    return this.userService.findAll(query).then(records => {
+      // Filtrar la contraseña de cada usuario en la respuesta
+      const usersWithoutPassword = records.data.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+  
+      // Retornar la estructura completa (usuarios filtrados y otros datos)
+      return {
+        ...records,
+        data: usersWithoutPassword,
+      };
+    });
   }
 
   @AuthorizedRoles()
@@ -209,7 +222,10 @@ export class UsersController {
   })
   findOne(@Param('id') id: string) {
     console.log(id);
-    return this.userService.findOne(id);
+    return this.userService.findOne(id).then(user => {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
   }
 
   @AuthorizedRoles()
@@ -328,11 +344,15 @@ export class UsersController {
       'Solicitud incorrecta. Puede ser que el rol no se haya encontrado.',
   })
   create(@Body() body: CreateUserDto) {
-    const response = this.userService.create(body);
-    if (response === null) {
-      return 'El Role no fue encontrado';
-    }
-    return response;
+    return this.userService.create(body).then(response => {
+      if (response === null) {
+        return 'El Role no fue encontrado';
+      }
+      
+      // Filtrar la contraseña de la respuesta
+      const { password, ...userWithoutPassword } = response;
+      return userWithoutPassword;
+    });
   }
 
   @AuthorizedRoles()
