@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import CreateRecetaDto from './dto/create-receta.dto';
 import UpdateRecetaDto from './dto/update-receta.dto';
 import Receta from './entities/receta.entity';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { PacientesService } from 'src/pacientes/pacientes.service';
 import QueryRecetaDto from './dto/query-receta.dto';
+import { EstadoReceta } from './enum/estado-receta.enum';
 
 @Injectable()
 export class RecetasService {
@@ -55,28 +56,29 @@ export class RecetasService {
       .leftJoinAndSelect('receta.user', 'user')
       .leftJoinAndSelect('receta.paciente', 'paciente')
       .where('receta.is_Active = :isActive', { isActive: true });
-
+  
     if (q) {
       queryBuilder.andWhere(
         '(user.name LIKE :name OR paciente.nombre LIKE :nombre)',
         { name: `%${q}%`, nombre: `%${q}%` },
       );
     }
-
+  
     if (filter) {
       queryBuilder.andWhere(
         '(user.name = :user OR paciente.nombre = :paciente)',
         { user: filter, paciente: filter },
       );
     }
-
+  
     const totalItems = await queryBuilder.getCount();
-
+  
     const recetas = await queryBuilder
       .select([
         'receta.id',
         'receta.descripcion',
         'receta.createdAt',
+        'receta.estado', // Incluir el campo estado
         'user.id',
         'user.name',
         'paciente.id',
@@ -85,9 +87,9 @@ export class RecetasService {
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
-
+  
     const totalPages = Math.ceil(totalItems / limit);
-
+  
     return {
       data: recetas,
       totalItems,
@@ -95,17 +97,21 @@ export class RecetasService {
       page,
     };
   }
+  
 
   async findOne(id: string) {
     const record = await this.recetasRepository.findOne({
       where: { id, is_Active: true },
       relations: ['user', 'paciente'],
+      select: ['id', 'descripcion', 'createdAt', 'estado'], // Incluir el campo estado
     });
-    if (record === null) {
+  
+    if (!record) {
       throw new NotFoundException(`Receta #${id} no encontrada`);
     }
     return record;
   }
+  
 
   async update(id: string, updateRecetaDto: UpdateRecetaDto) {
     const receta = await this.findOne(id);
@@ -136,6 +142,13 @@ export class RecetasService {
 
   async remove(id: string) {
     const receta = await this.findOne(id);
+
+    // Verificar si el estado es 'Entregado'
+    if (receta.estado === EstadoReceta.ENTREGADO) {
+      throw new BadRequestException('No se puede eliminar una receta con estado "Entregado".');
+    }
+
+    // Realizar el soft delete (cambiar is_Active a false)
     receta.is_Active = false;
     await this.recetasRepository.save(receta);
   }
