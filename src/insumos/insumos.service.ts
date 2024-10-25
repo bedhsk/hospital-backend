@@ -10,7 +10,7 @@ import { CreateInsumoDto } from './dto/create-insumo.dto';
 import UpdateInsumoDto from './dto/update-insumo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoriasService } from 'src/categorias/categorias.service';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import QueryInsumoDto from './dto/query-insumo.dto';
 import Insumo from './entities/insumo.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
@@ -203,7 +203,20 @@ export class InsumosService {
     });
 
     if (existingInsumo) {
-      throw new ConflictException('El código ingresado está en uso');
+      // Si existe un insumo con el mismo código, reactivarlo
+      if (!existingInsumo.is_active) {
+        // Actualizar los datos del insumo reactivado con los nuevos datos
+        this.insumoRepository.merge(existingInsumo, {
+          ...rest,
+          categoria: await this.categoriaService.findOne(categoriaId), // Actualiza la categoría
+        });
+
+        existingInsumo.is_active = true; // Reactivar el insumo
+        await this.insumoRepository.save(existingInsumo); // Guardar los cambios
+        return existingInsumo; // Devolver el insumo reactivado
+      } else {
+        throw new ConflictException('El código ingresado está en uso'); // Solo si ya está activo
+      }
     }
 
     const categoria = await this.categoriaService.findOne(categoriaId);
@@ -251,16 +264,19 @@ export class InsumosService {
       );
     }
 
-    // Verificar si el código del insumo ya existe
-    const existingInsumo = await this.insumoRepository.findOne({
-      where: { codigo: updateInsumoDto.codigo },
-      withDeleted: true,
-    });
+    // Solo verificamos si se está intentando cambiar el código
+    if (updateInsumoDto.codigo && updateInsumoDto.codigo !== insumo.codigo) {
+      // Verificar si el código del insumo ya existe en otro registro
+      const existingInsumo = await this.insumoRepository.findOne({
+        where: { codigo: updateInsumoDto.codigo, id: Not(id) },
+        withDeleted: true,
+      });
 
-    if (existingInsumo) {
-      throw new ConflictException(
-        `El código de insumo ${updateInsumoDto.codigo} ya está en uso.`,
-      );
+      if (existingInsumo) {
+        throw new ConflictException(
+          `El código de insumo ${updateInsumoDto.codigo} ya está en uso.`,
+        );
+      }
     }
 
     this.insumoRepository.merge(insumo, updateInsumoDto);

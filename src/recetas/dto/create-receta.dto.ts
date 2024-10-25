@@ -1,4 +1,5 @@
-import { IsString, MinLength, MaxLength } from 'class-validator';
+import { IsString, MinLength, MaxLength, IsEnum } from 'class-validator';
+import { EstadoReceta } from '../enum/estado-receta.enum';
 
 class CreateRecetaDto {
   @IsString()
@@ -11,6 +12,9 @@ class CreateRecetaDto {
 
   @IsString()
   pacienteId: string;
+
+  @IsEnum(EstadoReceta)
+  estado: EstadoReceta; // Estado de la receta: Pendiente o Entregado
 }
 
 export default CreateRecetaDto;
