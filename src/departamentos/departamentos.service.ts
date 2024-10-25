@@ -153,6 +153,22 @@ export class DepartamentosService {
 
   async remove(id: string) {
     const departamento = await this.findOne(id);
-    return await this.departamentosRepository.remove(departamento);
+
+    // Validar si el departamento existe
+    if (!departamento) {
+      throw new NotFoundException(`Departamento con ID ${id} no encontrado`);
+    }
+
+    try {
+      // Realizar eliminación en cascada gracias a las relaciones de la base de datos
+      await this.departamentosRepository.remove(departamento);
+    } catch (error) {
+      // Manejo de errores, en caso de que haya algún problema en la eliminación
+      throw new BadRequestException(
+        'Error al eliminar el departamento, verifique si tiene dependencias',
+      );
+    }
+
+    return { message: 'Departamento eliminado con éxito' };
   }
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import CreateRecetaDto from './dto/create-receta.dto';
 import UpdateRecetaDto from './dto/update-receta.dto';
 import Receta from './entities/receta.entity';
@@ -56,23 +60,23 @@ export class RecetasService {
       .leftJoinAndSelect('receta.user', 'user')
       .leftJoinAndSelect('receta.paciente', 'paciente')
       .where('receta.is_Active = :isActive', { isActive: true });
-  
+
     if (q) {
       queryBuilder.andWhere(
-        '(user.name LIKE :name OR paciente.nombre LIKE :nombre)',
-        { name: `%${q}%`, nombre: `%${q}%` },
+        '(user.name ILIKE :name OR paciente.nombre ILIKE :nombre OR paciente.cui ILIKE :cui)',
+        { name: `%${q}%`, nombre: `%${q}%`, cui: `%${q}%` },
       );
     }
-  
+
     if (filter) {
       queryBuilder.andWhere(
         '(user.name = :user OR paciente.nombre = :paciente)',
         { user: filter, paciente: filter },
       );
     }
-  
+
     const totalItems = await queryBuilder.getCount();
-  
+
     const recetas = await queryBuilder
       .select([
         'receta.id',
@@ -87,9 +91,9 @@ export class RecetasService {
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
-  
+
     const totalPages = Math.ceil(totalItems / limit);
-  
+
     return {
       data: recetas,
       totalItems,
@@ -97,7 +101,6 @@ export class RecetasService {
       page,
     };
   }
-  
 
   async findOne(id: string) {
     const record = await this.recetasRepository.findOne({
@@ -105,13 +108,12 @@ export class RecetasService {
       relations: ['user', 'paciente'],
       select: ['id', 'descripcion', 'createdAt', 'estado'], // Incluir el campo estado
     });
-  
+
     if (!record) {
       throw new NotFoundException(`Receta #${id} no encontrada`);
     }
     return record;
   }
-  
 
   async update(id: string, updateRecetaDto: UpdateRecetaDto) {
     const receta = await this.findOne(id);
@@ -145,7 +147,9 @@ export class RecetasService {
 
     // Verificar si el estado es 'Entregado'
     if (receta.estado === EstadoReceta.ENTREGADO) {
-      throw new BadRequestException('No se puede eliminar una receta con estado "Entregado".');
+      throw new BadRequestException(
+        'No se puede eliminar una receta con estado "Entregado".',
+      );
     }
 
     // Realizar el soft delete (cambiar is_Active a false)
