@@ -559,15 +559,13 @@ export class AdquisicionesController {
               numeroLote: "Lote12345",
               fechaCaducidad: "2025-12-31",
               cantidadInical: 350,
-              status: "En uso",
-              insumoDepartamentoId: "0e741e20-77e5-4e78-8887-bd3d85a02234"
+              insumoId: "0e741e20-77e5-4e78-8887-bd3d85a02234"
             },
             {
               numeroLote: "Lote98765",
               fechaCaducidad: "2024-06-15",
               cantidadInical: 75,
-              status: "Disponible",
-              insumoDepartamentoId: "aae4c265-3bb7-402e-a3ee-0b5358caf40a"
+              insumoId: "aae4c265-3bb7-402e-a3ee-0b5358caf40a"
             }
           ],
         },
