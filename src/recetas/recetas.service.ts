@@ -15,6 +15,7 @@ import { EstadoReceta } from './enum/estado-receta.enum';
 import { DetalleretirosService } from '../retiros/detalleretiros/detalleretiros.service'
 import { RetirosService } from '../retiros/retiros.service';
 import { InsumoDepartamentosService } from '../insumo_departamentos/insumo_departamentos.service';
+import { RecetaConRetiro } from './interfaces/receta-con-retiro';
 
 @Injectable()
 export class RecetasService {
@@ -28,7 +29,7 @@ export class RecetasService {
     private readonly insumoDepartamentoService: InsumoDepartamentosService
   ) {}
 
-  async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
+  async create(createRecetaDto: CreateRecetaDto): Promise<RecetaConRetiro> {
     const { userId, pacienteId, descripcion, detalles, departamentoId, ...recetaData } = createRecetaDto;
 
     // Validar existencia de user y paciente
@@ -68,7 +69,7 @@ export class RecetasService {
 
       // Crear el detalle de retiro y añadirlo a retiroDetalles
       const detalleRetiro = await this.detalleRetiroService.create({
-        retiroId: retiro.retiro.id, // Cambiar a utilizar el ID del retiro creado
+        retiroId: retiro.retiro.id, 
         insumoDepartamentoId: insumoDepartamento.id,
         cantidad,
       });
@@ -77,14 +78,20 @@ export class RecetasService {
     }
 
     // Retornar solo la información necesaria de la receta
+    // Retornar todos los datos, incluyendo el retiro y detalles
     return {
       id: savedReceta.id,
       descripcion: savedReceta.descripcion,
       createdAt: savedReceta.createdAt,
       user: { id: user.id, name: user.name },
       paciente: { id: paciente.id, nombre: paciente.nombre },
-    } as Receta;
-}
+      estado: savedReceta.estado,
+      retiro: {
+        id: retiro.retiro.id,
+        detalles: retiroDetalles,
+      }
+    } as RecetaConRetiro;
+  }
 
 
 
