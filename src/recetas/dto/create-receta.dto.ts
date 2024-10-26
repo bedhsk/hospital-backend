@@ -8,10 +8,6 @@ export class DetalleRetiroDto {
   @IsNotEmpty()
   insumoId: string;
 
-  @IsUUID()
-  @IsNotEmpty()
-  departamentoId: string;
-
   @IsNumber()
   @IsNotEmpty()
   cantidad: number;
@@ -32,6 +28,10 @@ class CreateRecetaDto {
   estado: EstadoReceta; // Estado de la receta: Pendiente o Entregado
 
   // Atributos para crear el detalle del retiro
+  @IsUUID()
+  @IsNotEmpty()
+  departamentoId: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type (() => DetalleRetiroDto)

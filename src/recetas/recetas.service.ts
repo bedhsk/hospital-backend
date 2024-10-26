@@ -29,7 +29,7 @@ export class RecetasService {
   ) {}
 
   async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
-    const { userId, pacienteId, descripcion, detalles, ...recetaData } = createRecetaDto;
+    const { userId, pacienteId, descripcion, detalles, departamentoId, ...recetaData } = createRecetaDto;
 
     // Validar existencia de user y paciente
     const user = await this.usersService.findOne(userId);
@@ -55,7 +55,7 @@ export class RecetasService {
     });
 
     for (const detalle of detalles) {
-      const { insumoId, departamentoId, cantidad } = detalle;
+      const { insumoId, cantidad } = detalle;
 
       // Buscar insumo-departamento por insumoId y departamentoId
       const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(
