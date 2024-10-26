@@ -1,6 +1,24 @@
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from "class-validator";
-import CreateLoteDto from "src/lotes/dto/create-lote.dto";
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from "class-validator";
+
+
+export class createLote {
+  @IsUUID()
+  @IsNotEmpty()
+  insumoId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  cantidadInical: number;
+
+  @IsString()
+  @MaxLength(50)
+  numeroLote: string;
+
+  @IsDate()
+  @Type(() => Date)
+  fechaCaducidad: Date;
+}
 
 export default class CreateAdquisicionLoteDto {
   @IsString()
@@ -19,7 +37,7 @@ export default class CreateAdquisicionLoteDto {
   // Atributos para crear detalle adquisicion
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateLoteDto)
+  @Type(() => createLote)
   @IsNotEmpty()
-  lotes: CreateLoteDto[];
+  lotes: createLote[];
 }
