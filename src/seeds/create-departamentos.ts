@@ -15,6 +15,7 @@ export class CreateDepartamentoSeed {
       { nombre: 'Traumatología' },
       { nombre: 'Administración' },
       { nombre: 'Medicina General' },
+      { nombre: 'Bodega' },
     ];
 
     await departamentoRepository.save(departamento);
