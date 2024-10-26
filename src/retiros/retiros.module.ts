@@ -34,6 +34,6 @@ import { DepartamentosModule } from 'src/departamentos/departamentos.module';
   providers: [RetirosService, DetalleretirosService
   ],
   controllers: [RetirosController],
-  exports: [RetirosService]
+  exports: [RetirosService, DetalleretirosService,]
 })
 export class RetirosModule {}

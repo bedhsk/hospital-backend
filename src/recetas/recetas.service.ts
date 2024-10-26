@@ -12,6 +12,9 @@ import { UsersService } from '../users/users.service';
 import { PacientesService } from 'src/pacientes/pacientes.service';
 import QueryRecetaDto from './dto/query-receta.dto';
 import { EstadoReceta } from './enum/estado-receta.enum';
+import { DetalleretirosService } from '../retiros/detalleretiros/detalleretiros.service'
+import { RetirosService } from '../retiros/retiros.service';
+import { InsumoDepartamentosService } from '../insumo_departamentos/insumo_departamentos.service';
 
 @Injectable()
 export class RecetasService {
@@ -20,30 +23,60 @@ export class RecetasService {
     private recetasRepository: Repository<Receta>,
     private readonly usersService: UsersService,
     private readonly pacientesService: PacientesService,
+    private readonly detalleRetiroService: DetalleretirosService,
+    private readonly retiroService: RetirosService,
+    private readonly insumoDepartamentoService: InsumoDepartamentosService
   ) {}
 
   async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
-    const { userId, pacienteId, ...recetaData } = createRecetaDto;
+    const { userId, pacienteId, descripcion, detalles, ...recetaData } = createRecetaDto;
+
+    // Validar existencia de user y paciente
     const user = await this.usersService.findOne(userId);
     const paciente = await this.pacientesService.findOne(pacienteId);
+    if (!user) throw new NotFoundException('User not found, cannot create receta');
+    if (!paciente) throw new NotFoundException('Paciente not found, cannot create receta');
 
-    if (!user) {
-      throw new NotFoundException('User not found, cannot create receta');
-    }
-
-    if (!paciente) {
-      throw new NotFoundException('Paciente not found, cannot create receta');
-    }
-
+    // Crear la receta
     const receta = this.recetasRepository.create({
       ...recetaData,
+      descripcion,
       user: { id: user.id },
       paciente: { id: paciente.id },
     });
-
     const savedReceta = await this.recetasRepository.save(receta);
 
-    // Retornar solo la información necesaria
+    // Procesar y generar los detalles de retiro
+    const retiroDetalles = [];
+    const retiro = await this.retiroService.create({
+      usuarioId: user.id,
+      descripcion: descripcion,
+      detalles: retiroDetalles,
+    });
+
+    for (const detalle of detalles) {
+      const { insumoId, departamentoId, cantidad } = detalle;
+
+      // Buscar insumo-departamento por insumoId y departamentoId
+      const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(
+        insumoId, departamentoId, true // true asume que este es el departamento destino
+      );
+
+      if (!insumoDepartamento) {
+        throw new NotFoundException(`Insumo ${insumoId} en departamento ${departamentoId} no encontrado`);
+      }
+
+      // Crear el detalle de retiro y añadirlo a retiroDetalles
+      const detalleRetiro = await this.detalleRetiroService.create({
+        retiroId: retiro.retiro.id, // Cambiar a utilizar el ID del retiro creado
+        insumoDepartamentoId: insumoDepartamento.id,
+        cantidad,
+      });
+
+      retiroDetalles.push(detalleRetiro);
+    }
+
+    // Retornar solo la información necesaria de la receta
     return {
       id: savedReceta.id,
       descripcion: savedReceta.descripcion,
@@ -51,7 +84,9 @@ export class RecetasService {
       user: { id: user.id, name: user.name },
       paciente: { id: paciente.id, nombre: paciente.nombre },
     } as Receta;
-  }
+}
+
+
 
   async findAll(query: QueryRecetaDto) {
     const { q, filter, page = 1, limit = 10 } = query;

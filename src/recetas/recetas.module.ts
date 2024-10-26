@@ -13,6 +13,8 @@ import Departamento from 'src/departamentos/entities/departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import Antecedente from 'src/pacientes/entities/antecedente.entity';
 import { AntecedentesService } from 'src/pacientes/antecedentes/antecedentes.service';
+import { RetirosModule } from 'src/retiros/retiros.module';
+import { InsumoDepartamentosModule } from 'src/insumo_departamentos/insumo_departamentos.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { AntecedentesService } from 'src/pacientes/antecedentes/antecedentes.ser
       Departamento,
       Antecedente,
     ]),
+    RetirosModule,
+    InsumoDepartamentosModule
   ],
   controllers: [RecetasController],
   providers: [
