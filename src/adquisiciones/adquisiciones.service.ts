@@ -10,6 +10,8 @@ import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
 import { LotesService } from 'src/lotes/lotes.service';
 import CreateAdquisicionLoteDto from './dtos/create-adquisicion-lote.dto';
 import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
+import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 
 @Injectable()
 export class AdquisicionesService {
@@ -20,6 +22,8 @@ export class AdquisicionesService {
     private readonly usuarioService: UsersService,
     private readonly lotesService: LotesService,
     private readonly movimientoLoteService: MovimientolotesService,
+    private readonly departamentosServcie: DepartamentosService,
+    private readonly insumoDepartamentoService: InsumoDepartamentosService
   ) {}
 
   // Método para obtener todos los insumos que están activos
@@ -193,10 +197,24 @@ export class AdquisicionesService {
     const detalles = []
     const lotesAux = []
     const movimientosLote = []
+    const departamento = await this.departamentosServcie.findOneByName('Bodega')
     const lotesPromises = lotes.map(async element => {
-      const { insumoDepartamentoId, cantidadInical } = element;
-      detalles.push({insumoDepartamentoId, cantidad: cantidadInical})
-      const lote = await this.lotesService.create(element)
+      const { insumoId, cantidadInical } = element;
+      
+      const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, departamento.id, true)
+      
+      detalles.push({insumoDepartamentoId: insumoDepartamento.id, cantidad: cantidadInical})
+      const lote = await this.lotesService.create(
+        {
+          numeroLote: element.numeroLote,
+          fechaCaducidad: element.fechaCaducidad,
+          cantidadInical: element.cantidadInical,
+          status: 'disponible',
+          is_active: true,
+          insumoDepartamentoId: insumoDepartamento.id,
+          cantidadActual: 0
+        }
+      )
       if (lote){
         lotesAux.push(lote)
       }

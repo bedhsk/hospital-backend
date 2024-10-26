@@ -12,12 +12,15 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
 import { LotesModule } from 'src/lotes/lotes.module';
+import { DepartamentosModule } from 'src/departamentos/departamentos.module';
 
 @Module({
   imports: [
     InsumoDepartamentosModule,
     UsersModule,
     LotesModule,
+    InsumoDepartamentosModule,
+    DepartamentosModule,
     TypeOrmModule.forFeature([
       detalleAdquisicion,
       InsumoDepartamento,
