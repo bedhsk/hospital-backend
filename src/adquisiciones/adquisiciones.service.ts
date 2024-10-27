@@ -12,6 +12,7 @@ import CreateAdquisicionLoteDto from './dtos/create-adquisicion-lote.dto';
 import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
+import Lote from 'src/lotes/entities/lote.entity';
 import createNewLoteDto from './dtos/create-new-lote.dto';
 import { log } from 'console';
 

@@ -226,7 +226,6 @@ export class LotesService {
     return loteAux2;
   }
 
-
   // Soft delete para un lote
   async softDelete(id: string) {
     const lote = await this.findOne(id);
