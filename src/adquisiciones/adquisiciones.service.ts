@@ -127,10 +127,12 @@ export class AdquisicionesService {
         `Adquisicion no fue creada con exito!`,
       );
     }
-
+    log(...detalles)
     const detallePromises = detalles.map(async element => {
       const { insumoId, cantidad } = element;
+      log("El insumo id es: " + insumoId + " y la cantidad es: " + cantidad)
       const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, rest.departamentoId, true);
+      log("El insumo departamento es: " + insumoDepartamento.id)
       const detalle =  await this.detalleAdquisicionService.create({
         adquisicionId: adquisicion.id,
         insumoDepartamentoId: insumoDepartamento.id,
@@ -144,6 +146,7 @@ export class AdquisicionesService {
           }
         }
       }
+      log(detalle)
       return detalle;
     });
 
@@ -215,7 +218,9 @@ export class AdquisicionesService {
       
       const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, departamento.id, true)
       
-      detalles.push({insumoDepartamentoId: insumoDepartamento.id, cantidad: cantidadInical})
+      detalles.push({insumoId: insumoId, cantidad: cantidadInical})
+
+      
       const lote = await this.lotesService.create(
         {
           numeroLote: element.numeroLote,
@@ -234,7 +239,6 @@ export class AdquisicionesService {
     });
     
     await Promise.all(lotesPromises);
-
     const adquisiciones = await this.create({usuarioId, departamentoId: departamento.id, descripcion, detalles, lotes: null})
 
     const movimientoLotePromises = adquisiciones.detalleAdquisicion.map(async (element, index) => {
