@@ -1,10 +1,11 @@
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from "class-validator";
+import createNewLoteDto from "./create-new-lote.dto";
 
 export class DetalleAdquisicionDto {
   @IsUUID()
   @IsNotEmpty()
-  insumoDepartamentoId: string;
+  insumoId: string;
 
   @IsNumber()
   @IsNotEmpty()
@@ -25,10 +26,20 @@ export default class CreateAdquisicionDto {
   @MaxLength(255)
   descripcion: string;
 
+  @IsUUID()
+  @IsNotEmpty()
+  departamentoId: string;
+
   // Atributos para crear detalle adquisicion
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => DetalleAdquisicionDto)
   @IsNotEmpty()
   detalles: DetalleAdquisicionDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DetalleAdquisicionDto)
+  @IsOptional()
+  lotes: createNewLoteDto[] = null;
 }

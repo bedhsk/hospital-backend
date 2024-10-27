@@ -12,6 +12,9 @@ import CreateAdquisicionLoteDto from './dtos/create-adquisicion-lote.dto';
 import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
+import Lote from 'src/lotes/entities/lote.entity';
+import createNewLoteDto from './dtos/create-new-lote.dto';
+import { log } from 'console';
 
 @Injectable()
 export class AdquisicionesService {
@@ -100,7 +103,7 @@ export class AdquisicionesService {
 
   // Crear adquisicion
   async create(createAdquisicion: CreateAdquisicionDto) {
-    const { usuarioId, detalles, ...rest} = createAdquisicion;
+    const { usuarioId, detalles, lotes, ...rest} = createAdquisicion;
     const usuario = await this.usuarioService.findOne(
       createAdquisicion.usuarioId,
     );
@@ -126,14 +129,22 @@ export class AdquisicionesService {
     }
 
     const detallePromises = detalles.map(async element => {
-      const { insumoDepartamentoId, cantidad } = element;
-
-      return await this.detalleAdquisicionService.create({
+      const { insumoId, cantidad } = element;
+      const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, rest.departamentoId, true);
+      const detalle =  await this.detalleAdquisicionService.create({
         adquisicionId: adquisicion.id,
-        insumoDepartamentoId,
+        insumoDepartamentoId: insumoDepartamento.id,
         is_active: true,
         cantidad,
       });
+      if (lotes){
+        for (const lote of lotes) {
+          if (lote.insumoId === insumoId) {
+            await this.crearMovimientoLote(insumoDepartamento.id, lote, detalle.id);
+          }
+        }
+      }
+      return detalle;
     });
 
     await Promise.all(detallePromises);
@@ -159,7 +170,8 @@ export class AdquisicionesService {
     
     const detallePromises = updateInsumoDto.detalles.map(async element => {
       if (element.cantidad) {
-        const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionIdAndInsumoDepartamentoId(id, element.insumoDepartamentoId)
+        const insumoDepartamento = await this.insumoDepartamentoService.findByInsumoDepartamentoId(element.insumoId, updateInsumoDto.departamentoId);
+        const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionIdAndInsumoDepartamentoId(id, insumoDepartamento.id);
         await this.detalleAdquisicionService.update(detalleAdquisicionAux.id, { cantidad: element.cantidad })
       }
     });
@@ -212,7 +224,7 @@ export class AdquisicionesService {
           status: 'disponible',
           is_active: true,
           insumoDepartamentoId: insumoDepartamento.id,
-          cantidadActual: 0
+          cantidadActual: element.cantidadInical
         }
       )
       if (lote){
@@ -223,7 +235,7 @@ export class AdquisicionesService {
     
     await Promise.all(lotesPromises);
 
-    const adquisiciones = await this.create({usuarioId, descripcion, detalles})
+    const adquisiciones = await this.create({usuarioId, departamentoId: departamento.id, descripcion, detalles, lotes: null})
 
     const movimientoLotePromises = adquisiciones.detalleAdquisicion.map(async (element, index) => {
       const { id, cantidad } = element;
@@ -246,5 +258,20 @@ export class AdquisicionesService {
       lotes: lotesAux, 
       movimientosLote
     };
+  }
+
+  async crearMovimientoLote(
+    insumoDepartamentoId: string,
+    lote: createNewLoteDto,
+    detalleAquisicionId: string,
+  ) {
+    const loteAd = await this.lotesService.updateAdquisicionLote(lote, insumoDepartamentoId);
+
+    // se crea un movimiento lote.
+    return await this.movimientoLoteService.create({
+      loteId: loteAd.id,
+      detalleAdquisicionId: detalleAquisicionId,
+      cantidad: loteAd.cantidadInical,
+    });
   }
 }
