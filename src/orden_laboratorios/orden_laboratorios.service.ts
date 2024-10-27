@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import OrdenLaboratorio from './entities/orden_laboratorio.entity';
@@ -8,16 +12,15 @@ import QueryOrdenLaboratorioDto from './dtos/query-orden-laboratorio.dto';
 import User from '../users/entities/user.entity';
 import Paciente from '../pacientes/entities/paciente.entity';
 import Examen from '../examenes/entities/examen.entity';
-import Retiro from '../retiros/entities/retiro.entity';
-import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
-import { RetirosService } from 'src/retiros/retiros.service';
 import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
-import CreateRetiroDto from 'src/retiros/dto/create-retiro.dto';
-import { DetalleRetiroDto } from 'src/retiros/dto/create-retiro.dto';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
-import { log } from 'console';
 import { EstadoOrdenLaboratorio } from './enum/estado-orden-laboratorio.enum';
+import Retiro from 'src/retiros/entities/retiro.entity';
+import { RetirosService } from 'src/retiros/retiros.service';
+import CreateRetiroDto, {
+  DetalleRetiroDto,
+} from 'src/retiros/dto/create-retiro.dto';
 
 @Injectable()
 export class OrdenLaboratoriosService {

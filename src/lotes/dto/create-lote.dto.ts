@@ -18,10 +18,6 @@ class CreateLoteDto {
 
   @IsDate()
   @Type(() => Date)
-  fechaEntrada: Date;
-
-  @IsDate()
-  @Type(() => Date)
   fechaCaducidad: Date;
 
   @IsInt()

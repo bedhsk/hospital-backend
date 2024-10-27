@@ -6,6 +6,7 @@ import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
 import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
 import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
+import CreateAdquisicionLoteDto from './dtos/create-adquisicion-lote.dto';
 
 @ApiTags('Adquisiciones y detalleAdquisicion')
 @Controller('adquisiciones')
@@ -528,4 +529,59 @@ export class AdquisicionesController {
   findAllDetallesByAdquisicionId(@Param('id') id: string){
     return this.detalleAdquisicionService.findAllByAdquisicionId(id);
   }
+
+
+  // ------------------------------------------ ENDPOINTS PARA CREAR LOTES -----------------------------//
+  
+  @AuthorizedRoles(['Bodeguero'])
+  @Post('/lotes')
+  @ApiOperation({
+    summary: 'Crear nueva adquisicion de lotes',
+    description: 'Este endpoint sirve para crear nuevas adquisiciones de lotes',
+  })
+  @ApiBody({
+    description: 'Datos de la adquisición a crear con lotes',
+    schema: {
+      type: 'object',
+      properties: {
+        usuarioId: {
+          type: 'string',
+          example: '4b343f3e-0b6d-4182-b9c9-18fa7175588d',
+        },
+        descripcion: {
+          type: 'string',
+          example: 'Prueba de adquisicion',
+        },
+        detalles: {
+          type: 'array',
+          example: [
+            {
+              numeroLote: "Lote12345",
+              fechaCaducidad: "2025-12-31",
+              cantidadInical: 350,
+              insumoId: "0e741e20-77e5-4e78-8887-bd3d85a02234"
+            },
+            {
+              numeroLote: "Lote98765",
+              fechaCaducidad: "2024-06-15",
+              cantidadInical: 75,
+              insumoId: "aae4c265-3bb7-402e-a3ee-0b5358caf40a"
+            }
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Adquisicion de lotes creados existosamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos inválidos, revisa los campos enviados',
+  })
+  createAdquisicionLote(@Body() createAdquisicionLote: CreateAdquisicionLoteDto) {
+    return this.adquisicionService.createAdquisicionLote(createAdquisicionLote);
+  }
+
 }
