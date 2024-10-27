@@ -45,8 +45,8 @@ export class UsersService {
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.name ILIKE :name OR user.username ILIKE :username OR user.email ILIKE :email)',
-        { name: `%${q}%`, username: `%${q}%`, email: `%${q}%` },
+        '(user.name ILIKE :query OR user.username ILIKE :query OR user.email ILIKE :query)',
+        { query: `%${q}%` },
       );
     }
 

@@ -4,21 +4,21 @@ import { Type } from 'class-transformer';
 class QueryExamenDto {
   @IsOptional()
   @IsString()
-  q?: string; // Campo opcional para buscar por nombre
+  nombre?: string;  // Campo opcional para buscar por nombre
 
   @IsOptional()
   @IsUUID()
-  id?: string; // Campo opcional para buscar por ID
+  id?: string;  // Campo opcional para buscar por ID
 
   @IsOptional()
   @IsNumber()
-  @Type(() => Number) // Convertir el valor recibido a número
-  page: number = 1; // Número de página para paginación (opcional)
+  @Type(() => Number)  // Convertir el valor recibido a número
+  page: number = 1;  // Número de página para paginación (opcional)
 
   @IsOptional()
   @IsNumber()
-  @Type(() => Number) // Convertir el valor recibido a número
-  limit: number = 10; // Límite de resultados por página (opcional)
+  @Type(() => Number)  // Convertir el valor recibido a número
+  limit: number = 10;  // Límite de resultados por página (opcional)
 }
 
 export default QueryExamenDto;

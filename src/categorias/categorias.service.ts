@@ -21,7 +21,7 @@ export class CategoriasService {
       .select(['categoria.id', 'categoria.nombre']);
 
     if (q) {
-      queryBuilder.andWhere('categoria.nombre ILIKE :nombre', {
+      queryBuilder.andWhere('categoria.nombre LIKE :nombre', {
         nombre: `%${q}%`,
       });
     }

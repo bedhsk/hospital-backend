@@ -25,7 +25,7 @@ export class DepartamentosService {
   }
 
   async findAll(queryDto: QueryDepartamentoDto) {
-    const { q, filter, page = 1, limit = 10 } = queryDto;
+    const { query, filter, page = 1, limit = 10 } = queryDto;
 
     const queryBuilder = this.departamentosRepository
       .createQueryBuilder('departamento')
@@ -36,9 +36,9 @@ export class DepartamentosService {
       .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
       .where('departamento.is_active = :isActive', { isActive: true });
 
-    if (q) {
+    if (query) {
       queryBuilder.andWhere('departamento.nombre ILIKE :nombre', {
-        nombre: `%${q}%`,
+        nombre: `%${query}%`,
       });
     }
 
