@@ -12,6 +12,7 @@ export class CreateUsersSeed {
 
     const adminRole = await roleRepository.findOneBy({ name: 'Admin' });
     const doctorRole = await roleRepository.findOneBy({ name: 'Doctor' });
+    const bodgaRole = await roleRepository.findOneBy({ name: 'Bodeguero' });
 
     const departamentoAdmin = await departamentoRepository.findOneBy({
       nombre: 'Administración',
@@ -19,9 +20,14 @@ export class CreateUsersSeed {
     const departamentoEnfermeria = await departamentoRepository.findOneBy({
       nombre: 'Enfermería',
     });
+    const departamentoBodega = await departamentoRepository.findOneBy({
+      nombre: 'Bodega',
+    });
 
     const passwordAdminHash = await bcrypt.hash('admin.hsptl24*', 10);
     const passwordDoctorHash = await bcrypt.hash('doctorahsptl24', 10);
+    const passwordBodegaHash = await bcrypt.hash('bodegahsptl24', 10);
+
     const users = [
       {
         name: 'Admin',
@@ -42,6 +48,16 @@ export class CreateUsersSeed {
         role: doctorRole,
         departamento: departamentoEnfermeria,
         password: passwordDoctorHash, // Esta contraseña se hasheará automáticamente
+      },
+      {
+        name: 'Carlos',
+        lastname: 'Bodega',
+        username: 'bdga',
+        email: 'bdga@example.com',
+        is_Active: true,
+        role: bodgaRole,
+        departamento: departamentoBodega,
+        password: passwordBodegaHash, // Esta contraseña se hasheará automáticamente
       },
     ];
 
