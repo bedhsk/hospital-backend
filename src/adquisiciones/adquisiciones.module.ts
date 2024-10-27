@@ -13,6 +13,7 @@ import { JwtGuard } from 'src/auth/jwt.guard';
 import { RoleGuard } from 'src/auth/role.guard';
 import { LotesModule } from 'src/lotes/lotes.module';
 import { DepartamentosModule } from 'src/departamentos/departamentos.module';
+import Lote from 'src/lotes/entities/lote.entity';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { DepartamentosModule } from 'src/departamentos/departamentos.module';
       detalleAdquisicion,
       InsumoDepartamento,
       Adquisicion,
+      Lote
     ]),
   ],
   providers: [ 

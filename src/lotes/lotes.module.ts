@@ -17,9 +17,11 @@ import { DetalleretirosService } from 'src/retiros/detalleretiros/detalleretiros
 import { DetalleadquisicionesService } from 'src/adquisiciones/detalleadquisiciones/detalleadquisiciones.service';
 import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
 import detalleAdquisicion from 'src/adquisiciones/entities/detalle_adquisicion.entity';
+import { InsumoDepartamentosModule } from 'src/insumo_departamentos/insumo_departamentos.module';
 
 @Module({
   imports: [
+    InsumoDepartamentosModule,
     TypeOrmModule.forFeature([
       Lote,
       InsumoDepartamento,
