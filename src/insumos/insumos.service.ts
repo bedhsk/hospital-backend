@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -8,9 +10,11 @@ import { CreateInsumoDto } from './dto/create-insumo.dto';
 import UpdateInsumoDto from './dto/update-insumo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoriasService } from 'src/categorias/categorias.service';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import QueryInsumoDto from './dto/query-insumo.dto';
 import Insumo from './entities/insumo.entity';
+import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 
 @Injectable()
 export class InsumosService {
@@ -18,15 +22,25 @@ export class InsumosService {
     @InjectRepository(Insumo)
     private readonly insumoRepository: Repository<Insumo>,
     private readonly categoriaService: CategoriasService,
+    private readonly departamentosService: DepartamentosService,
+    @Inject(forwardRef(() => InsumoDepartamentosService))
+    private readonly insumoDepartamentosService: InsumoDepartamentosService,
   ) {}
 
-  // Método para obtener todos los insumos que están activos
+  // Método para obtener todos los insumos que están activos con el total de cantidad actual
   async findAll(query: QueryInsumoDto) {
-    const { q, filter, page, limit } = query;
+    const { q, filter, page = 1, limit = 10 } = query;
+
+    const insumosConTotalCantidad =
+      await this.getInsumosWithTotalCantidadActual();
+
     const queryBuilder = this.insumoRepository
       .createQueryBuilder('insumo')
       .where({ is_active: true })
       .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .leftJoinAndSelect('insumo.insumosDepartamentos', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .leftJoinAndSelect('insumoDepartamento.lotes', 'lote')
       .select([
         'insumo.id',
         'insumo.codigo',
@@ -35,15 +49,29 @@ export class InsumosService {
         'insumo.categoriaId',
         'categoria.id',
         'categoria.nombre',
+        'insumoDepartamento.id',
+        'insumoDepartamento.existencia',
+        'departamento.id',
+        'departamento.nombre',
+        'lote.id',
+        'lote.numeroLote',
+        'lote.created_at',
+        'lote.fechaCaducidad',
+        'lote.cantidadInical',
+        'lote.cantidadActual',
+        'lote.status',
       ]);
 
     if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere(
+        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
+        { nombre: `%${q}%`, codigo: `%${q}%` },
+      );
     }
 
     if (filter) {
       queryBuilder.andWhere('categoria.nombre = :categoria', {
-        categoria: `${filter}`,
+        categoria: filter,
       });
     }
 
@@ -55,8 +83,48 @@ export class InsumosService {
 
     const totalPages = Math.ceil(totalItems / limit);
 
+    const result = insumos.map((insumo) => {
+      const totalCantidad =
+        insumosConTotalCantidad.find((i) => i.insumoId === insumo.id)
+          ?.totalCantidadActual || 0;
+
+      const departamentos = insumo.insumosDepartamentos.map((insumoDep) => ({
+        id: insumoDep.departamento.id,
+        nombre: insumoDep.departamento.nombre,
+        existencia: insumoDep.existencia,
+      }));
+
+      return {
+        id: insumo.id,
+        codigo: insumo.codigo,
+        nombre: insumo.nombre,
+        trazador: insumo.trazador,
+        categoria: {
+          id: insumo.categoria.id,
+          nombre: insumo.categoria.nombre,
+        },
+        totalCantidadActual: totalCantidad,
+        departamentos,
+        lotes: insumo.insumosDepartamentos.flatMap((dep) =>
+          dep.lotes
+            ? dep.lotes
+                .filter((lote) => lote.cantidadActual > 0)
+                .map((lote) => ({
+                  id: lote.id,
+                  numeroLote: lote.numeroLote,
+                  fechaEntrada: lote.created_at,
+                  fechaCaducidad: lote.fechaCaducidad,
+                  cantidadInical: lote.cantidadInical,
+                  cantidadActual: lote.cantidadActual,
+                  status: lote.status,
+                }))
+            : [],
+        ),
+      };
+    });
+
     return {
-      data: insumos,
+      data: result,
       totalItems,
       totalPages,
       page,
@@ -77,22 +145,84 @@ export class InsumosService {
     return insumo;
   }
 
-  // Crear un nuevo insumo
+  async findOneWithDepartamentosAndLotes(id: string) {
+    const insumo = await this.insumoRepository.findOne({
+      where: { id, is_active: true },
+      relations: [
+        'categoria',
+        'insumosDepartamentos',
+        'insumosDepartamentos.departamento',
+        'insumosDepartamentos.lotes',
+      ],
+    });
+
+    if (!insumo) {
+      throw new NotFoundException(
+        `Insumo con ID ${id} no encontrado o desactivado`,
+      );
+    }
+
+    const departamentos = insumo.insumosDepartamentos.map((insumoDep) => ({
+      id: insumoDep.departamento.id,
+      nombre: insumoDep.departamento.nombre,
+      existencia: insumoDep.existencia,
+    }));
+
+    const lotes = insumo.insumosDepartamentos.flatMap((insumoDep) =>
+      insumoDep.lotes
+        .filter((lote) => lote.cantidadActual > 0)
+        .map((lote) => ({
+          id: lote.id,
+          numeroLote: lote.numeroLote,
+          fechaEntrada: lote.created_at,
+          fechaCaducidad: lote.fechaCaducidad,
+          cantidadInical: lote.cantidadInical,
+          cantidadActual: lote.cantidadActual,
+          status: lote.status,
+        })),
+    );
+
+    return {
+      id: insumo.id,
+      codigo: insumo.codigo,
+      nombre: insumo.nombre,
+      trazador: insumo.trazador,
+      categoria: {
+        id: insumo.categoria.id,
+        nombre: insumo.categoria.nombre,
+      },
+      departamentos,
+      lotes,
+    };
+  }
+
   async create(createInsumoDto: CreateInsumoDto) {
     const { categoriaId, codigo, ...rest } = createInsumoDto;
 
     // Verificar si el código del insumo ya existe
     const existingInsumo = await this.insumoRepository.findOne({
       where: { codigo },
+      withDeleted: true,
     });
 
     if (existingInsumo) {
-      throw new ConflictException('El código ingresado está en uso');
+      // Si existe un insumo con el mismo código, reactivarlo
+      if (!existingInsumo.is_active) {
+        // Actualizar los datos del insumo reactivado con los nuevos datos
+        this.insumoRepository.merge(existingInsumo, {
+          ...rest,
+          categoria: await this.categoriaService.findOne(categoriaId), // Actualiza la categoría
+        });
+
+        existingInsumo.is_active = true; // Reactivar el insumo
+        await this.insumoRepository.save(existingInsumo); // Guardar los cambios
+        return existingInsumo; // Devolver el insumo reactivado
+      } else {
+        throw new ConflictException('El código ingresado está en uso'); // Solo si ya está activo
+      }
     }
 
-    const categoria = await this.categoriaService.findOne(
-      createInsumoDto.categoriaId,
-    );
+    const categoria = await this.categoriaService.findOne(categoriaId);
 
     if (!categoria) {
       throw new NotFoundException(
@@ -100,17 +230,26 @@ export class InsumosService {
       );
     }
 
-    // Crear el nuevo insumo con la categoría relacionada
     try {
+      // Crear el nuevo insumo
       const insumo = this.insumoRepository.create({
         ...rest,
-        codigo, // Asignar el código del insumo
-        categoria, // Relacionar el insumo con la categoría encontrada
+        codigo,
+        categoria,
       });
 
-      return await this.insumoRepository.save(insumo);
+      const savedInsumo = await this.insumoRepository.save(insumo);
+      return {
+        id: savedInsumo.id,
+        codigo: savedInsumo.codigo,
+        nombre: savedInsumo.nombre,
+        trazador: savedInsumo.trazador,
+        categoria: {
+          id: savedInsumo.categoria.id,
+          nombre: savedInsumo.categoria.nombre,
+        },
+      };
     } catch (error) {
-      // Captura detallada de cualquier error que ocurra
       console.error('Error al crear el insumo:', error);
       throw new InternalServerErrorException(
         'Error al crear el insumo',
@@ -127,6 +266,22 @@ export class InsumosService {
         `Insumo con ID ${id} no encontrado o desactivado`,
       );
     }
+
+    // Solo verificamos si se está intentando cambiar el código
+    if (updateInsumoDto.codigo && updateInsumoDto.codigo !== insumo.codigo) {
+      // Verificar si el código del insumo ya existe en otro registro
+      const existingInsumo = await this.insumoRepository.findOne({
+        where: { codigo: updateInsumoDto.codigo, id: Not(id) },
+        withDeleted: true,
+      });
+
+      if (existingInsumo) {
+        throw new ConflictException(
+          `El código de insumo ${updateInsumoDto.codigo} ya está en uso.`,
+        );
+      }
+    }
+
     this.insumoRepository.merge(insumo, updateInsumoDto);
     return await this.insumoRepository.save(insumo);
   }

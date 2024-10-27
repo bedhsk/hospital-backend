@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInsumoDepartamentoDto } from './dto/create-insumo_departamento.dto';
 import UpdateInsumoDepartamentoDto from './dto/update-insumo_departamento.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,14 +12,16 @@ import { Repository } from 'typeorm';
 import QueryIsumoDepartamentoDto from './dto/query-insumo_departamento.dto';
 import { InsumoDepartamento } from './entities/insumo_departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import { log } from 'console';
 
 @Injectable()
 export class InsumoDepartamentosService {
   constructor(
     @InjectRepository(InsumoDepartamento)
     private readonly insumodepartamentoService: Repository<InsumoDepartamento>,
-    private readonly insumoService: InsumosService,
     private readonly departamentoService: DepartamentosService,
+    @Inject(forwardRef(() => InsumosService))
+    private readonly insumoService: InsumosService,
   ) {}
 
   async findAll(query: QueryIsumoDepartamentoDto) {
@@ -74,6 +81,53 @@ export class InsumoDepartamentosService {
     return insumoDepartamento;
   }
 
+  async findOneByInsumoAndDepartamento(
+    insumoId: string,
+    departamentoId: string,
+    isDestino: boolean = false,
+  ) {
+    const insumoDepartamento = await this.insumodepartamentoService.findOne({
+      where: {
+        insumo: { id: insumoId },
+        departamento: { id: departamentoId },
+        is_active: true,
+      },
+      relations: ['insumo', 'departamento'],
+    });
+
+    if (!insumoDepartamento) {
+      const insumo = await this.insumoService.findOne(insumoId);
+      const departamento =
+        await this.departamentoService.findOne(departamentoId);
+
+      if (!insumo) {
+        throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
+      }
+      if (!departamento) {
+        throw new NotFoundException(
+          `Departamento con ID ${departamentoId} no encontrado`,
+        );
+      }
+
+      if (isDestino) {
+        // Si es el departamento destino, creamos automáticamente el InsumoDepartamento
+        const newInsumoDepartamento = this.insumodepartamentoService.create({
+          insumo,
+          departamento,
+          existencia: 0,
+        });
+        return await this.insumodepartamentoService.save(newInsumoDepartamento);
+      } else {
+        // Si es el departamento origen, lanzamos un error
+        throw new NotFoundException(
+          `No se encontró una relación activa entre el insumo "${insumo.nombre}" y el departamento "${departamento.nombre}"`,
+        );
+      }
+    }
+
+    return insumoDepartamento;
+  }
+
   async create(createInsumoDepartamentoDto: CreateInsumoDepartamentoDto) {
     const { insumoId, departamentoId, ...rest } = createInsumoDepartamentoDto;
     const insumo = await this.insumoService.findOne(
@@ -130,5 +184,36 @@ export class InsumoDepartamentosService {
     // Soft delete: cambia el campo `is_active` a false
     insumoDepartamento.is_active = false;
     return await this.insumodepartamentoService.save(insumoDepartamento);
+  }
+
+  async findByInsumoDepartamentoId(insumoId: string, departamentoId: string) {
+    const departamento = await this.departamentoService.findOne(departamentoId);
+    if (!departamento) {
+      throw new NotFoundException(
+        `Departamento con ID ${departamentoId} no encontrado`,
+      );
+    }
+    const insumo = await this.insumoService.findOne(insumoId);
+    if (!insumo) {
+      throw new NotFoundException(`Insumo con ID ${insumoId} no encontrado`);
+    }
+    const insumoDepartamento = await this.insumodepartamentoService.findOne({
+      where: {
+        insumo: {
+          id: insumo.id,
+          nombre: insumo.nombre,
+          trazador: insumo.trazador,
+        },
+        departamento: { id: departamento.id, nombre: departamento.nombre },
+        is_active: true,
+      },
+      relations: ['insumo', 'departamento'],
+    });
+    if (!insumoDepartamento) {
+      throw new NotFoundException(
+        `InsumoDepartamento con insumo ID ${insumoId} y departamento ID ${departamentoId} no encontrado`,
+      );
+    }
+    return insumoDepartamento;
   }
 }

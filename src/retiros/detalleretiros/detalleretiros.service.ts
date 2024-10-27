@@ -80,7 +80,7 @@ export class DetalleretirosService {
     
         
       // Actualizar la existencia del insumo departamento
-      
+
       await this.insumoDepartamentosService.update(
       insumoDepartamento.id,
       {

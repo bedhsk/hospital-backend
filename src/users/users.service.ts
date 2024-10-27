@@ -45,8 +45,8 @@ export class UsersService {
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.name ILIKE :query OR user.username ILIKE :query OR user.email ILIKE :query)',
-        { query: `%${q}%` },
+        '(user.name ILIKE :name OR user.username ILIKE :username OR user.email ILIKE :email)',
+        { name: `%${q}%`, username: `%${q}%`, email: `%${q}%` },
       );
     }
 
@@ -102,7 +102,9 @@ export class UsersService {
 
     const existingUser = await this.usersRepository.findOne({
       where: { username },
+      withDeleted: true,
     });
+
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
@@ -132,6 +134,7 @@ export class UsersService {
     if (username && username !== user.username) {
       const existingUser = await this.usersRepository.findOne({
         where: { username },
+        withDeleted: true,
       });
       if (existingUser) {
         throw new ConflictException('Username already exists');

@@ -1,20 +1,39 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import QueryPacienteDto from './dto/query-paciente.dto';
 import { PacientesService } from './pacientes.service';
-import CreatePacienteDto from './dto/create-paciente.dto';
+import { CreatePacienteDto } from './dto/create-paciente.dto';
 import UpdatePacienteDto from './dto/update-paciente.dto';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 
 @ApiTags('Pacientes')
 @Controller('pacientes')
 export class PacientesController {
-  constructor(private readonly pacientesService: PacientesService) { }
+  constructor(private readonly pacientesService: PacientesService) {}
   @AuthorizedRoles()
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los pacientes',
-    description: 'Este endpoint sirve para retornar todos los pacientes existentes en la base de datos.',
+    description:
+      'Este endpoint sirve para retornar todos los pacientes existentes en la base de datos.',
   })
   @ApiQuery({
     name: 'q',
@@ -62,7 +81,10 @@ export class PacientesController {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'string', example: '59271b3e-e4ca-4434-8064-048a094ec8dc' },
+              id: {
+                type: 'string',
+                example: '59271b3e-e4ca-4434-8064-048a094ec8dc',
+              },
               nombre: { type: 'string', example: 'Juana' },
               sexo: { type: 'string', example: 'Femenino' },
               cui: { type: 'string', example: '1234567890123' },
@@ -77,7 +99,10 @@ export class PacientesController {
               antecedente: {
                 type: 'object',
                 properties: {
-                  id: { type: 'string', example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6' },
+                  id: {
+                    type: 'string',
+                    example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6',
+                  },
                   gestas: { type: 'number', example: 2 },
                   hijos_vivos: { type: 'number', example: 1 },
                   hijos_muertos: { type: 'number', example: 0 },
@@ -86,7 +111,10 @@ export class PacientesController {
                   planificacion_familiar: { type: 'number', example: 0 },
                   partos: { type: 'number', example: 2 },
                   cesareas: { type: 'number', example: 0 },
-                  createdAt: { type: 'date', example: '2024-08-29T01:38:11.779Z' },
+                  createdAt: {
+                    type: 'date',
+                    example: '2024-08-29T01:38:11.779Z',
+                  },
                 },
               },
             },
@@ -103,7 +131,7 @@ export class PacientesController {
     description: 'Acceso denegado.',
   })
   findAll(@Query() query: QueryPacienteDto) {
-    console.log(query)
+    console.log(query);
     const records = this.pacientesService.findAll(query);
     return records;
   }
@@ -112,7 +140,8 @@ export class PacientesController {
   @Get(':id')
   @ApiOperation({
     summary: 'Obtiene un paciente por ID',
-    description: 'Este endpoint sirve para retornar un paciente específico por su ID.',
+    description:
+      'Este endpoint sirve para retornar un paciente específico por su ID.',
   })
   @ApiParam({
     name: 'id',
@@ -141,7 +170,10 @@ export class PacientesController {
         antecedente: {
           type: 'object',
           properties: {
-            id: { type: 'string', example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6' },
+            id: {
+              type: 'string',
+              example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6',
+            },
             gestas: { type: 'number', example: 2 },
             hijos_vivos: { type: 'number', example: 1 },
             hijos_muertos: { type: 'number', example: 0 },
@@ -161,15 +193,27 @@ export class PacientesController {
     description: 'Paciente no encontrado.',
   })
   findOne(@Param('id') id: string) {
-    console.log(id)
+    console.log(id);
     return this.pacientesService.findOne(id);
+  }
+
+  @AuthorizedRoles()
+  @Get(':id/historialmedico')
+  @ApiResponse({
+    status: 404,
+    description: 'Paciente no encontrado.',
+  })
+  findOneWithRetiros(@Param('id') id: string) {
+    console.log(id);
+    return this.pacientesService.findOneWithRetiros(id);
   }
 
   @AuthorizedRoles()
   @Post()
   @ApiOperation({
     summary: 'Crea un nuevo paciente',
-    description: 'Este endpoint sirve para crear un nuevo paciente en la base de datos.',
+    description:
+      'Este endpoint sirve para crear un nuevo paciente en la base de datos.',
   })
   @ApiResponse({
     status: 201,
@@ -192,7 +236,10 @@ export class PacientesController {
         antecedente: {
           type: 'object',
           properties: {
-            id: { type: 'string', example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6' },
+            id: {
+              type: 'string',
+              example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6',
+            },
             gestas: { type: 'number', example: 2 },
             hijos_vivos: { type: 'number', example: 1 },
             hijos_muertos: { type: 'number', example: 0 },
@@ -212,7 +259,8 @@ export class PacientesController {
     description: 'Solicitud incorrecta.',
   })
   @ApiBody({
-    description: 'Datos necesarios para crear un nuevo usuario, el resto de datos son opcionales, los antecedentes se insertan desde Antecedentes y solo los pacientes femeninos pueden tener por el hecho que son antecedentes ginecologicos',
+    description:
+      'Datos necesarios para crear un nuevo usuario, el resto de datos son opcionales, los antecedentes se insertan desde Antecedentes y solo los pacientes femeninos pueden tener por el hecho que son antecedentes ginecologicos',
     schema: {
       type: 'object',
       properties: {
@@ -227,19 +275,19 @@ export class PacientesController {
         nacimiento: {
           type: 'date',
           example: '1990-01-01',
-        }
+        },
       },
     },
   })
   create(@Body() body: CreatePacienteDto) {
     return this.pacientesService.create(body);
- 
   }
   @AuthorizedRoles()
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualiza un paciente existente',
-    description: 'Este endpoint sirve para actualizar la información de un paciente existente.',
+    description:
+      'Este endpoint sirve para actualizar la información de un paciente existente.',
   })
   @ApiParam({
     name: 'id',
@@ -268,13 +316,16 @@ export class PacientesController {
         antecedente: {
           type: 'object',
           properties: {
-            id: { type: 'string', example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6' },
+            id: {
+              type: 'string',
+              example: 'b9d78e40-9d56-4e23-8a94-1e9a5f77e4f6',
+            },
             gestas: { type: 'number', example: 2 },
             hijos_vivos: { type: 'number', example: 1 },
             hijos_muertos: { type: 'number', example: 0 },
             abortos: { type: 'number', example: 0 },
             ultima_regla: { type: 'string', example: '2024-06-01' },
-            planificacion_familiar: { type: 'number', example: 0},
+            planificacion_familiar: { type: 'number', example: 0 },
             partos: { type: 'number', example: 2 },
             cesareas: { type: 'number', example: 0 },
             createdAt: { type: 'string', example: '2024-08-29T01:38:11.779Z' },
@@ -292,7 +343,8 @@ export class PacientesController {
     description: 'Solicitud incorrecta.',
   })
   @ApiBody({
-    description: 'Se puede actualizar cualquier campo, los antecedentes se modifican desde Antecedentes, solo se necesita el ID del paceinte para modificar',
+    description:
+      'Se puede actualizar cualquier campo, los antecedentes se modifican desde Antecedentes, solo se necesita el ID del paceinte para modificar',
     schema: {
       type: 'object',
       properties: {
@@ -307,7 +359,7 @@ export class PacientesController {
         nacimiento: {
           type: 'date',
           example: '1990-01-01',
-        }
+        },
       },
     },
   })
@@ -319,7 +371,8 @@ export class PacientesController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Elimina un paciente',
-    description: 'Este endpoint sirve para eliminar (soft delete) un paciente por su ID.',
+    description:
+      'Este endpoint sirve para eliminar (soft delete) un paciente por su ID.',
   })
   @ApiParam({
     name: 'id',
@@ -339,7 +392,4 @@ export class PacientesController {
   remove(@Param('id') id: string) {
     return this.pacientesService.remove(id);
   }
-
-
-
 }

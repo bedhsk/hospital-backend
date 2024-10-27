@@ -1,3 +1,4 @@
+import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
 import OrdenLaboratorio from 'src/orden_laboratorios/entities/orden_laboratorio.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
@@ -16,7 +17,11 @@ class Examen {
   is_active: boolean;
     insumoExamen: any;
 
-    @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.examen)
+  @OneToMany(() => OrdenLaboratorio, (ordenLaboratorio) => ordenLaboratorio.examen)
     ordenesLaboratorio: OrdenLaboratorio[];
+
+  @OneToMany(() => InsumoExamen, (insumoExamen) => insumoExamen.examen)
+    insumoExamenes: InsumoExamen[];
+
 }
 export default Examen;

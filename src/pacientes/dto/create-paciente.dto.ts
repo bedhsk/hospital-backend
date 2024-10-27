@@ -1,62 +1,113 @@
-import { Type } from "class-transformer";
-import { IsDate,IsIn,IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { Type } from 'class-transformer';
+import {
+  IsDate,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import Receta from 'src/recetas/entities/receta.entity';
 
-class CreatePacienteDto {
+// DTO para la entidad Antecedentes
+class AntecedenteDto {
+  @IsInt()
+  @IsOptional()
+  gestas?: number;
 
-    @IsString()
-    @MinLength(1)
-    @MaxLength(60)
-    nombre: string;
+  @IsInt()
+  @IsOptional()
+  hijos_vivos?: number;
 
-    @IsString()
-    @IsIn(['Masculino', 'Femenino'])
-    @MaxLength(10)
-    sexo: string;
+  @IsInt()
+  @IsOptional()
+  hijos_muertos?: number;
 
-    @IsString()
-    @MaxLength(13)
-    @IsOptional()
-    cui?: string;
-    
-    @Type(() => Date) 
-    @IsDate()
-    nacimiento: Date;
-    
-    @IsString()
-    @MinLength(1)
-    @MaxLength(255)
-    @IsOptional()
-    familiares?: string;
+  @IsInt()
+  @IsOptional()
+  abortos?: number;
 
-    @IsString()
-    @MinLength(1)
-    @MaxLength(255)
-    @IsOptional()
-    medicos?: string;   
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  ultima_regla?: Date;
 
-    @IsString()
-    @MinLength(1)
-    @MaxLength(255)
-    @IsOptional()
-    quirurgicos?: string;
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  planificacion_familiar?: string;
 
-    @IsString()
-    @MinLength(1)
-    @MaxLength(255)
-    @IsOptional()
-    traumaticos?: string;
+  @IsInt()
+  @IsOptional()
+  partos?: number;
 
-    @IsString()
-    @MinLength(1)
-    @MaxLength(255)
-    @IsOptional()
-    alergias?: string;
-
-    @IsString()
-    @MinLength(1)
-    @MaxLength(255)
-    @IsOptional()
-    vicios?: string;
+  @IsInt()
+  @IsOptional()
+  cesareas?: number;
 }
 
-export default CreatePacienteDto;
+// DTO para la entidad Paciente
+class CreatePacienteDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(60)
+  @IsNotEmpty()
+  nombre: string;
+
+  @IsString()
+  @IsIn(['Masculino', 'Femenino'])
+  @MaxLength(10)
+  @IsNotEmpty()
+  sexo: string;
+
+  @IsString()
+  @MaxLength(13)
+  @IsOptional()
+  cui?: string;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsNotEmpty()
+  nacimiento: Date;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  familiares?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  medicos?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  quirurgicos?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  traumaticos?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  alergias?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  vicios?: string;
+
+  // Atributos del antecedente
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AntecedenteDto)
+  antecedente?: AntecedenteDto;
+}
+
+export { CreatePacienteDto };

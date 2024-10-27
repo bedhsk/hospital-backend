@@ -12,11 +12,13 @@ import InsumoExamen from 'src/insumo_examenes/entities/insumo_examen.entity';
 import { InsumoExamenesModule } from 'src/insumo_examenes/insumo_examenes.module';
 import { RetirosModule } from 'src/retiros/retiros.module';
 import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
+import { DepartamentosModule } from 'src/departamentos/departamentos.module';
 
 @Module({
   imports: [
     InsumoExamenesModule,
     RetirosModule,
+    DepartamentosModule,
     TypeOrmModule.forFeature([
       OrdenLaboratorio,  // Entidad OrdenLaboratorio
       Paciente,          // Entidad Paciente (FK en OrdenLaboratorio)

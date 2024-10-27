@@ -1,4 +1,5 @@
-import { IsUUID, IsNotEmpty, IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsUUID, IsNotEmpty, IsString, IsOptional, IsBoolean, IsEnum } from 'class-validator';
+import { EstadoOrdenLaboratorio } from '../enum/estado-orden-laboratorio.enum';
 
 export default class CreateOrdenLaboratorioDto {
     @IsUUID()
@@ -21,9 +22,8 @@ export default class CreateOrdenLaboratorioDto {
     @IsNotEmpty()
     descripcion: string;
 
-    @IsString()
-    @IsNotEmpty()
-    estado: string;
+    @IsEnum(EstadoOrdenLaboratorio)
+    estado: EstadoOrdenLaboratorio;
 
     @IsBoolean()
     @IsOptional()
