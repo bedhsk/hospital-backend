@@ -55,7 +55,7 @@ export class InsumosService {
         'departamento.nombre',
         'lote.id',
         'lote.numeroLote',
-        'lote.created_at',
+        'lote.fechaEntrada',
         'lote.fechaCaducidad',
         'lote.cantidadInical',
         'lote.cantidadActual',
@@ -63,10 +63,7 @@ export class InsumosService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere(
-        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
-        { nombre: `%${q}%`, codigo: `%${q}%` },
-      );
+      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
     }
 
     if (filter) {
@@ -112,7 +109,7 @@ export class InsumosService {
                 .map((lote) => ({
                   id: lote.id,
                   numeroLote: lote.numeroLote,
-                  fechaEntrada: lote.created_at,
+                  fechaEntrada: lote.fechaEntrada,
                   fechaCaducidad: lote.fechaCaducidad,
                   cantidadInical: lote.cantidadInical,
                   cantidadActual: lote.cantidadActual,
@@ -174,7 +171,7 @@ export class InsumosService {
         .map((lote) => ({
           id: lote.id,
           numeroLote: lote.numeroLote,
-          fechaEntrada: lote.created_at,
+          fechaEntrada: lote.fechaEntrada,
           fechaCaducidad: lote.fechaCaducidad,
           cantidadInical: lote.cantidadInical,
           cantidadActual: lote.cantidadActual,

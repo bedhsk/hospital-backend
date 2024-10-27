@@ -1,20 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import Adquisicion from './entities/adquisicion.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
 import { UsersService } from 'src/users/users.service';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
+import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 import { DetalleadquisicionesService } from './detalleadquisiciones/detalleadquisiciones.service';
 import QueryAdquisicionDto from './dtos/query-adquisicion.dto';
-import { LotesService } from 'src/lotes/lotes.service';
-import CreateAdquisicionLoteDto from './dtos/create-adquisicion-lote.dto';
-import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
-import { DepartamentosService } from 'src/departamentos/departamentos.service';
-import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
-import Lote from 'src/lotes/entities/lote.entity';
-import createNewLoteDto from './dtos/create-new-lote.dto';
-import { log } from 'console';
 
 @Injectable()
 export class AdquisicionesService {
@@ -23,11 +16,7 @@ export class AdquisicionesService {
     private readonly adquisicionRepository: Repository<Adquisicion>,
     private readonly detalleAdquisicionService: DetalleadquisicionesService,
     private readonly usuarioService: UsersService,
-    private readonly lotesService: LotesService,
-    private readonly movimientoLoteService: MovimientolotesService,
-    private readonly departamentosServcie: DepartamentosService,
     private readonly insumoDepartamentoService: InsumoDepartamentosService,
-    private dataSource: DataSource,
   ) {}
 
   // Método para obtener todos los insumos que están activos
@@ -104,12 +93,7 @@ export class AdquisicionesService {
 
   // Crear adquisicion
   async create(createAdquisicion: CreateAdquisicionDto) {
-    const { usuarioId, detalles, lotes, ...rest} = createAdquisicion;
-    const queryRunner = this.dataSource.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try{
+    const { usuarioId, detalles, ...rest} = createAdquisicion;
     const usuario = await this.usuarioService.findOne(
       createAdquisicion.usuarioId,
     );
@@ -123,7 +107,7 @@ export class AdquisicionesService {
     // Crear la nueva adquisicion con el usuario relacionado
     const adquisicionCreate = this.adquisicionRepository.create({
       ...rest,
-      usuario: {id: usuario.id, username: usuario.username},
+      usuario: {id: usuario.id, username: usuario.username}, // Relacionar el insumo con la categoría encontrada
     });
     // Guarda la adquisicion 
     const adquisicion = await this.adquisicionRepository.save(adquisicionCreate)
@@ -133,40 +117,23 @@ export class AdquisicionesService {
         `Adquisicion no fue creada con exito!`,
       );
     }
-    
-      const detallePromises = detalles.map(async element => {
-        const { insumoId, cantidad } = element;
-        const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, rest.departamentoId, true);
-        const detalle = await this.detalleAdquisicionService.create({
-          adquisicionId: adquisicion.id,
-          insumoDepartamentoId: insumoDepartamento.id,
-          is_active: true,
-          cantidad,
-        });
-        await queryRunner.manager.save(detalle);
 
-        if (lotes) {
-          for (const lote of lotes) {
-            if (lote.insumoId === insumoId) {
-              await this.crearMovimientoLote(insumoDepartamento.id, lote, detalle.id);
-            }
-          }
-        }
-        return detalle;
+    const detallePromises = detalles.map(async element => {
+      const { insumoDepartamentoId, cantidad } = element;
+
+      return await this.detalleAdquisicionService.create({
+        adquisicionId: adquisicion.id,
+        insumoDepartamentoId,
+        is_active: true,
+        cantidad,
       });
+    });
 
-      await Promise.all(detallePromises);
-      await queryRunner.commitTransaction();
+    await Promise.all(detallePromises);
 
-      const detalleAdquisicion = await this.detalleAdquisicionService.findAllByAdquisicionId(adquisicion.id);
+    const detalleAdquisicion = await this.detalleAdquisicionService.findAllByAdquisicionId(adquisicion.id);
     
-      return {adquisicion, detalleAdquisicion};
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      return err;
-    } finally {
-      await queryRunner.release();
-    }
+    return {adquisicion, detalleAdquisicion};
   }
 
   // Actualizar una adquisicion existente, si está activa
@@ -185,8 +152,7 @@ export class AdquisicionesService {
     
     const detallePromises = updateInsumoDto.detalles.map(async element => {
       if (element.cantidad) {
-        const insumoDepartamento = await this.insumoDepartamentoService.findByInsumoDepartamentoId(element.insumoId, updateInsumoDto.departamentoId);
-        const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionIdAndInsumoDepartamentoId(id, insumoDepartamento.id);
+        const detalleAdquisicionAux = await this.detalleAdquisicionService.findOneByAdquisicionIdAndInsumoDepartamentoId(id, element.insumoDepartamentoId)
         await this.detalleAdquisicionService.update(detalleAdquisicionAux.id, { cantidad: element.cantidad })
       }
     });
@@ -215,89 +181,5 @@ export class AdquisicionesService {
     await Promise.all(detallePromises);
 
     return await this.adquisicionRepository.save(adquisicionAux);
-  }
-
-
-  //--------------- CODIGO PARA REALIZAR ADQUISICIONES DE LOTES ----------------------------------//
-  async createAdquisicionLote(createAdquisicionLote: CreateAdquisicionLoteDto) {
-    const { usuarioId, descripcion, lotes } = createAdquisicionLote
-    const detalles = []
-    const lotesAux = []
-    const movimientosLote = []
-    const departamento = await this.departamentosServcie.findOneByName('Bodega')
-    const lotesPromises = lotes.map(async element => {
-      const { insumoId, cantidadInical } = element;
-
-      const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, departamento.id, true)
-      
-      detalles.push({ insumoId: insumoId, cantidad: cantidadInical })
-      
-      const loteExistente = await this.lotesService.findOneByNumeroLoteAndDepartamentoId(element.numeroLote, departamento.id)
-      if (!loteExistente) {
-        const lote = await this.lotesService.create(
-          {
-            numeroLote: element.numeroLote,
-            fechaCaducidad: element.fechaCaducidad,
-            cantidadInical: element.cantidadInical,
-            status: 'disponible',
-            is_active: true,
-            insumoDepartamentoId: insumoDepartamento.id,
-            cantidadActual: element.cantidadInical
-          }
-        )
-        if (lote) {
-          lotesAux.push(lote)
-        }
-        return lote
-      }
-      else {
-        const lote = await this.lotesService.update(loteExistente.id,
-          { cantidadActual: loteExistente.cantidadActual + element.cantidadInical })
-        if (lote) {
-          lotesAux.push(lote)
-        }
-        return lote
-      }
-    });
-    
-    await Promise.all(lotesPromises);
-    const adquisiciones = await this.create({usuarioId, departamentoId: departamento.id, descripcion, detalles, lotes: null})
-
-    const movimientoLotePromises = adquisiciones.detalleAdquisicion.map(async (element, index) => {
-      const { id, cantidad } = element;
-      const movimientoLoteAux = await this.movimientoLoteService.create({
-        loteId: lotesAux[index].id,
-        detalleAdquisicionId: id,
-        cantidad
-      })
-      if (movimientoLoteAux){
-        movimientosLote.push(movimientoLoteAux)
-      }
-      return movimientoLoteAux
-    });
-
-    await Promise.all(movimientoLotePromises);
-
-    return { 
-      adquisicion: adquisiciones.adquisicion, 
-      detalleAdquisicion: adquisiciones.detalleAdquisicion , 
-      lotes: lotesAux, 
-      movimientosLote
-    };
-  }
-
-  async crearMovimientoLote(
-    insumoDepartamentoId: string,
-    lote: createNewLoteDto,
-    detalleAquisicionId: string,
-  ) {
-    const loteAd = await this.lotesService.updateAdquisicionLote(lote, insumoDepartamentoId);
-
-    // se crea un movimiento lote.
-    return await this.movimientoLoteService.create({
-      loteId: loteAd.id,
-      detalleAdquisicionId: detalleAquisicionId,
-      cantidad: loteAd.cantidadInical,
-    });
   }
 }

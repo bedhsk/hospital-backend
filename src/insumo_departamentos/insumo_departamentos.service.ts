@@ -12,7 +12,6 @@ import { Repository } from 'typeorm';
 import QueryIsumoDepartamentoDto from './dto/query-insumo_departamento.dto';
 import { InsumoDepartamento } from './entities/insumo_departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
-import { log } from 'console';
 
 @Injectable()
 export class InsumoDepartamentosService {
@@ -160,7 +159,6 @@ export class InsumoDepartamentosService {
         departamento: { id: departamento.id, nombre: departamento.nombre },
         is_active: true,
       },
-      relations: ['insumo', 'departamento'],
     });
     if (!insumoDepartamento) {
       throw new NotFoundException(

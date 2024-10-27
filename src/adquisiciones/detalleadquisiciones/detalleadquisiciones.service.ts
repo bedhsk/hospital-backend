@@ -98,7 +98,7 @@ export class DetalleadquisicionesService {
       }, // Relacionar el detalleadquisicion con el insumoDepartamento encontrado
     });
 
-    return detalleAdquisicion;
+    return await this.detalleAdquisicionesRepository.save(detalleAdquisicion);
   }
 
   // Actualizar un detalle adquisicion existente, si está activo

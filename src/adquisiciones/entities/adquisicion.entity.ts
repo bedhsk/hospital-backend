@@ -10,7 +10,7 @@ import {
   Entity,
   CreateDateColumn,
 } from 'typeorm';
-import detalleAdquisicion from './detalle_adquisicion.entity';
+import detalleAdquisicion from '../entities/detalle_adquisicion.entity';
 
 @Entity('adquisicion')
 export default class Adquisicion {
@@ -38,8 +38,7 @@ export default class Adquisicion {
   usuario: User; // Relación con Usuario
 
   @OneToMany(
-    () => detalleAdquisicion,
-    (detalleAdquisicion) => detalleAdquisicion.adquisicion,
+    () => detalleAdquisicion, (detalleAdquisicion) => detalleAdquisicion.adquisicion,
   )
   detalleAdquisicion: detalleAdquisicion[];
 }
