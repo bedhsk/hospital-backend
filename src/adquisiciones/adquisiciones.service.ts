@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import Adquisicion from './entities/adquisicion.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import CreateAdquisicionDto from './dtos/create-adquisicion.dto';
 import { UsersService } from 'src/users/users.service';
 import UpdateAdquisicionDto from './dtos/update-adquisicion.dto';
@@ -26,7 +26,8 @@ export class AdquisicionesService {
     private readonly lotesService: LotesService,
     private readonly movimientoLoteService: MovimientolotesService,
     private readonly departamentosServcie: DepartamentosService,
-    private readonly insumoDepartamentoService: InsumoDepartamentosService
+    private readonly insumoDepartamentoService: InsumoDepartamentosService,
+    private dataSource: DataSource,
   ) {}
 
   // Método para obtener todos los insumos que están activos
@@ -104,6 +105,11 @@ export class AdquisicionesService {
   // Crear adquisicion
   async create(createAdquisicion: CreateAdquisicionDto) {
     const { usuarioId, detalles, lotes, ...rest} = createAdquisicion;
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try{
     const usuario = await this.usuarioService.findOne(
       createAdquisicion.usuarioId,
     );
@@ -127,34 +133,40 @@ export class AdquisicionesService {
         `Adquisicion no fue creada con exito!`,
       );
     }
-    log(...detalles)
-    const detallePromises = detalles.map(async element => {
-      const { insumoId, cantidad } = element;
-      log("El insumo id es: " + insumoId + " y la cantidad es: " + cantidad)
-      const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, rest.departamentoId, true);
-      log("El insumo departamento es: " + insumoDepartamento.id)
-      const detalle =  await this.detalleAdquisicionService.create({
-        adquisicionId: adquisicion.id,
-        insumoDepartamentoId: insumoDepartamento.id,
-        is_active: true,
-        cantidad,
-      });
-      if (lotes){
-        for (const lote of lotes) {
-          if (lote.insumoId === insumoId) {
-            await this.crearMovimientoLote(insumoDepartamento.id, lote, detalle.id);
+    
+      const detallePromises = detalles.map(async element => {
+        const { insumoId, cantidad } = element;
+        const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, rest.departamentoId, true);
+        const detalle = await this.detalleAdquisicionService.create({
+          adquisicionId: adquisicion.id,
+          insumoDepartamentoId: insumoDepartamento.id,
+          is_active: true,
+          cantidad,
+        });
+        await queryRunner.manager.save(detalle);
+
+        if (lotes) {
+          for (const lote of lotes) {
+            if (lote.insumoId === insumoId) {
+              await this.crearMovimientoLote(insumoDepartamento.id, lote, detalle.id);
+            }
           }
         }
-      }
-      log(detalle)
-      return detalle;
-    });
+        return detalle;
+      });
 
-    await Promise.all(detallePromises);
+      await Promise.all(detallePromises);
+      await queryRunner.commitTransaction();
 
-    const detalleAdquisicion = await this.detalleAdquisicionService.findAllByAdquisicionId(adquisicion.id);
+      const detalleAdquisicion = await this.detalleAdquisicionService.findAllByAdquisicionId(adquisicion.id);
     
-    return {adquisicion, detalleAdquisicion};
+      return {adquisicion, detalleAdquisicion};
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      return err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   // Actualizar una adquisicion existente, si está activa
