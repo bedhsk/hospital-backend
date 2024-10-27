@@ -219,35 +219,45 @@ export class AdquisicionesService {
 
 
   //--------------- CODIGO PARA REALIZAR ADQUISICIONES DE LOTES ----------------------------------//
-  async createAdquisicionLote(createAdquisicionLote: CreateAdquisicionLoteDto){
-    const { usuarioId, descripcion, lotes} = createAdquisicionLote
+  async createAdquisicionLote(createAdquisicionLote: CreateAdquisicionLoteDto) {
+    const { usuarioId, descripcion, lotes } = createAdquisicionLote
     const detalles = []
     const lotesAux = []
     const movimientosLote = []
     const departamento = await this.departamentosServcie.findOneByName('Bodega')
     const lotesPromises = lotes.map(async element => {
       const { insumoId, cantidadInical } = element;
-      
+
       const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(insumoId, departamento.id, true)
       
-      detalles.push({insumoId: insumoId, cantidad: cantidadInical})
-
+      detalles.push({ insumoId: insumoId, cantidad: cantidadInical })
       
-      const lote = await this.lotesService.create(
-        {
-          numeroLote: element.numeroLote,
-          fechaCaducidad: element.fechaCaducidad,
-          cantidadInical: element.cantidadInical,
-          status: 'disponible',
-          is_active: true,
-          insumoDepartamentoId: insumoDepartamento.id,
-          cantidadActual: element.cantidadInical
+      const loteExistente = await this.lotesService.findOneByNumeroLoteAndDepartamentoId(element.numeroLote, departamento.id)
+      if (!loteExistente) {
+        const lote = await this.lotesService.create(
+          {
+            numeroLote: element.numeroLote,
+            fechaCaducidad: element.fechaCaducidad,
+            cantidadInical: element.cantidadInical,
+            status: 'disponible',
+            is_active: true,
+            insumoDepartamentoId: insumoDepartamento.id,
+            cantidadActual: element.cantidadInical
+          }
+        )
+        if (lote) {
+          lotesAux.push(lote)
         }
-      )
-      if (lote){
-        lotesAux.push(lote)
+        return lote
       }
-      return lote
+      else {
+        const lote = await this.lotesService.update(loteExistente.id,
+          { cantidadActual: loteExistente.cantidadActual + element.cantidadInical })
+        if (lote) {
+          lotesAux.push(lote)
+        }
+        return lote
+      }
     });
     
     await Promise.all(lotesPromises);
