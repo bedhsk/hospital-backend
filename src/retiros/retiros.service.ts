@@ -14,6 +14,8 @@ import { AdquisicionesService } from 'src/adquisiciones/adquisiciones.service';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { LotesService } from 'src/lotes/lotes.service';
 import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
+import { createNewLoteDto } from 'src/lotes/dto/create-new-lote.dto';
+import { log } from 'console';
 
 @Injectable()
 export class RetirosService {
@@ -117,6 +119,7 @@ export class RetirosService {
   }
 
   async create(createRetiro: CreateRetiroDto) {
+    const lotesR:createNewLoteDto[] = [];
     const { usuarioId, detalles, ...rest } = createRetiro;
     const usuario = await this.usuarioService.findOne(createRetiro.usuarioId);
 
@@ -160,22 +163,22 @@ export class RetirosService {
         cantidad,
       });
       // crear el movimiento lote
-      await this.crearMovimientoLote(
+      const lote = await this.crearMovimientoLote(
         insumoDepartamentoId,
         detalle.cantidad,
         detalle.id,
       );
-
-      return detalle;
+      lotesR.push(...lote);
+      return {detalle, lotesR};
     });
 
-    await Promise.all(detallePromises);
+    const lotes = await Promise.all(detallePromises);
 
     const detalleRetiro = await this.detalleRetiroService.findAllRetiroId(
       retiro.id,
     );
 
-    return { retiro, detalleRetiro };
+    return { retiro, detalleRetiro, lotesR};
   }
 
   async update(id: string, updateInsumoDto: UpdateRetiroDto) {
@@ -277,37 +280,36 @@ export class RetirosService {
         cantidad: cantidad,
       };
     });
-
     const detalleRetiros: DetalleRetiroDto[] = await Promise.all(
       detalleRetirosPromise,
     );
 
-    const detalleAdquisicionPromise = insumos.map(async (element) => {
-      const { insumoId, cantidad } = element;
-      const insumoDepartamento =
-        await this.insumoDepartamentoService.findByInsumoDepartamentoId(
-          insumoId,
-          departamentoAdquisicionId,
-        );
-      if (!insumoDepartamento) {
-        throw new NotFoundException(
-          `Insumo ${insumoId} no encontrado en el departamento ${departamentoAdquisicionId}`,
-        );
-      }
-      if (insumoDepartamento.existencia < cantidad) {
-        throw new NotFoundException(
-          `Insumo ${insumoDepartamento.insumo.nombre} no tiene suficiente existencia`,
-        );
-      }
-      return {
-        insumoDepartamentoId: insumoDepartamento.id,
-        cantidad: cantidad,
-      };
-    });
+    // const detalleAdquisicionPromise = insumos.map(async (element) => {
+    //   const { insumoId, cantidad } = element;
+    //   const insumoDepartamento =
+    //     await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(
+    //       insumoId,
+    //       departamentoAdquisicionId,
+    //     );
+    //   if (!insumoDepartamento) {
+    //     throw new NotFoundException(
+    //       `Insumo ${insumoId} no encontrado en el departamento ${departamentoAdquisicionId}`,
+    //     );
+    //   }
+    //   if (insumoDepartamento.existencia < cantidad) {
+    //     throw new NotFoundException(
+    //       `Insumo ${insumoDepartamento.insumo.nombre} no tiene suficiente existencia`,
+    //     );
+    //   }
+    //   return {
+    //     insumoDepartamentoId: insumoDepartamento.id,
+    //     cantidad: cantidad,
+    //   };
+    // });
 
-    const detalleAdquisicion: DetalleAdquisicionDto[] = await Promise.all(
-      detalleAdquisicionPromise,
-    );
+    // const detalleAdquisicion: DetalleAdquisicionDto[] = await Promise.all(
+    //   detalleAdquisicionPromise,
+    // );
 
     const { nombre: nombreAdquisicion } =
       await this.departamentoService.findOne(departamentoAdquisicionId);
@@ -323,17 +325,17 @@ export class RetirosService {
         ' para el departamento ' +
         nombreAdquisicion,
     });
-
     const adquisicion = await this.adquisicionService.create({
       usuarioId,
-      detalles: detalleAdquisicion,
+      departamentoId: departamentoAdquisicionId,
+      detalles: insumos,
+      lotes: retiro.lotesR,
       descripcion:
         'Retiro de insumos del departamento ' +
         nombreRetiro +
         ' para el departamento ' +
         nombreAdquisicion,
     });
-
     return {
       descripcion:
         'Retiro de insumos del departamento ' +
@@ -350,24 +352,23 @@ export class RetirosService {
     cantidad: number,
     detalleRetiroId: string,
   ) {
-    const insumoDepartamento =
-      await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
-    if (insumoDepartamento.departamento.nombre === 'Bodega') {
-      // Descontamos del lote
-      const lotes = await this.lotesService.updateRetiroLote(
-        insumoDepartamentoId,
-        cantidad,
-      );
-      // se crea un movimiento lote.
-      const lotesPromises = lotes.map(async (element) => {
-        return await this.moviemintoLoteService.create({
-          loteId: element.id,
-          detalleRetiroId,
-          cantidad,
-        });
+    const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
+    // Descontamos del lote
+    const lotes = await this.lotesService.updateRetiroLote(
+      insumoDepartamentoId,
+      cantidad,
+    );
+    // se crea un movimiento lote.
+    const lotesPromises = lotes.map(async (element) => {
+      return await this.moviemintoLoteService.create({
+        loteId: element.id,
+        detalleRetiroId,
+        cantidad: element.cantidadInical,
       });
+    });
 
-      await Promise.all(lotesPromises);
-    }
+    await Promise.all(lotesPromises);
+
+    return lotes;
   }
 }
