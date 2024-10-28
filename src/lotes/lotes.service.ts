@@ -120,7 +120,7 @@ export class LotesService {
 
   async getLoteByDepartamentoId(departamentoId: string, lote: createNewLoteDto) {
     const loteAux = await this.findOneByNumeroLoteAndDepartamentoId(lote.numeroLote, departamentoId);
-    const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(lote.insumoId, departamentoId, true);
+    const insumoDepartamento = await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(lote.insumoId, departamentoId);
     if (!insumoDepartamento) {
       throw new NotFoundException(`InsumoDepartamento con id ${lote.insumoId} no encontrado`);
     }
