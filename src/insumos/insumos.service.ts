@@ -10,7 +10,7 @@ import { CreateInsumoDto } from './dto/create-insumo.dto';
 import UpdateInsumoDto from './dto/update-insumo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoriasService } from 'src/categorias/categorias.service';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import QueryInsumoDto from './dto/query-insumo.dto';
 import Insumo from './entities/insumo.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
@@ -55,18 +55,18 @@ export class InsumosService {
         'departamento.nombre',
         'lote.id',
         'lote.numeroLote',
-        'lote.fechaEntrada',
+        'lote.created_at',
         'lote.fechaCaducidad',
         'lote.cantidadInical',
         'lote.cantidadActual',
         'lote.status',
       ]);
 
-      
-
     if (q) {
-      queryBuilder.andWhere('insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo', 
-        { nombre: `%${q}%`, codigo: `%${q}%` });
+      queryBuilder.andWhere(
+        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
+        { nombre: `%${q}%`, codigo: `%${q}%` },
+      );
     }
 
     if (filter) {
@@ -112,7 +112,7 @@ export class InsumosService {
                 .map((lote) => ({
                   id: lote.id,
                   numeroLote: lote.numeroLote,
-                  fechaEntrada: lote.fechaEntrada,
+                  fechaEntrada: lote.created_at,
                   fechaCaducidad: lote.fechaCaducidad,
                   cantidadInical: lote.cantidadInical,
                   cantidadActual: lote.cantidadActual,
@@ -174,7 +174,7 @@ export class InsumosService {
         .map((lote) => ({
           id: lote.id,
           numeroLote: lote.numeroLote,
-          fechaEntrada: lote.fechaEntrada,
+          fechaEntrada: lote.created_at,
           fechaCaducidad: lote.fechaCaducidad,
           cantidadInical: lote.cantidadInical,
           cantidadActual: lote.cantidadActual,
@@ -267,16 +267,19 @@ export class InsumosService {
       );
     }
 
-    // Verificar si el código del insumo ya existe
-    const existingInsumo = await this.insumoRepository.findOne({
-      where: { codigo: updateInsumoDto.codigo },
-      withDeleted: true,
-    });
+    // Solo verificamos si se está intentando cambiar el código
+    if (updateInsumoDto.codigo && updateInsumoDto.codigo !== insumo.codigo) {
+      // Verificar si el código del insumo ya existe en otro registro
+      const existingInsumo = await this.insumoRepository.findOne({
+        where: { codigo: updateInsumoDto.codigo, id: Not(id) },
+        withDeleted: true,
+      });
 
-    if (existingInsumo) {
-      throw new ConflictException(
-        `El código de insumo ${updateInsumoDto.codigo} ya está en uso.`,
-      );
+      if (existingInsumo) {
+        throw new ConflictException(
+          `El código de insumo ${updateInsumoDto.codigo} ya está en uso.`,
+        );
+      }
     }
 
     this.insumoRepository.merge(insumo, updateInsumoDto);
