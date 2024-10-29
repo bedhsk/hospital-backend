@@ -19,7 +19,11 @@ class CreateRetiroDto {
     @MinLength(1)
     @MaxLength(255)
     @IsOptional()
-    descripcion?: string;   
+    descripcion?: string;
+
+    @IsUUID()
+    @IsOptional() 
+    recetaId?: string;
     
     @IsArray()
     @ValidateNested({ each: true })

@@ -118,6 +118,39 @@ export class RetirosService {
     return retiro;
   }
 
+  async findOneByRecetaId(recetaId: string) {
+    const retiro = await this.retiroRepository
+      .createQueryBuilder('retiro')
+      .leftJoinAndSelect('retiro.user', 'user')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .where('retiro.recetaId = :recetaId', { recetaId })
+      .andWhere('retiro.is_active = true')
+      .select([
+        'retiro', // Todos los campos de Retiro
+        'user.id',
+        'user.username', // Solo ID y username del usuario
+        'detalleRetiro.id',
+        'detalleRetiro.cantidad',
+        'detalleRetiro.is_active', // Solo ID y cantidad del detalle de Retiro
+        'insumoDepartamento.id',
+        'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
+        'departamento.id',
+        'departamento.nombre', // Id y nombre del departamento.
+      ])
+      .getOne();
+
+    if (!retiro) {
+      throw new NotFoundException(
+        `Retiro asociado a la receta con ID ${recetaId} no encontrado o desactivado`,
+      );
+    }
+
+    return retiro;
+  }
+
+
   async create(createRetiro: CreateRetiroDto) {
     const lotesR:createNewLoteDto[] = [];
     const { usuarioId, detalles, ...rest } = createRetiro;

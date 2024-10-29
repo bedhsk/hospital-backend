@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import User from "src/users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import DetalleRetiro from "./detalleRetiro.entity";
 import OrdenLaboratorio from "src/orden_laboratorios/entities/orden_laboratorio.entity";
+import Receta from "src/recetas/entities/receta.entity";
 
 @Entity('retiros')
 export default  class Retiro{
@@ -54,4 +55,13 @@ export default  class Retiro{
       (ordenLaboratorio) => ordenLaboratorio.retiro,
     )
     ordenesLaboratorio: OrdenLaboratorio[];
+
+    @OneToOne(() => Receta, (receta) => receta.retiro, { nullable: true })
+    @JoinColumn({ name: 'recetaId'}) 
+    @ApiProperty({
+      description: 
+        'Relación entre Retiro y Receta. Un retiro puede estar asociado a una receta',
+    })
+    receta?: Receta;
+
 }

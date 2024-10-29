@@ -4,8 +4,9 @@ import Retiro from 'src/retiros/entities/retiro.entity';
 import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
 
 export interface RecetaConRetiro extends Receta {
-  retiro: {
+  retiro_properties: {
     id: string;
     detalles: DetalleRetiro[];
   };
+
 }

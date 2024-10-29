@@ -1,4 +1,4 @@
-import { IsString, MinLength, MaxLength, IsEnum, IsUUID, IsNotEmpty, IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { IsString, MinLength, MaxLength, IsEnum, IsUUID, IsNotEmpty, IsNumber, IsArray, ValidateNested, IsOptional } from 'class-validator';
 import { EstadoReceta } from '../enum/estado-receta.enum';
 import { Type } from 'class-transformer';
 
@@ -31,6 +31,10 @@ class CreateRecetaDto {
   @IsUUID()
   @IsNotEmpty()
   departamentoId: string;
+
+  @IsUUID()
+  @IsOptional() 
+  retiroId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

@@ -15,7 +15,7 @@ import { EstadoReceta } from './enum/estado-receta.enum';
 import { DetalleretirosService } from '../retiros/detalleretiros/detalleretiros.service'
 import { RetirosService } from '../retiros/retiros.service';
 import { InsumoDepartamentosService } from '../insumo_departamentos/insumo_departamentos.service';
-import { RecetaConRetiro } from './interfaces/receta-con-retiro';
+import { RecetaConRetiro } from 'src/recetas/interfaces/receta-con-retiro';
 
 @Injectable()
 export class RecetasService {
@@ -86,7 +86,7 @@ export class RecetasService {
       user: { id: user.id, name: user.name },
       paciente: { id: paciente.id, nombre: paciente.nombre },
       estado: savedReceta.estado,
-      retiro: {
+      retiro_properties: {
         id: retiro.retiro.id,
         detalles: retiroDetalles,
       }
@@ -192,6 +192,16 @@ export class RecetasService {
       throw new BadRequestException(
         'No se puede eliminar una receta con estado "Entregado".',
       );
+    }
+
+    const retiro = await this.retiroService.findOneByRecetaId(id);
+    if (!retiro) {
+      throw new NotFoundException(
+        `Retiro asociado a la receta con ID ${id} no encontrado`,
+      );
+    }
+    if (retiro) {
+      await this.retiroService.softDelete(retiro.id);
     }
 
     // Realizar el soft delete (cambiar is_Active a false)

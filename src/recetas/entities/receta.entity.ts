@@ -1,10 +1,11 @@
 // receta.entity.ts
 
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import Paciente from 'src/pacientes/entities/paciente.entity';
 import User from 'src/users/entities/user.entity';
 import { EstadoReceta } from '../enum/estado-receta.enum';
+import Retiro from 'src/retiros/entities/retiro.entity';
 
 
 @Entity('recetas')
@@ -60,4 +61,11 @@ export default class Receta {
     example: EstadoReceta.PENDIENTE,
   })
   estado: EstadoReceta;
+
+  @OneToOne(() => Retiro, (retiro) => retiro.receta, { nullable: true }) // Haz el campo opcional
+  @ApiProperty({
+    description: 
+      'Relación entre Receta y Retiro. Una receta puede tener un retiro asociado',
+  })
+  retiro?: Retiro;
 }
