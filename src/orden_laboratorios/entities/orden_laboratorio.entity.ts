@@ -5,6 +5,8 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import Paciente from '../../pacientes/entities/paciente.entity';
 import Examen from '../../examenes/entities/examen.entity';
@@ -52,17 +54,19 @@ class OrdenLaboratorio {
   @ManyToOne(() => User, (usuario) => usuario.ordenesLaboratorio)
   usuario: User;
 
-  @ManyToOne(() => Retiro, (retiro) => retiro.ordenesLaboratorio, {
+  @OneToOne(() => Retiro, (retiro) => retiro.ordenLaboratorio, {
     nullable: true,
   })
+  @JoinColumn({ name: 'retiroId' })
   retiro: Retiro;
 
   @ManyToOne(() => Paciente, (paciente) => paciente.ordenesLaboratorio)
   paciente: Paciente;
 
-  @ManyToOne(() => Examen, (examen) => examen.ordenesLaboratorio, {
+  @OneToOne(() => Examen, (examen) => examen.ordenLaboratorio, {
     nullable: false,
   })
+  @JoinColumn({ name: 'examenId' })
   examen: Examen;
 
   @Column({ type: 'boolean', default: true })

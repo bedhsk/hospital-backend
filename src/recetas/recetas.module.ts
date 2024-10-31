@@ -13,9 +13,13 @@ import Departamento from 'src/departamentos/entities/departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import Antecedente from 'src/pacientes/entities/antecedente.entity';
 import { AntecedentesService } from 'src/pacientes/antecedentes/antecedentes.service';
+import { ExamenesModule } from 'src/examenes/examenes.module';
+import { RetirosModule } from 'src/retiros/retiros.module';
 
 @Module({
   imports: [
+    ExamenesModule,
+    RetirosModule,
     TypeOrmModule.forFeature([
       Receta,
       User,

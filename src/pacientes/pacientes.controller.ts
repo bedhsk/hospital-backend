@@ -203,9 +203,9 @@ export class PacientesController {
     status: 404,
     description: 'Paciente no encontrado.',
   })
-  findOneWithRetiros(@Param('id') id: string) {
+  findHistorialMedico(@Param('id') id: string) {
     console.log(id);
-    return this.pacientesService.findOneWithRetiros(id);
+    return this.pacientesService.findHistorialMedico(id);
   }
 
   @AuthorizedRoles()

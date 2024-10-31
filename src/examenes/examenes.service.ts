@@ -95,6 +95,42 @@ export class ExamenesService {
     return examen;
   }
 
+  async findAnyOne(id: string) {
+    const examen = await this.examenesRepository.findOne({
+      where: { id },
+      relations: ['insumoExamenes'],
+    });
+
+    if (!examen) {
+      throw new NotFoundException(
+        `Examen con ID ${id} no encontrado o desactivado`,
+      );
+    }
+
+    return examen;
+  }
+
+  async activate(id: string) {
+    const examen = await this.findAnyOne(id); // Validamos que el examen existe
+    if (!examen){
+      throw new NotFoundException(`Examen con ID ${id} no encontrado`,)
+    }
+    if (examen.is_active){
+      throw new NotFoundException(`El examen con ID ${id} ya está activo`,)
+    }
+    examen.is_active = true; // Cambiamos el estado a activo
+    return this.examenesRepository.save(examen);
+  }
+
+  async desactivate(id: string) {
+    const examen = await this.findOne(id); // Validamos que el examen existe
+    if (!examen){
+      throw new NotFoundException(`Examen con ID ${id} no encontrado o esta desactivado`,)
+    }
+    examen.is_active = false; // Cambiamos el estado a inactivo
+    return this.examenesRepository.save(examen);
+  }
+
   async findOneWithInsumos(id: string) {
     const examen = await this.examenesRepository
       .createQueryBuilder('examen')

@@ -1,6 +1,16 @@
-import { IsString, MinLength, MaxLength, IsEnum } from 'class-validator';
+import { IsString, MinLength, MaxLength, IsEnum, IsArray, IsNotEmpty, ValidateNested, IsNumber, IsUUID, IsOptional } from 'class-validator';
 import { EstadoReceta } from '../enum/estado-receta.enum';
+import { Type } from 'class-transformer';
 
+export class InsumosDto {
+  @IsUUID()
+  @IsNotEmpty()
+  insumoId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  cantidad: number;
+}
 class CreateRecetaDto {
   @IsString()
   @MinLength(1)
@@ -13,8 +23,19 @@ class CreateRecetaDto {
   @IsString()
   pacienteId: string;
 
+  @IsUUID()
+  @IsOptional()
+  retiroId?: string;
+
   @IsEnum(EstadoReceta)
-  estado: EstadoReceta; // Estado de la receta: Pendiente o Entregado
+  @IsOptional()
+  estado: EstadoReceta = EstadoReceta.PENDIENTE; // Estado de la receta: Pendiente o Entregado
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => InsumosDto)
+  @IsNotEmpty()
+  insumos: InsumosDto[];
 }
 
 export default CreateRecetaDto;
