@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { log } from 'console';
 import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 import { InsumosService } from 'src/insumos/insumos.service';
 import { DetalleretirosService } from 'src/retiros/detalleretiros/detalleretiros.service';
@@ -36,66 +35,77 @@ export class SemaforoService {
     private readonly detalleRetiroService: DetalleretirosService,
   ) {}
 
+  async enrichInsumoWithInventoryStatus(
+    insumo: any,
+    diasAnalisis: number,
+    umbralRojo: number,
+    umbralAmarillo: number,
+  ): Promise<any> {
+    // Ajusta el tipo de retorno según necesites
+    // Obtener la cantidad actual total del insumo
+    const cantidadActual = await this.getCurrentStock(insumo.id);
+
+    // Calcular el consumo promedio diario
+    const consumoPromedio = await this.calculateAverageConsumption(
+      insumo.id,
+      diasAnalisis,
+    );
+
+    // Calcular tiempo hasta agotamiento en días
+    let tiempoAgotamiento: number;
+    if (consumoPromedio > 0) {
+      tiempoAgotamiento = Math.floor(cantidadActual / consumoPromedio);
+    } else {
+      tiempoAgotamiento = 0;
+    }
+
+    // Determinar el estado del semáforo
+    const status = this.determineSemaphoreStatus(
+      cantidadActual,
+      consumoPromedio,
+      tiempoAgotamiento,
+      umbralRojo,
+      umbralAmarillo,
+    );
+
+    return {
+      ...insumo,
+      cantidadActual,
+      consumoPromedio,
+      tiempoAgotamiento:
+        tiempoAgotamiento === Number.POSITIVE_INFINITY ? -1 : tiempoAgotamiento,
+      status,
+    };
+  }
+
   async calculateInventoryStatus(
     queryDto: QuerySemaforoDto,
     diasAnalisis: number = 30,
     umbralRojo: number = 7,
     umbralAmarillo: number = 15,
   ): Promise<AleartaSemaforoResponse> {
-    const alerts: AleartaSemaforo[] = [];
-
     // Obtener todos los insumos activos
-    const insumos = await this.insumoService.findActive(queryDto);
+    const insumos = await this.insumoService.findAll(queryDto);
 
-    for (const insumo of insumos.data) {
-      // Obtener la cantidad actual total del insumo
-      const cantidadActual = await this.getCurrentStock(insumo.id);
-
-      // Calcular el consumo promedio diario
-      const consumoPromedio = await this.calculateAverageConsumption(
-        insumo.id,
-        diasAnalisis,
-      );
-
-      // Calcular tiempo hasta agotamiento en días
-      let tiempoAgotamiento: number;
-      if (consumoPromedio > 0) {
-        tiempoAgotamiento = Math.floor(cantidadActual / consumoPromedio);
-      } else {
-        // Si el consumo promedio es cero, se considera que el insumo está agotado
-        tiempoAgotamiento = 0;
-      }
-
-      // Determinar el estado del semáforo
-      const status = this.determineSemaphoreStatus(
-        cantidadActual,
-        consumoPromedio,
-        tiempoAgotamiento,
-        umbralRojo,
-        umbralAmarillo,
-      );
-
-      alerts.push({
-        insumoId: insumo.id,
-        nombre: insumo.nombre,
-        cantidadActual,
-        consumoPromedio,
-        tiempoAgotamiento:
-          tiempoAgotamiento === Number.POSITIVE_INFINITY
-            ? -1
-            : tiempoAgotamiento,
-        status,
-      });
-    }
+    // Enriquecer cada insumo con la información de inventario
+    const enrichedInsumos = await Promise.all(
+      insumos.data.map((insumo) =>
+        this.enrichInsumoWithInventoryStatus(
+          insumo,
+          diasAnalisis,
+          umbralRojo,
+          umbralAmarillo,
+        ),
+      ),
+    );
 
     return {
-      data: alerts,
+      data: enrichedInsumos,
       totalItems: insumos.totalItems,
       totalPages: insumos.totalPages,
       page: insumos.page,
     };
   }
-
   private async getCurrentStock(insumoId: string): Promise<number> {
     // Obtener la suma de las existencias en todos los departamentos
     const result = await this.insumoDepartamentoService.getStock(insumoId);
