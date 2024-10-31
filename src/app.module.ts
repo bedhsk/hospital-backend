@@ -19,6 +19,7 @@ import { ExamenesModule } from './examenes/examenes.module';
 import { InsumoExamenesModule } from './insumo_examenes/insumo_examenes.module';
 import { RetirosModule } from './retiros/retiros.module';
 import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.module';
+import { SemaforoModule } from './semaforo/semaforo.module';
 
 @Module({
   imports: [
@@ -59,7 +60,7 @@ import { OrdenLaboratorioModule } from './orden_laboratorios/orden_laboratorios.
     InsumoExamenesModule,
     RetirosModule,
     OrdenLaboratorioModule,
-
+    SemaforoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

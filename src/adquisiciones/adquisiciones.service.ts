@@ -14,7 +14,6 @@ import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 import Lote from 'src/lotes/entities/lote.entity';
 import createNewLoteDto from './dtos/create-new-lote.dto';
-import { log } from 'console';
 
 @Injectable()
 export class AdquisicionesService {
@@ -286,12 +285,6 @@ export class AdquisicionesService {
           insumoId,
           departamento.id,
         );
-
-      log(
-        'InsumoDepartamento',
-        insumoDepartamento,
-        '\n======================================',
-      );
 
       // Verificar si el insumo ya ha sido procesado
       if (!insumoDepartamento) {
