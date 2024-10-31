@@ -8,7 +8,7 @@ import QuerySemaforoDto from './dtos/query-semaforo.dto';
 export class SemaforoController {
   constructor(private semaforoService: SemaforoService) {}
 
-  @Get('alerts')
+  @Get('insumos')
   @ApiOperation({
     summary: 'Obtiene alertas de inventario',
     description:
