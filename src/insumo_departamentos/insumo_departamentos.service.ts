@@ -185,4 +185,15 @@ export class InsumoDepartamentosService {
     }
     return insumoDepartamento;
   }
+
+  async getStock(insumoId: string) {
+    const result = await this.insumodepartamentoService
+      .createQueryBuilder('insumo_departamento')
+      .select('SUM(insumo_departamento.existencia)', 'total')
+      .where('insumo_departamento.insumoId = :insumoId', { insumoId })
+      .andWhere('insumo_departamento.is_active = :isActive', { isActive: true })
+      .getRawOne();
+
+    return result;
+  }
 }

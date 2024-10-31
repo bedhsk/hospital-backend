@@ -319,4 +319,45 @@ export class InsumosService {
     `;
     return await this.insumoRepository.query(query);
   }
+
+  async findActive(query: QueryInsumoDto): Promise<{
+    data: Insumo[];
+    totalItems: number;
+    totalPages: number;
+    page: number;
+  }> {
+    const { q, filter, page = 1, limit = 10 } = query;
+
+    const queryBuilder = this.insumoRepository
+      .createQueryBuilder('insumo')
+      .where({ is_active: true });
+
+    if (q) {
+      queryBuilder.andWhere(
+        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
+        { nombre: `%${q}%`, codigo: `%${q}%` },
+      );
+    }
+
+    if (filter) {
+      queryBuilder.andWhere('categoria.nombre = :categoria', {
+        categoria: filter,
+      });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+    const insumos = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: insumos,
+      totalItems,
+      totalPages,
+      page,
+    };
+  }
 }

@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { log } from 'console';
-import { InsumoDepartamento } from 'src/insumo_departamentos/entities/insumo_departamento.entity';
-import Insumo from 'src/insumos/entities/insumo.entity';
-import DetalleRetiro from 'src/retiros/entities/detalleRetiro.entity';
-import Retiro from 'src/retiros/entities/retiro.entity';
-import { Repository } from 'typeorm';
+import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
+import { InsumosService } from 'src/insumos/insumos.service';
+import { DetalleretirosService } from 'src/retiros/detalleretiros/detalleretiros.service';
+import QuerySemaforoDto from './dtos/query-semaforo.dto';
 
 export enum SemaphoreStatus {
   RED = 'red',
@@ -23,32 +21,33 @@ export interface AleartaSemaforo {
   status: SemaphoreStatus;
 }
 
+export interface AleartaSemaforoResponse {
+  data: AleartaSemaforo[];
+  totalItems: number;
+  totalPages: number;
+  page: number;
+}
+
 @Injectable()
 export class SemaforoService {
   constructor(
-    @InjectRepository(Insumo)
-    private insumoRepository: Repository<Insumo>,
-    @InjectRepository(InsumoDepartamento)
-    private insumoDepartamentoRepository: Repository<InsumoDepartamento>,
-    @InjectRepository(DetalleRetiro)
-    private detalleRetiroRepository: Repository<DetalleRetiro>,
-    @InjectRepository(Retiro)
-    private retiroRepository: Repository<Retiro>,
+    private readonly insumoService: InsumosService,
+    private readonly insumoDepartamentoService: InsumoDepartamentosService,
+    private readonly detalleRetiroService: DetalleretirosService,
   ) {}
 
   async calculateInventoryStatus(
+    queryDto: QuerySemaforoDto,
     diasAnalisis: number = 30,
     umbralRojo: number = 7,
     umbralAmarillo: number = 15,
-  ): Promise<AleartaSemaforo[]> {
+  ): Promise<AleartaSemaforoResponse> {
     const alerts: AleartaSemaforo[] = [];
 
     // Obtener todos los insumos activos
-    const insumos = await this.insumoRepository.find({
-      where: { is_active: true },
-    });
+    const insumos = await this.insumoService.findActive(queryDto);
 
-    for (const insumo of insumos) {
+    for (const insumo of insumos.data) {
       // Obtener la cantidad actual total del insumo
       const cantidadActual = await this.getCurrentStock(insumo.id);
 
@@ -70,6 +69,7 @@ export class SemaforoService {
       // Determinar el estado del semáforo
       const status = this.determineSemaphoreStatus(
         cantidadActual,
+        consumoPromedio,
         tiempoAgotamiento,
         umbralRojo,
         umbralAmarillo,
@@ -80,22 +80,25 @@ export class SemaforoService {
         nombre: insumo.nombre,
         cantidadActual,
         consumoPromedio,
-        tiempoAgotamiento,
+        tiempoAgotamiento:
+          tiempoAgotamiento === Number.POSITIVE_INFINITY
+            ? -1
+            : tiempoAgotamiento,
         status,
       });
     }
 
-    return alerts;
+    return {
+      data: alerts,
+      totalItems: insumos.totalItems,
+      totalPages: insumos.totalPages,
+      page: insumos.page,
+    };
   }
 
   private async getCurrentStock(insumoId: string): Promise<number> {
     // Obtener la suma de las existencias en todos los departamentos
-    const result = await this.insumoDepartamentoRepository
-      .createQueryBuilder('insumo_departamento')
-      .select('SUM(insumo_departamento.existencia)', 'total')
-      .where('insumo_departamento.insumoId = :insumoId', { insumoId })
-      .andWhere('insumo_departamento.is_active = :isActive', { isActive: true })
-      .getRawOne();
+    const result = await this.insumoDepartamentoService.getStock(insumoId);
 
     return result?.total || 0;
   }
@@ -108,31 +111,35 @@ export class SemaforoService {
     fechaInicio.setDate(fechaInicio.getDate() - diasAnalisis);
 
     // Obtener todos los retiros del período para el insumo específico
-    const consumoTotal = await this.detalleRetiroRepository
-      .createQueryBuilder('detalleRetiro')
-      .innerJoin('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
-      .innerJoin('detalleRetiro.retiro', 'retiro')
-      .where('insumoDepartamento.insumoId = :insumoId', { insumoId })
-      .andWhere('retiro.is_active = :isActive', { isActive: true })
-      .andWhere('retiro.createdAt >= :fechaInicio', { fechaInicio })
-      .select('SUM(detalleRetiro.cantidad)', 'total')
-      .getRawOne();
+    const consumoTotal = await this.detalleRetiroService.getConsumoTotal(
+      insumoId,
+      fechaInicio,
+    );
 
     // Calcular el promedio diario
-    log(consumoTotal);
+    // log(consumoTotal);
     const total = Number(consumoTotal?.total) || 0;
-    return total / diasAnalisis;
+    return parseFloat((total / diasAnalisis).toFixed(2));
   }
 
   private determineSemaphoreStatus(
     cantidadActual: number,
+    consumoPromedio: number,
     tiempoAgotamiento: number,
     umbralRojo: number,
     umbralAmarillo: number,
   ): SemaphoreStatus {
     if (cantidadActual === 0) {
       return SemaphoreStatus.OUT_OF_STOCK;
-    } else if (tiempoAgotamiento <= umbralRojo) {
+    }
+
+    // Si no hay consumo (consumoPromedio = 0) pero hay existencias, el estado es verde
+    if (consumoPromedio === 0 && cantidadActual > 0) {
+      return SemaphoreStatus.GREEN;
+    }
+
+    // Evaluación normal basada en el tiempo de agotamiento
+    if (tiempoAgotamiento <= umbralRojo) {
       return SemaphoreStatus.RED;
     } else if (tiempoAgotamiento <= umbralAmarillo) {
       return SemaphoreStatus.YELLOW;
