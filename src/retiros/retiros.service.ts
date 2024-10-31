@@ -16,6 +16,9 @@ import { LotesService } from 'src/lotes/lotes.service';
 import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
 import { createNewLoteDto } from 'src/lotes/dto/create-new-lote.dto';
 import { log } from 'console';
+import CreateRetiroExamenDto from './dto/create-retiro-examen.dto';
+import { ExamenesService } from 'src/examenes/examenes.service';
+import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
 
 @Injectable()
 export class RetirosService {
@@ -29,6 +32,8 @@ export class RetirosService {
     private readonly departamentoService: DepartamentosService,
     private readonly lotesService: LotesService,
     private readonly moviemintoLoteService: MovimientolotesService,
+    private readonly examenService: ExamenesService,
+    private readonly insumosExamenService: InsumoExamenesService,
   ) {}
 
   async findAll(query: QueryRetiroDto) {
@@ -370,5 +375,64 @@ export class RetirosService {
     await Promise.all(lotesPromises);
 
     return lotes;
+  }
+
+  async createByExams(retiroExamen: CreateRetiroExamenDto){
+    const { usuarioId, departamentoId, examenId, descripcion, ...rest } = retiroExamen;
+    const usuario = await this.usuarioService.findOne(retiroExamen.usuarioId);
+    const departamento = await this.departamentoService.findOne(retiroExamen.departamentoId);
+    const examen = await this.examenService.findOne(retiroExamen.examenId);
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${usuarioId} no encontrado`);
+    }
+    if (!departamento) {
+      throw new NotFoundException(`Departamento con id ${departamentoId} no encontrado`);
+    }
+    if (!examen) {
+      throw new NotFoundException(`Examen con id ${examenId} no encontrado`);
+    }
+    const insumosExamen = (
+      await this.insumosExamenService.findAll({ examenId: examenId })
+    ).data;
+
+    const insumosDepartamentoPromise = insumosExamen.map(async (element) => {
+      const { insumo, cantidad } = element;
+
+      const insumoDeparamento = await this.insumoDepartamentoService.findByInsumoDepartamentoId(
+        insumo.id,
+        departamentoId,
+      );
+
+      if (!insumoDeparamento) {
+        throw new NotFoundException(
+          `Insumo ${insumo.nombre} no encontrado en el departamento`,
+        );
+      }
+
+      const result: DetalleRetiroDto = {
+        insumoDepartamentoId: insumoDeparamento.id,
+        cantidad: cantidad,
+      };
+
+      return result;
+    });
+
+    const insumosDepartamento = await Promise.all(insumosDepartamentoPromise);
+
+    const retiroPromise: CreateRetiroDto = {
+      usuarioId: usuario.id,
+
+      detalles: insumosDepartamento,
+      ...rest,
+    }
+
+    const retiro = await this.create({
+      usuarioId: usuario.id,
+      descripcion: descripcion,
+      detalles: insumosDepartamento,
+      ...rest,
+    });
+
+    return retiro;
   }
 }

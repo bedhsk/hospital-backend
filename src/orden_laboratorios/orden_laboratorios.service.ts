@@ -21,6 +21,7 @@ import { RetirosService } from 'src/retiros/retiros.service';
 import CreateRetiroDto, {
   DetalleRetiroDto,
 } from 'src/retiros/dto/create-retiro.dto';
+import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -52,7 +53,7 @@ export class OrdenLaboratoriosService {
 
   // Método para crear una nueva orden de laboratorio
   async create(createOrdenLaboratorioDto: CreateOrdenLaboratorioDto) {
-    const { usuarioId, retiroId, pacienteId, examenId, ...rest } =
+    const { usuarioId, retiroId, pacienteId, examenId, estado, ...rest } =
       createOrdenLaboratorioDto;
 
     // Verifica que el usuario existe
@@ -94,6 +95,7 @@ export class OrdenLaboratoriosService {
       paciente,
       examen,
       retiro,
+      estado
     });
 
     // Guarda y retorna la nueva orden
@@ -189,7 +191,7 @@ export class OrdenLaboratoriosService {
 
   // Método para crear una nueva orden de laboratorio segun examenes
   async createByExams(createOrdenLaboratorioDto: CreateOrdenLaboratorioDto) {
-    const { usuarioId, retiroId, pacienteId, examenId, ...rest } =
+    const { usuarioId, retiroId, pacienteId, examenId, estado, ...rest } =
       createOrdenLaboratorioDto;
 
     // Verifica que el usuario existe
@@ -226,61 +228,64 @@ export class OrdenLaboratoriosService {
       throw new NotFoundException(`Examen con ID ${examenId} no encontrado`);
     }
 
-    const insumosExamen = (
-      await this.insumoExamenService.findAll({ examenId: examenId })
-    ).data;
+    let nuevaOrdenLaboratorio: CreateOrdenLaboratorioDto;
 
-    const insumosPromise = insumosExamen.map(async (element) => {
-      const { insumo, cantidad } = element;
-
-      const insumoDeparamento = await this.insumoDepartamentoRepository.findOne(
-        {
-          where: {
-            insumo,
-            departamento: { id: laboratorio.id, nombre: laboratorio.nombre },
-            is_active: true,
-          },
-        },
-      );
-
-      if (!insumoDeparamento) {
-        throw new NotFoundException(
-          `Insumo ${insumo.nombre} no encontrado en el departamento`,
-        );
+    if (estado === EstadoOrdenLaboratorio.ENTREGADO) {
+      // Crear un nuevo retiro
+      const nuevoRetiro: CreateRetiroExamenDto = {
+        usuarioId: usuario.id,
+        departamentoId: laboratorio.id,
+        descripcion: 'Retiro por orden de laboratorio para el paciente:' + paciente.nombre,
+        examenId: examen.id,
       }
 
-      const result: DetalleRetiroDto = {
-        insumoDepartamentoId: insumoDeparamento.id,
-        cantidad: cantidad,
+      const retiroCompleto = await this.retiroService.createByExams(nuevoRetiro);
+
+      nuevaOrdenLaboratorio = {
+        usuarioId: usuario.id,
+        pacienteId: paciente.id,
+        examenId: examen.id,
+        retiroId: retiroCompleto.retiro.id,
+        estado: estado,
+        ...rest,
       };
-
-      return result;
-    });
-
-    const insumosArray: DetalleRetiroDto[] = await Promise.all(insumosPromise);
-
-    const retiroPromise: CreateRetiroDto = {
-      usuarioId: usuario.id,
-      descripcion: `Orden de laboratorio para el paciente ${paciente.nombre}`,
-      detalles: insumosArray,
-    };
-
-    const retiroP = this.retiroService.create(retiroPromise);
-
-    if (!retiroP) {
-      throw new NotFoundException(`No se pudo crear el retiro`);
     }
 
-    const { retiro } = await Promise.resolve(retiroP);
-    // this.retiroService.create(retiroPromise);
-    const nuevaOrdenLaboratorio: CreateOrdenLaboratorioDto = {
-      usuarioId: usuario.id,
-      pacienteId: paciente.id,
-      examenId: examen.id,
-      retiroId: retiro.id,
-      ...rest,
-    };
+    else {
+      nuevaOrdenLaboratorio = {
+        usuarioId: usuario.id,
+        pacienteId: paciente.id,
+        examenId: examen.id,
+        retiroId: null,
+        estado: estado,
+        ...rest,
+      };
+    }
     // Crear la nueva orden de laboratorio
     return this.create(nuevaOrdenLaboratorio);
+  }
+
+  async retireOrderLaboratorio(id: string) {
+    const ordenLaboratorio = await this.findOne(id);
+    if (ordenLaboratorio.estado === EstadoOrdenLaboratorio.ENTREGADO) {
+      throw new BadRequestException('La orden ya fue entregada');
+    }
+    else{
+      const laboratorio = await this.departamentoService.findOneByName('Laboratorio');
+      if (!laboratorio) {
+        throw new NotFoundException(
+          `Departamento con nombre Laboratorio no encontrado`,
+        );
+      }
+      const retiro = await this.retiroService.createByExams({
+        usuarioId: ordenLaboratorio.usuario.id,
+        departamentoId: laboratorio.id,
+        descripcion: 'Retiro por orden de laboratorio para el paciente:' + ordenLaboratorio.paciente.nombre,
+        examenId: ordenLaboratorio.examen.id,
+      })
+      ordenLaboratorio.estado = EstadoOrdenLaboratorio.ENTREGADO;
+      ordenLaboratorio.retiro = retiro.retiro;
+      return this.ordenLaboratorioRepository.save(ordenLaboratorio);
+    }
   }
 }

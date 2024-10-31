@@ -84,6 +84,12 @@ export class RecetasController {
   }
 
   @AuthorizedRoles()
+  @Post(':id/retiro')
+  retire(@Param('id') id: string) {
+    return this.recetasService.retiroReceta(id);
+  }
+
+  @AuthorizedRoles()
   @Get()
   @ApiOperation({
     summary: 'Listar recetas',
@@ -204,7 +210,7 @@ export class RecetasController {
     description: 'Receta no encontrada',
   })
   findOne(@Param('id') id: string) {
-    return this.recetasService.findOne(id);
+    return this.recetasService.findOnePublic(id);
   }
 
   @AuthorizedRoles()

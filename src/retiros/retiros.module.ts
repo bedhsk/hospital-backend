@@ -13,6 +13,8 @@ import Adquisicion from 'src/adquisiciones/entities/adquisicion.entity';
 import { AdquisicionesModule } from 'src/adquisiciones/adquisiciones.module';
 import { DepartamentosModule } from 'src/departamentos/departamentos.module';
 import { LotesModule } from 'src/lotes/lotes.module';
+import { ExamenesModule } from 'src/examenes/examenes.module';
+import { InsumoExamenesModule } from 'src/insumo_examenes/insumo_examenes.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { LotesModule } from 'src/lotes/lotes.module';
     AdquisicionesModule,
     DepartamentosModule,
     LotesModule,
+    ExamenesModule,
+    InsumoExamenesModule,
     TypeOrmModule.forFeature([
       DetalleRetiro,
       InsumoDepartamento,
