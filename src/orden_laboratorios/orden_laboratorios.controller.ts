@@ -21,6 +21,7 @@ import {
     ApiTags,
   } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import RetireOrdenDto from './dtos/retire-orden-laboratorio.dto';
 
   
   @ApiTags('OrdenLaboratorio')
@@ -60,8 +61,8 @@ import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 
     @AuthorizedRoles()
     @Post(':id/retiro')
-    retire(@Param('id') id: string) {
-      return this.ordenLaboratorioService.retireOrderLaboratorio(id);
+    retire(@Param('id') id: string, @Body() body: RetireOrdenDto) {
+      return this.ordenLaboratorioService.retireOrderLaboratorio(id, body);
     }
   
     @Get()

@@ -17,6 +17,7 @@ import CreateExamenDto from 'src/examenes/dtos/create-examen.dto';
 import { RetirosService } from 'src/retiros/retiros.service';
 import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
 import { throws } from 'assert';
+import RetireRecetaDto from './dto/retire-receta.dto';
 
 @Injectable()
 export class RecetasService {
@@ -243,9 +244,7 @@ export class RecetasService {
       receta.paciente = paciente;
     }
 
-    if (recetaData.estado === EstadoReceta.ENTREGADO) {
-      this.retiroReceta(id);
-    }
+    recetaData.estado = receta.estado;
 
     if (insumos){
       this.examenesService.activate(receta.examen.id);
@@ -282,8 +281,12 @@ export class RecetasService {
     await this.recetasRepository.save(receta);
   }
 
-  async retiroReceta(id: string) {
+  async retiroReceta(id: string, usuario: RetireRecetaDto) {
     const receta = await this.findOne(id);
+    if (!receta){
+      throw new NotFoundException('Receta no encontrada');
+    }
+    const usuarioRetiro = await this.usersService.findOne(usuario.userId);
     if (receta.estado === EstadoReceta.ENTREGADO) {
       throw new BadRequestException(
         'La receta ya ha sido entregada',
@@ -292,8 +295,8 @@ export class RecetasService {
     receta.estado = EstadoReceta.ENTREGADO;
     this.examenesService.activate(receta.examen.id);
     const retiro = await this.retiroService.createByExams({
-      usuarioId: receta.user.id,
-      departamentoId: receta.user.departamento.id,
+      usuarioId: usuarioRetiro.id,
+      departamentoId: usuarioRetiro.departamento.id,
       descripcion: 'Entrega de receta para ' + receta.paciente.nombre,
       examenId: receta.examen.id,
     });

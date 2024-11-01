@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryRecetaDto from './dto/query-receta.dto';
+import RetireRecetaDto from './dto/retire-receta.dto';
 
 @ApiTags('Recetas')
 @Controller('recetas')
@@ -85,8 +86,8 @@ export class RecetasController {
 
   @AuthorizedRoles()
   @Post(':id/retiro')
-  retire(@Param('id') id: string) {
-    return this.recetasService.retiroReceta(id);
+  retire(@Param('id') id: string, @Body() body: RetireRecetaDto) {
+    return this.recetasService.retiroReceta(id, body);
   }
 
   @AuthorizedRoles()

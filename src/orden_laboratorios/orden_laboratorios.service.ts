@@ -22,6 +22,8 @@ import CreateRetiroDto, {
   DetalleRetiroDto,
 } from 'src/retiros/dto/create-retiro.dto';
 import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
+import RetireOrdenDto from './dtos/retire-orden-laboratorio.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -49,6 +51,8 @@ export class OrdenLaboratoriosService {
     private readonly retiroService: RetirosService,
 
     private readonly departamentoService: DepartamentosService,
+
+    private readonly userService: UsersService,
   ) {}
 
   // Método para crear una nueva orden de laboratorio
@@ -265,8 +269,13 @@ export class OrdenLaboratoriosService {
     return this.create(nuevaOrdenLaboratorio);
   }
 
-  async retireOrderLaboratorio(id: string) {
+  async retireOrderLaboratorio(id: string, usuario: RetireOrdenDto) {
     const ordenLaboratorio = await this.findOne(id);
+    if (!ordenLaboratorio) {
+      throw new NotFoundException(
+        `Orden de laboratorio con ID ${id} no encontrada`,
+      );
+    }
     if (ordenLaboratorio.estado === EstadoOrdenLaboratorio.ENTREGADO) {
       throw new BadRequestException('La orden ya fue entregada');
     }
@@ -277,8 +286,12 @@ export class OrdenLaboratoriosService {
           `Departamento con nombre Laboratorio no encontrado`,
         );
       }
+      const user = await this.userService.findOne(usuario.userId);
+      if (!user) {
+        throw new NotFoundException(`Usuario con ID ${usuario.userId} no encontrado`);
+      }
       const retiro = await this.retiroService.createByExams({
-        usuarioId: ordenLaboratorio.usuario.id,
+        usuarioId: user.id,
         departamentoId: laboratorio.id,
         descripcion: 'Retiro por orden de laboratorio para el paciente:' + ordenLaboratorio.paciente.nombre,
         examenId: ordenLaboratorio.examen.id,
