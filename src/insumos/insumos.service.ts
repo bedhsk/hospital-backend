@@ -13,8 +13,6 @@ import { CategoriasService } from 'src/categorias/categorias.service';
 import { Not, Repository } from 'typeorm';
 import QueryInsumoDto from './dto/query-insumo.dto';
 import Insumo from './entities/insumo.entity';
-import { DepartamentosService } from 'src/departamentos/departamentos.service';
-import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 
 @Injectable()
 export class InsumosService {
@@ -22,9 +20,6 @@ export class InsumosService {
     @InjectRepository(Insumo)
     private readonly insumoRepository: Repository<Insumo>,
     private readonly categoriaService: CategoriasService,
-    private readonly departamentosService: DepartamentosService,
-    @Inject(forwardRef(() => InsumoDepartamentosService))
-    private readonly insumoDepartamentosService: InsumoDepartamentosService,
   ) {}
 
   // Método para obtener todos los insumos que están activos con el total de cantidad actual
@@ -84,9 +79,9 @@ export class InsumosService {
     const totalPages = Math.ceil(totalItems / limit);
 
     const result = insumos.map((insumo) => {
-      const totalCantidad =
-        insumosConTotalCantidad.find((i) => i.insumoId === insumo.id)
-          ?.totalCantidadActual || 0;
+      // const totalCantidad =
+      //   insumosConTotalCantidad.find((i) => i.insumoId === insumo.id)
+      //     ?.totalCantidadActual || 0;
 
       const departamentos = insumo.insumosDepartamentos.map((insumoDep) => ({
         id: insumoDep.departamento.id,
@@ -103,7 +98,7 @@ export class InsumosService {
           id: insumo.categoria.id,
           nombre: insumo.categoria.nombre,
         },
-        totalCantidadActual: totalCantidad,
+        // totalCantidadActual: totalCantidad,
         departamentos,
         lotes: insumo.insumosDepartamentos.flatMap((dep) =>
           dep.lotes
@@ -318,5 +313,46 @@ export class InsumosService {
         "insumo"."nombre";
     `;
     return await this.insumoRepository.query(query);
+  }
+
+  async findActive(query: QueryInsumoDto): Promise<{
+    data: Insumo[];
+    totalItems: number;
+    totalPages: number;
+    page: number;
+  }> {
+    const { q, filter, page = 1, limit = 10 } = query;
+
+    const queryBuilder = this.insumoRepository
+      .createQueryBuilder('insumo')
+      .where({ is_active: true });
+
+    if (q) {
+      queryBuilder.andWhere(
+        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
+        { nombre: `%${q}%`, codigo: `%${q}%` },
+      );
+    }
+
+    if (filter) {
+      queryBuilder.andWhere('categoria.nombre = :categoria', {
+        categoria: filter,
+      });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+    const insumos = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: insumos,
+      totalItems,
+      totalPages,
+      page,
+    };
   }
 }

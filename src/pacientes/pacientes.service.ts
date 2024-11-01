@@ -86,7 +86,7 @@ export class PacientesService {
     return paciente;
   }
 
-  async findOneWithRetiros(id: string) {
+  async findHistorialMedico(id: string) {
     const paciente = await this.pacientesRepository
       .createQueryBuilder('paciente')
       .leftJoinAndSelect('paciente.recetas', 'recetas')
@@ -102,14 +102,20 @@ export class PacientesService {
 
     const retiros = [
       ...paciente.recetas.map((receta) => ({
-        ...receta,
-        tipo: 'receta', // Identificamos que este es del tipo receta
+        id: receta.id,
+        descripcion: receta.descripcion,
+        estado: receta.estado,
+        createdAt: receta.createdAt,
+        updatedAt: receta.updatedAt,
+        tipo: 'Receta', // Identificamos que este es del tipo receta
       })),
       ...paciente.ordenesLaboratorio.map((orden) => ({
-        ...orden,
-        updatedAt: new Date().toISOString(),
-
-        tipo: 'ordenLaboratorio', // Identificamos que este es del tipo ordenLaboratorio
+        id: orden.id,
+        descripcion: orden.descripcion,
+        estado: orden.estado,
+        createdAt: orden.created_at,
+        updatedAt: orden.updated_at,
+        tipo: 'Orden de Laboratorio', // Identificamos que este es del tipo ordenLaboratorio
       })),
     ];
 

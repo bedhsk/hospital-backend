@@ -20,6 +20,8 @@ import {
     ApiResponse,
     ApiTags,
   } from '@nestjs/swagger';
+import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import RetireOrdenDto from './dtos/retire-orden-laboratorio.dto';
 
   
   @ApiTags('OrdenLaboratorio')
@@ -54,7 +56,13 @@ import {
       description: 'Datos inválidos, revisa los campos enviados',
     })
     create(@Body() createOrdenLaboratorioDto: CreateOrdenLaboratorioDto) {
-      return this.ordenLaboratorioService.create(createOrdenLaboratorioDto);
+      return this.ordenLaboratorioService.createByExams(createOrdenLaboratorioDto);
+    }
+
+    @AuthorizedRoles()
+    @Post(':id/retiro')
+    retire(@Param('id') id: string, @Body() body: RetireOrdenDto) {
+      return this.ordenLaboratorioService.retireOrderLaboratorio(id, body);
     }
   
     @Get()

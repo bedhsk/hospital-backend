@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryRecetaDto from './dto/query-receta.dto';
+import RetireRecetaDto from './dto/retire-receta.dto';
 
 @ApiTags('Recetas')
 @Controller('recetas')
@@ -81,6 +82,12 @@ export class RecetasController {
   })
   create(@Body() createRecetaDto: CreateRecetaDto) {
     return this.recetasService.create(createRecetaDto);
+  }
+
+  @AuthorizedRoles()
+  @Post(':id/retiro')
+  retire(@Param('id') id: string, @Body() body: RetireRecetaDto) {
+    return this.recetasService.retiroReceta(id, body);
   }
 
   @AuthorizedRoles()
@@ -204,7 +211,7 @@ export class RecetasController {
     description: 'Receta no encontrada',
   })
   findOne(@Param('id') id: string) {
-    return this.recetasService.findOne(id);
+    return this.recetasService.findOnePublic(id);
   }
 
   @AuthorizedRoles()

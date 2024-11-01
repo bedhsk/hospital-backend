@@ -23,7 +23,8 @@ export default class CreateOrdenLaboratorioDto {
     descripcion: string;
 
     @IsEnum(EstadoOrdenLaboratorio)
-    estado: EstadoOrdenLaboratorio;
+    @IsOptional()
+    estado: EstadoOrdenLaboratorio = EstadoOrdenLaboratorio.PENDIENTE;
 
     @IsBoolean()
     @IsOptional()
