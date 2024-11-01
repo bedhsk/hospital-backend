@@ -68,8 +68,10 @@ export class SemaforoService {
       umbralAmarillo,
     );
 
+    const { totalCantidadActual, ...restInsumo } = insumo;
+
     return {
-      ...insumo,
+      ...restInsumo,
       cantidadActual,
       consumoPromedio,
       tiempoAgotamiento:
