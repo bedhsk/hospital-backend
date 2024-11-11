@@ -79,9 +79,9 @@ export class InsumosService {
     const totalPages = Math.ceil(totalItems / limit);
 
     const result = insumos.map((insumo) => {
-      // const totalCantidad =
-      //   insumosConTotalCantidad.find((i) => i.insumoId === insumo.id)
-      //     ?.totalCantidadActual || 0;
+      const totalCantidad =
+        insumosConTotalCantidad.find((i) => i.insumoId === insumo.id)
+          ?.totalCantidadActual || 0;
 
       const departamentos = insumo.insumosDepartamentos.map((insumoDep) => ({
         id: insumoDep.departamento.id,
@@ -98,7 +98,7 @@ export class InsumosService {
           id: insumo.categoria.id,
           nombre: insumo.categoria.nombre,
         },
-        // totalCantidadActual: totalCantidad,
+        totalCantidadActual: totalCantidad,
         departamentos,
         lotes: insumo.insumosDepartamentos.flatMap((dep) =>
           dep.lotes
