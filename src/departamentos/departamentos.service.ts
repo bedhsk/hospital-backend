@@ -127,8 +127,8 @@ export class DepartamentosService {
       departamento: {
         id: departamento.id,
         nombre: departamento.nombre,
+        insumos: insumos,
       },
-      insumos,
     };
   }
 
