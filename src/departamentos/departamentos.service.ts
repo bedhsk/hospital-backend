@@ -124,11 +124,9 @@ export class DepartamentosService {
     );
 
     return {
-      departamento: {
-        id: departamento.id,
-        nombre: departamento.nombre,
-        insumos: insumos,
-      },
+      id: departamento.id,
+      nombre: departamento.nombre,
+      insumos: insumos,
     };
   }
 
