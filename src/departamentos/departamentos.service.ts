@@ -11,12 +11,15 @@ import Departamento from './entities/departamento.entity';
 import CreateDepartamentoDto from './dto/create-departamento.dto';
 import UpdateDepartamentoDto from './dto/update-departamento.dto';
 import QueryDepartamentoDto from './dto/query-departamento.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DepartmentDeletedEvent } from 'src/events/department-deleted.event';
 
 @Injectable()
 export class DepartamentosService {
   constructor(
     @InjectRepository(Departamento)
     private readonly departamentosRepository: Repository<Departamento>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   create(createDepartamentoDto: CreateDepartamentoDto): Promise<Departamento> {
@@ -157,15 +160,13 @@ export class DepartamentosService {
       throw new NotFoundException(`Departamento con ID ${id} no encontrado`);
     }
 
-    try {
-      // Realizar eliminación en cascada gracias a las relaciones de la base de datos
-      await this.departamentosRepository.remove(departamento);
-    } catch (error) {
-      // Manejo de errores, en caso de que haya algún problema en la eliminación
-      throw new BadRequestException(
-        'Error al eliminar el departamento, verifique si tiene dependencias',
-      );
-    }
+    this.eventEmitter.emit(
+      'department.deleted',
+      new DepartmentDeletedEvent(id, departamento),
+    );
+
+    departamento.is_active = false;
+    await this.departamentosRepository.save(departamento);
 
     return { message: 'Departamento eliminado con éxito' };
   }
