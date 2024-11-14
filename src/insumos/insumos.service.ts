@@ -59,13 +59,13 @@ export class InsumosService {
 
     if (q) {
       queryBuilder.andWhere(
-        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
+        "unaccent(insumo.nombre) ILIKE unaccent(:nombre) OR unaccent(insumo.codigo) ILIKE unaccent(:codigo)",
         { nombre: `%${q}%`, codigo: `%${q}%` },
       );
     }
 
     if (filter) {
-      queryBuilder.andWhere('categoria.nombre = :categoria', {
+      queryBuilder.andWhere("unaccent(categoria.nombre) = unaccent(:categoria)", {
         categoria: filter,
       });
     }
@@ -329,13 +329,13 @@ export class InsumosService {
 
     if (q) {
       queryBuilder.andWhere(
-        'insumo.nombre ILIKE :nombre OR insumo.codigo ILIKE :codigo',
+        "unaccent(insumo.nombre) ILIKE unaccent(:nombre) OR unaccent(insumo.codigo) ILIKE unaccent(:codigo)",
         { nombre: `%${q}%`, codigo: `%${q}%` },
       );
     }
 
     if (filter) {
-      queryBuilder.andWhere('categoria.nombre = :categoria', {
+      queryBuilder.andWhere("unaccent(categoria.nombre) = unaccent(:categoria)", {
         categoria: filter,
       });
     }

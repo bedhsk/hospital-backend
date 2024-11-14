@@ -40,7 +40,7 @@ export class DepartamentosService {
       .where('departamento.is_active = :isActive', { isActive: true });
 
     if (q) {
-      queryBuilder.andWhere('departamento.nombre ILIKE :nombre', {
+      queryBuilder.andWhere("unaccent(departamento.nombre) ILIKE unaccent(:nombre)", {
         nombre: `%${q}%`,
       });
     }

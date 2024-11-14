@@ -45,13 +45,18 @@ export class InsumoDepartamentosService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere('unaccent(insumo.nombre) ILIKE unaccent(:nombre)', {
+        nombre: `%${q}%`,
+      });
     }
 
     if (filter) {
-      queryBuilder.andWhere('departamento.nombre = :departamento', {
-        departamento: `${filter}`,
-      });
+      queryBuilder.andWhere(
+        'unaccent(departamento.nombre) = unaccent(:departamento)',
+        {
+          departamento: `${filter}`,
+        },
+      );
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -182,7 +187,7 @@ export class InsumoDepartamentosService {
     });
     if (!insumoDepartamento) {
       throw new NotFoundException(
-        `InsumoDepartamento con insumo ID ${insumoId} y departamento ID ${departamentoId} no encontrado`,
+        `No existe el insumo ${insumo.nombre} en el departamento ${departamento.nombre}`,
       );
     }
     return insumoDepartamento;
