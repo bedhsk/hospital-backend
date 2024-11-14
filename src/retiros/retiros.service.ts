@@ -9,13 +9,11 @@ import QueryRetiroDto from './dto/query-retiro.dto';
 import CreateRetiroDto, { DetalleRetiroDto } from './dto/create-retiro.dto';
 import UpdateRetiroDto from './dto/update-retiro.dto';
 import CreateTransaccionDepartamentoDto from './dto/transaccion_departamento.dto';
-import { DetalleAdquisicionDto } from 'src/adquisiciones/dtos/create-adquisicion.dto';
 import { AdquisicionesService } from 'src/adquisiciones/adquisiciones.service';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { LotesService } from 'src/lotes/lotes.service';
 import { MovimientolotesService } from 'src/lotes/movimientolotes/movimientolotes.service';
 import { createNewLoteDto } from 'src/lotes/dto/create-new-lote.dto';
-import { log } from 'console';
 import CreateRetiroExamenDto from './dto/create-retiro-examen.dto';
 import { ExamenesService } from 'src/examenes/examenes.service';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
@@ -47,6 +45,7 @@ export class RetirosService {
         'insumoDepartamento',
       )
       .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
       .where('retiro.is_active = true')
       .select([
         'retiro', // Todos los campos de Retiro
@@ -56,12 +55,14 @@ export class RetirosService {
         'detalleRetiro.cantidad', // Solo ID y cantidad del detalle de reitro
         'insumoDepartamento.id',
         'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
+        'insumo.id',
+        'insumo.nombre', // Solo ID y nombre del insumo
         'departamento.id',
         'departamento.nombre', // Id y nombre del departamento.
       ]);
 
     if (q) {
-      queryBuilder.andWhere('user.username LIKE :username', {
+      queryBuilder.andWhere('user.username ILIKE :username', {
         username: `%${q}%`,
       });
     }
@@ -73,15 +74,30 @@ export class RetirosService {
     }
 
     const totalItems = await queryBuilder.getCount();
-    const insumos = await queryBuilder
+    const retiros = await queryBuilder
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
 
+    const result = retiros.map((retiro) => ({
+      id: retiro.id,
+      createdAt: retiro.createdAt,
+      descripcion: retiro.descripcion,
+      user: {
+        id: retiro.user.id,
+        username: retiro.user.username,
+      },
+      detalleRetiro: retiro.detalleRetiro.map((detalle) => ({
+        id: detalle.id,
+        nombreInsumo: detalle.insumoDepartamento.insumo.nombre,
+        cantidad: detalle.cantidad,
+      })),
+    }));
+
     return {
-      data: insumos,
+      data: result,
       totalItems,
       totalPages,
       page,
@@ -123,8 +139,59 @@ export class RetirosService {
     return retiro;
   }
 
+  async findOneOut(id: string) {
+    const retiro = await this.retiroRepository
+      .createQueryBuilder('retiro')
+      .leftJoinAndSelect('retiro.user', 'user')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect(
+        'detalleRetiro.insumoDepartamento',
+        'insumoDepartamento',
+      )
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .where('retiro.id = :id', { id })
+      .andWhere('retiro.is_active = true')
+      .select([
+        'retiro', // Todos los campos de Retiro
+        'user.id',
+        'user.username', // Solo ID y username del usuario
+        'detalleRetiro.id',
+        'detalleRetiro.cantidad',
+        'detalleRetiro.is_active', // Solo ID y cantidad del detalle de Retiro
+        'insumoDepartamento.id',
+        'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
+        'insumo.id',
+        'insumo.nombre', // Solo ID y nombre del insumo
+        'departamento.id',
+        'departamento.nombre', // Id y nombre del departamento.
+      ])
+      .getOne();
+
+    if (!retiro) {
+      throw new NotFoundException(
+        `Retiro con ID ${id} no encontrada o desactivada`,
+      );
+    }
+
+    return {
+      id: retiro.id,
+      createdAt: retiro.createdAt,
+      descripcion: retiro.descripcion,
+      user: {
+        id: retiro.user.id,
+        username: retiro.user.username,
+      },
+      detalleRetiro: retiro.detalleRetiro.map((detalle) => ({
+        id: detalle.id,
+        nombreInsumo: detalle.insumoDepartamento.insumo.nombre,
+        cantidad: detalle.cantidad,
+      })),
+    };
+  }
+
   async create(createRetiro: CreateRetiroDto) {
-    const lotesR:createNewLoteDto[] = [];
+    const lotesR: createNewLoteDto[] = [];
     const { usuarioId, detalles, ...rest } = createRetiro;
     const usuario = await this.usuarioService.findOne(createRetiro.usuarioId);
 
@@ -174,7 +241,7 @@ export class RetirosService {
         detalle.id,
       );
       lotesR.push(...lote);
-      return {detalle, lotesR};
+      return { detalle, lotesR };
     });
 
     const lotes = await Promise.all(detallePromises);
@@ -183,7 +250,7 @@ export class RetirosService {
       retiro.id,
     );
 
-    return { retiro, detalleRetiro, lotesR};
+    return { retiro, detalleRetiro, lotesR };
   }
 
   async update(id: string, updateInsumoDto: UpdateRetiroDto) {
@@ -341,6 +408,7 @@ export class RetirosService {
         ' para el departamento ' +
         nombreAdquisicion,
     });
+
     return {
       descripcion:
         'Retiro de insumos del departamento ' +
@@ -357,7 +425,8 @@ export class RetirosService {
     cantidad: number,
     detalleRetiroId: string,
   ) {
-    const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
+    const insumoDepartamento =
+      await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
     // Descontamos del lote
     const lotes = await this.lotesService.updateRetiroLote(
       insumoDepartamentoId,
@@ -377,16 +446,21 @@ export class RetirosService {
     return lotes;
   }
 
-  async createByExams(retiroExamen: CreateRetiroExamenDto){
-    const { usuarioId, departamentoId, examenId, descripcion, ...rest } = retiroExamen;
+  async createByExams(retiroExamen: CreateRetiroExamenDto) {
+    const { usuarioId, departamentoId, examenId, descripcion, ...rest } =
+      retiroExamen;
     const usuario = await this.usuarioService.findOne(retiroExamen.usuarioId);
-    const departamento = await this.departamentoService.findOne(retiroExamen.departamentoId);
+    const departamento = await this.departamentoService.findOne(
+      retiroExamen.departamentoId,
+    );
     const examen = await this.examenService.findOne(retiroExamen.examenId);
     if (!usuario) {
       throw new NotFoundException(`Usuario con id ${usuarioId} no encontrado`);
     }
     if (!departamento) {
-      throw new NotFoundException(`Departamento con id ${departamentoId} no encontrado`);
+      throw new NotFoundException(
+        `Departamento con id ${departamentoId} no encontrado`,
+      );
     }
     if (!examen) {
       throw new NotFoundException(`Examen con id ${examenId} no encontrado`);
@@ -398,10 +472,11 @@ export class RetirosService {
     const insumosDepartamentoPromise = insumosExamen.map(async (element) => {
       const { insumo, cantidad } = element;
 
-      const insumoDeparamento = await this.insumoDepartamentoService.findByInsumoDepartamentoId(
-        insumo.id,
-        departamentoId,
-      );
+      const insumoDeparamento =
+        await this.insumoDepartamentoService.findByInsumoDepartamentoId(
+          insumo.id,
+          departamentoId,
+        );
 
       if (!insumoDeparamento) {
         throw new NotFoundException(
@@ -424,7 +499,7 @@ export class RetirosService {
 
       detalles: insumosDepartamento,
       ...rest,
-    }
+    };
 
     const retiro = await this.create({
       usuarioId: usuario.id,
