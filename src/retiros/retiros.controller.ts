@@ -256,9 +256,31 @@ export class RetirosController {
     status: 200,
     description: 'Lista de retiros por departamento',
   })
+  @ApiQuery({
+    name: 'filterUser',
+    required: false,
+    description: 'Filtrar por nombre de usuario',
+  })
+  @ApiQuery({
+    name: 'filterDepartamento',
+    required: false,
+    description: 'Filtrar por nombre de departamento',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página para paginación',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número de elementos por página',
+  })
   @Get('/departamento/list')
-  findAllInDepartamento(@Query() query: QueryRetiroDto) {
-    return this.retiroService.findAllInDepartamento(query);
+  async findAllInDepartamento(@Query() query: QueryRetiroDto) {
+    return await this.retiroService.findAllInDepartamento(query);
   }
 
   @AuthorizedRoles()
