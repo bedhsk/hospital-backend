@@ -251,7 +251,7 @@ export class RetirosController {
   }
 
   @AuthorizedRoles()
-  @Get('/departamento/')
+  @Get('/departamento/list')
   findAllFarmacia(@Query() query: QueryRetiroDto) {
     return this.retiroService.findAllInFarmacia(query);
   }
