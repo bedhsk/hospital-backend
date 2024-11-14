@@ -17,6 +17,7 @@ import { createNewLoteDto } from 'src/lotes/dto/create-new-lote.dto';
 import CreateRetiroExamenDto from './dto/create-retiro-examen.dto';
 import { ExamenesService } from 'src/examenes/examenes.service';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
+import { DetalleAdquisicionDto } from 'src/adquisiciones/dtos/create-adquisicion.dto';
 
 @Injectable()
 export class RetirosService {
