@@ -108,6 +108,116 @@ export class RetirosService {
     };
   }
 
+  async findAllInFarmacia(query: QueryRetiroDto) {
+    const { q, filterDepartamento, page, limit, startDate, endDate } = query;
+    const queryBuilder = this.retiroRepository
+      .createQueryBuilder('retiro')
+      .leftJoinAndSelect('retiro.user', 'user')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect(
+        'detalleRetiro.insumoDepartamento',
+        'insumoDepartamento',
+      )
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .where('retiro.is_active = true')
+      .select([
+        'retiro',
+        'user.id',
+        'user.username',
+        'detalleRetiro.id',
+        'detalleRetiro.cantidad',
+        'insumoDepartamento.id',
+        'insumoDepartamento.existencia',
+        'insumo.id',
+        'insumo.nombre',
+        'departamento.id',
+        'departamento.nombre',
+      ]);
+
+    // Si no se proporcionan fecha, filtrar por el día actual
+    if (!startDate && !endDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      queryBuilder.andWhere('retiro.createdAt >= :startDate', {
+        startDate: today,
+      });
+      queryBuilder.andWhere('retiro.createdAt < :endDate', {
+        endDate: tomorrow,
+      });
+    } else {
+      // Si ses proporcionan fechas usar el rango especificado
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        queryBuilder.andWhere('retiro.createdAt >= :startDate', {
+          startDate: start,
+        });
+      }
+
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        queryBuilder.andWhere('retiro.createdAt <= :endDate', { endDate: end });
+      }
+    }
+
+    if (q) {
+      queryBuilder.andWhere(
+        '(user.username ILIKE :username OR departamento.nombre ILIKE :departamento)',
+        {
+          username: `%${q}%`,
+          departamento: `%${q}%`,
+        },
+      );
+    }
+
+    // Este filtro adicional por departamento
+    if (filterDepartamento) {
+      queryBuilder.andWhere('departamento.nombre = :departamento', {
+        departamento: filterDepartamento,
+      });
+    }
+
+    const totalItems = await queryBuilder.getCount();
+    const retiros = await queryBuilder
+      .orderBy('retiro.createdAt', 'DESC') // Agregamos ordenamiento por fecha
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const result = retiros.map((retiro) => ({
+      id: retiro.id,
+      createdAt: retiro.createdAt,
+      descripcion: retiro.descripcion,
+      user: {
+        id: retiro.user.id,
+        username: retiro.user.username,
+      },
+      detalleRetiro: retiro.detalleRetiro.map((detalle) => ({
+        id: detalle.id,
+        nombreInsumo: detalle.insumoDepartamento.insumo.nombre,
+        cantidad: detalle.cantidad,
+      })),
+    }));
+
+    return {
+      data: result,
+      totalItems,
+      totalPages,
+      page,
+      dateRange: {
+        startDate: startDate || new Date(),
+        endDate: endDate || new Date(),
+      },
+    };
+  }
+
   async findOne(id: string) {
     const retiro = await this.retiroRepository
       .createQueryBuilder('retiro')
