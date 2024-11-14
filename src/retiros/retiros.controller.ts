@@ -251,9 +251,14 @@ export class RetirosController {
   }
 
   @AuthorizedRoles()
+  @ApiOperation({ summary: 'Obtener todos los retiros por departamento' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de retiros por departamento',
+  })
   @Get('/departamento/list')
-  findAllFarmacia(@Query() query: QueryRetiroDto) {
-    return this.retiroService.findAllInFarmacia(query);
+  findAllInDepartamento(@Query() query: QueryRetiroDto) {
+    return this.retiroService.findAllInDepartamento(query);
   }
 
   @AuthorizedRoles()
@@ -328,7 +333,7 @@ export class RetirosController {
     description: 'Retiro no encontrado o desactivado.',
   })
   @ApiParam({ name: 'id', description: 'ID del retiro' })
-  findOne(@Param('id') id: string) {
+  findOneOut(@Param('id') id: string) {
     return this.retiroService.findOneOut(id);
   }
 

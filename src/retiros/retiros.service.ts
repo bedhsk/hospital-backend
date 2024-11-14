@@ -108,7 +108,7 @@ export class RetirosService {
     };
   }
 
-  async findAllInFarmacia(query: QueryRetiroDto) {
+  async findAllInDepartamento(query: QueryRetiroDto) {
     const { q, filterDepartamento, page, limit, startDate, endDate } = query;
     const queryBuilder = this.retiroRepository
       .createQueryBuilder('retiro')
