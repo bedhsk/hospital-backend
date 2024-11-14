@@ -279,6 +279,6 @@ export class InsumoDepartamentosController {
   })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.insumoDepartamentoService.softDelete(id);
+    return this.insumoDepartamentoService.Remove(id);
   }
 }

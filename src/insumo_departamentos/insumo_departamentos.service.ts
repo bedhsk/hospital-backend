@@ -13,6 +13,8 @@ import QueryIsumoDepartamentoDto from './dto/query-insumo_departamento.dto';
 import { InsumoDepartamento } from './entities/insumo_departamento.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { log } from 'console';
+import { OnEvent } from '@nestjs/event-emitter';
+import { DepartmentDeletedEvent } from 'src/events/department-deleted.event';
 
 @Injectable()
 export class InsumoDepartamentosService {
@@ -143,7 +145,7 @@ export class InsumoDepartamentosService {
     return await this.insumodepartamentoService.save(insumoDepartamento);
   }
 
-  async softDelete(id: string) {
+  async Remove(id: string) {
     const insumoDepartamento = await this.findOne(id);
     if (!insumoDepartamento) {
       throw new NotFoundException(
@@ -195,5 +197,20 @@ export class InsumoDepartamentosService {
       .getRawOne();
 
     return result;
+  }
+
+  @OnEvent('department.deleted')
+  async handleDepartmentDeleted(event: DepartmentDeletedEvent) {
+    const departamento = event.departamento;
+    const insumoDepartamentos = await this.insumodepartamentoService.find({
+      where: {
+        departamento: { id: departamento.id, nombre: departamento.nombre },
+        is_active: true,
+      },
+      relations: ['insumo', 'departamento'],
+    });
+    for (const insumoDepartamento of insumoDepartamentos) {
+      await this.Remove(insumoDepartamento.id);
+    }
   }
 }
