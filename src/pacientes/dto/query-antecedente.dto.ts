@@ -5,7 +5,7 @@ class QueryAntecedenteDto {
    
     @IsOptional()
     @IsString()
-    filter?: string;
+    q?: string;
 
     @IsOptional()
     @IsString()
