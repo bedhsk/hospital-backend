@@ -17,6 +17,7 @@ import { createNewLoteDto } from 'src/lotes/dto/create-new-lote.dto';
 import CreateRetiroExamenDto from './dto/create-retiro-examen.dto';
 import { ExamenesService } from 'src/examenes/examenes.service';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
+import { DetalleAdquisicionDto } from 'src/adquisiciones/dtos/create-adquisicion.dto';
 
 @Injectable()
 export class RetirosService {
@@ -228,6 +229,7 @@ export class RetirosService {
         'insumoDepartamento',
       )
       .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
       .where('retiro.id = :id', { id })
       .andWhere('retiro.is_active = true')
       .select([
@@ -241,6 +243,8 @@ export class RetirosService {
         'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
         'departamento.id',
         'departamento.nombre', // Id y nombre del departamento.
+        'insumo.id',
+        'insumo.nombre', // Id y nombre del insumo.
       ])
       .getOne();
 
@@ -324,29 +328,27 @@ export class RetirosService {
       throw new NotFoundException(`Retiro no fue creada con exito!`);
     }
 
-    for (const elemntcheck of detalles) {
-      try {
-        const { insumoDepartamentoId, cantidad } = elemntcheck;
-        const insumoDepartamento =
-          await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
-
-        if (insumoDepartamento.existencia < cantidad) {
-          throw new NotFoundException(
-            `Insumo departamento con id ${insumoDepartamento.id} no cuenta con la cantidad en existencia (${insumoDepartamento.existencia}) que se necesita para crear el retiro (${cantidad})`,
-          );
-        }
-      } catch (error) {
-        throw error;
-      }
-    }
-
     const detallePromises = detalles.map(async (element) => {
       const { insumoDepartamentoId, cantidad } = element;
-
+      const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
+      if (!insumoDepartamento) {
+        throw new NotFoundException(
+          `Insumo departamento con id ${insumoDepartamentoId} no encontrado`,
+        );
+      }
+      if (insumoDepartamento.lotes.length === 0) {
+        throw new NotFoundException(
+          `Insumo departamento con id ${insumoDepartamentoId} no cuenta con lotes`,
+        );
+      }
+      let cantidadAux = cantidad;
+      if (insumoDepartamento.existencia < cantidad) {
+        cantidadAux = insumoDepartamento.existencia;
+      }
       const detalle = await this.detalleRetiroService.create({
         retiroId: retiro.id,
         insumoDepartamentoId,
-        cantidad,
+        cantidad: cantidadAux,
       });
       // crear el movimiento lote
       const lote = await this.crearMovimientoLote(
@@ -470,32 +472,19 @@ export class RetirosService {
       detalleRetirosPromise,
     );
 
-    // const detalleAdquisicionPromise = insumos.map(async (element) => {
-    //   const { insumoId, cantidad } = element;
-    //   const insumoDepartamento =
-    //     await this.insumoDepartamentoService.findOneByInsumoAndDepartamento(
-    //       insumoId,
-    //       departamentoAdquisicionId,
-    //     );
-    //   if (!insumoDepartamento) {
-    //     throw new NotFoundException(
-    //       `Insumo ${insumoId} no encontrado en el departamento ${departamentoAdquisicionId}`,
-    //     );
-    //   }
-    //   if (insumoDepartamento.existencia < cantidad) {
-    //     throw new NotFoundException(
-    //       `Insumo ${insumoDepartamento.insumo.nombre} no tiene suficiente existencia`,
-    //     );
-    //   }
-    //   return {
-    //     insumoDepartamentoId: insumoDepartamento.id,
-    //     cantidad: cantidad,
-    //   };
-    // });
-
-    // const detalleAdquisicion: DetalleAdquisicionDto[] = await Promise.all(
-    //   detalleAdquisicionPromise,
-    // );
+    const detalleAdquisiciones: DetalleAdquisicionDto[] = await Promise.all(detalleRetiros.map(async (element) => {
+      const { insumoDepartamentoId, cantidad } = element;
+      const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
+      if (!insumoDepartamento) {
+        throw new NotFoundException(
+          `Insumo departamento con id ${insumoDepartamentoId} no encontrado`,
+        );
+      }
+      return {
+        insumoId: insumoDepartamento.insumo.id,
+        cantidad,
+      }
+    }));
 
     const { nombre: nombreAdquisicion } =
       await this.departamentoService.findOne(departamentoAdquisicionId);
@@ -514,7 +503,7 @@ export class RetirosService {
     const adquisicion = await this.adquisicionService.create({
       usuarioId,
       departamentoId: departamentoAdquisicionId,
-      detalles: insumos,
+      detalles: detalleAdquisiciones,
       lotes: retiro.lotesR,
       descripcion:
         'Retiro de insumos del departamento ' +

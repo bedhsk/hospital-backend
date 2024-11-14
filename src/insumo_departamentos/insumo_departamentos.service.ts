@@ -73,7 +73,7 @@ export class InsumoDepartamentosService {
   async findOne(id: string) {
     const insumoDepartamento = await this.insumodepartamentoService.findOne({
       where: { id, is_active: true },
-      relations: ['insumo', 'departamento'],
+      relations: ['insumo', 'departamento', 'lotes'],
     });
     if (!insumoDepartamento) {
       throw new NotFoundException(
