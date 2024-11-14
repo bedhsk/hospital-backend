@@ -135,8 +135,10 @@ export class PacientesService {
       createPacienteDto;
 
     // Verificar si el paciente ya existe
+    
+    
     const pacienteExistente = await this.pacientesRepository.findOne({
-      where: { nombre, nacimiento },
+      where: { nombre, nacimiento, is_active: true},
     });
 
     if (pacienteExistente) {
@@ -146,12 +148,30 @@ export class PacientesService {
     }
 
     const pacienteExistentePorCui = await this.pacientesRepository.findOne({
-      where: { cui },
+      where: { cui, is_active: true },
     });
 
     if (pacienteExistentePorCui) {
       throw new ConflictException(`Ya existe un paciente con el CUI "${cui}".`);
     }
+
+    //Verifica Si es un paciente eliminado
+    const pacienteEliminado = await this.pacientesRepository.findOne({
+      where: { cui, is_active: false },
+    });
+    if (pacienteEliminado) {
+      pacienteEliminado.is_active = true
+      this.pacientesRepository.merge(pacienteEliminado, createPacienteDto);
+      await this.pacientesRepository.save(pacienteEliminado);
+      if (pacienteEliminado.antecedente)
+      {
+        pacienteEliminado.antecedente.is_active = true
+        this.antecedentesRepository.merge(pacienteEliminado.antecedente, createPacienteDto.antecedente);
+        
+      }
+      return pacienteEliminado
+    }
+   
 
     // Crear el paciente
     const paciente = this.pacientesRepository.create({
@@ -252,17 +272,17 @@ export class PacientesService {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
 
-    // Eliminar el antecedente si existe
+//Eliminar el antecedente si existe
     if (paciente.antecedente) {
-      await this.antecedentesRepository.delete({
-        paciente: { id: paciente.id },
-      });
+     paciente.antecedente.is_active=false
+     await this.antecedentesRepository.save(paciente.antecedente);
     }
 
     // Eliminar el paciente
-    await this.pacientesRepository.delete(id);
+    paciente.is_active = false
+    await this.pacientesRepository.save(paciente);
     return {
-      message: `Paciente y su antecedente (si existía) han sido eliminados`,
+      message: `Paciente y su antecedente (si existía) han sido desactivados`,
     };
   }
 }
