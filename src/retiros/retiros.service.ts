@@ -63,7 +63,7 @@ export class RetirosService {
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.username ILIKE :username OR departamento.nombre ILIKE :departamento)',
+        "(unaccent(user.username) ILIKE unaccent(:username) OR unaccent(departamento.nombre) ILIKE unaccent(:departamento))",
         {
           username: `%${q}%`,
           departamento: `%${q}%`,
@@ -72,7 +72,7 @@ export class RetirosService {
     }
 
     if (filterDepartamento) {
-      queryBuilder.andWhere('departamento.nombre = :departamento', {
+      queryBuilder.andWhere("unaccent(departamento.nombre) = unaccent(:departamento)", {
         departamento: `${filterDepartamento}`,
       });
     }

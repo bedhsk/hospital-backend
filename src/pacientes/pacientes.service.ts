@@ -55,7 +55,7 @@ export class PacientesService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('paciente.nombre ILIKE :nombre OR paciente.cui ILIKE :cui', {
+      queryBuilder.andWhere("unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui", {
         nombre: `%${q}%`, cui: `%${q}%` });
     }
 
