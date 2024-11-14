@@ -24,6 +24,7 @@ import UpdateRetiroDto from './dto/update-retiro.dto';
 import Retiro from './entities/retiro.entity';
 import { DetalleretirosService } from './detalleretiros/detalleretiros.service';
 import CreateTransaccionDepartamentoDto from './dto/transaccion_departamento.dto';
+import { query } from 'express';
 
 @ApiTags('Retiros y detalleRetiro')
 @Controller('retiros')
@@ -247,6 +248,12 @@ export class RetirosController {
   })
   findAll(@Query() query: QueryRetiroDto) {
     return this.retiroService.findAll(query);
+  }
+
+  @AuthorizedRoles()
+  @Get('/departamento/')
+  findAllFarmacia(@Query() query: QueryRetiroDto) {
+    return this.retiroService.findAllInFarmacia(query);
   }
 
   @AuthorizedRoles()
