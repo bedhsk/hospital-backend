@@ -26,8 +26,8 @@ async function runSeeds() {
   const createInsumoSeed = new CreateInsumoSeed();
   await createInsumoSeed.run(dataSource);
 
-  const createInsumoDepartamentoSeed = new CreateInsumoDepartamentoSeed();
-  await createInsumoDepartamentoSeed.run(dataSource);
+  // const createInsumoDepartamentoSeed = new CreateInsumoDepartamentoSeed();
+  // await createInsumoDepartamentoSeed.run(dataSource);
 
   const createPacienteSeed = new CreatePacienteSeed();
   await createPacienteSeed.run(dataSource);
