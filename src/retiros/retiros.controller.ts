@@ -482,7 +482,7 @@ export class RetirosController {
     type: Number,
     description: 'Número de elementos por página',
   })
-  @Get('/depto')
+  @Get('/depto/list')
   async findAllInDepartamento(@Query() query: QueryRetiroDto) {
     return await this.retiroService.findAllInDepartamento(query);
   }
