@@ -115,9 +115,6 @@ export class ExamenesService {
     if (!examen){
       throw new NotFoundException(`Examen con ID ${id} no encontrado`,)
     }
-    if (examen.is_active){
-      throw new NotFoundException(`El examen con ID ${id} ya está activo`,)
-    }
     examen.is_active = true; // Cambiamos el estado a activo
     return this.examenesRepository.save(examen);
   }
