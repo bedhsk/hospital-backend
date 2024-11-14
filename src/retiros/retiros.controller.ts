@@ -251,39 +251,6 @@ export class RetirosController {
   }
 
   @AuthorizedRoles()
-  @ApiOperation({ summary: 'Obtener todos los retiros por departamento' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de retiros por departamento',
-  })
-  @ApiQuery({
-    name: 'filterUser',
-    required: false,
-    description: 'Filtrar por nombre de usuario',
-  })
-  @ApiQuery({
-    name: 'filterDepartamento',
-    required: false,
-    description: 'Filtrar por nombre de departamento',
-  })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Número de página para paginación',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Número de elementos por página',
-  })
-  @Get('/departamento/list')
-  async findAllInDepartamento(@Query() query: QueryRetiroDto) {
-    return await this.retiroService.findAllInDepartamento(query);
-  }
-
-  @AuthorizedRoles()
   @Get(':id')
   @ApiResponse({
     status: 200,
@@ -485,6 +452,39 @@ export class RetirosController {
   @Get('/:id/detalles-de-retiro')
   findAllDetallesByRetiroId(@Param('id') id: string) {
     return this.detalleRetiroService.findAllRetiroId(id);
+  }
+
+  @AuthorizedRoles()
+  @ApiOperation({ summary: 'Obtener todos los retiros por departamento' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de retiros por departamento',
+  })
+  @ApiQuery({
+    name: 'filterUser',
+    required: false,
+    description: 'Filtrar por nombre de usuario',
+  })
+  @ApiQuery({
+    name: 'filterDepartamento',
+    required: false,
+    description: 'Filtrar por nombre de departamento',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página para paginación',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número de elementos por página',
+  })
+  @Get('/depto')
+  async findAllInDepartamento(@Query() query: QueryRetiroDto) {
+    return await this.retiroService.findAllInDepartamento(query);
   }
 
   @AuthorizedRoles()
