@@ -62,9 +62,13 @@ export class RetirosService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('user.username ILIKE :username', {
-        username: `%${q}%`,
-      });
+      queryBuilder.andWhere(
+        '(user.username ILIKE :username OR departamento.nombre ILIKE :departamento)',
+        {
+          username: `%${q}%`,
+          departamento: `%${q}%`,
+        },
+      );
     }
 
     if (filterDepartamento) {
