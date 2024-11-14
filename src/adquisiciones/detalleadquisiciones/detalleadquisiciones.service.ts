@@ -23,7 +23,7 @@ export class DetalleadquisicionesService {
     });
     if (!detalleAdquisicion) {
       throw new NotFoundException(
-        `Insumo departamento con ID ${id} no encontrado o desactivado`,
+        `Detalle adquisicion con ID ${id} no encontrado o desactivado`,
       );
     }
     return detalleAdquisicion;
@@ -98,7 +98,7 @@ export class DetalleadquisicionesService {
       }, // Relacionar el detalleadquisicion con el insumoDepartamento encontrado
     });
 
-    return detalleAdquisicion;
+    return this.detalleAdquisicionesRepository.save(detalleAdquisicion);
   }
 
   // Actualizar un detalle adquisicion existente, si está activo

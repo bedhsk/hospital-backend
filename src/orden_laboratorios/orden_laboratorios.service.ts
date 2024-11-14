@@ -115,7 +115,15 @@ export class OrdenLaboratoriosService {
       .leftJoinAndSelect('ordenLaboratorio.usuario', 'usuario')
       .leftJoinAndSelect('ordenLaboratorio.paciente', 'paciente')
       .leftJoinAndSelect('ordenLaboratorio.examen', 'examen')
-      .leftJoinAndSelect('ordenLaboratorio.retiro', 'retiro');
+      .leftJoinAndSelect('examen.insumoExamenes', 'insumoExamenes')
+      .leftJoinAndSelect('insumoExamenes.insumo', 'insumo')
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .leftJoinAndSelect('ordenLaboratorio.retiro', 'retiro')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo2')
+      .leftJoinAndSelect('insumo2.categoria', 'categoria2')
+      .orderBy('ordenLaboratorio.created_at', 'DESC');
 
     // Aplicar filtro de búsqueda (si se proporciona)
     if (q) {
@@ -139,9 +147,34 @@ export class OrdenLaboratoriosService {
       .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
-
+    const newOrdenes = ordenesLaboratorio.map((orden) => {
+      let retiros = [];
+      if (orden.retiro) {
+        retiros = orden.retiro.detalleRetiro.map((detalle) => {
+          return {
+            id: detalle.id,
+            insumo: detalle.insumoDepartamento.insumo.nombre,
+            cantidad: detalle.cantidad,
+            categoria: {
+              id: detalle.insumoDepartamento.insumo.categoria.id,
+              nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+            }
+          };
+        });
+      }
+      return {
+        id: orden.id,
+        estado: orden.estado,
+        createdAt: orden.created_at,
+        updatedAt: orden.updated_at,
+        usuario: {id: orden.usuario.id, nombre: orden.usuario.name},
+        paciente: {id: orden.paciente.id, nombre: orden.paciente.nombre},
+        examen: orden.examen,
+        insumosRetirados: retiros
+      }
+    });
     return {
-      data: ordenesLaboratorio,
+      data: newOrdenes,
       totalItems,
       totalPages,
       page,

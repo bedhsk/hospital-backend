@@ -18,6 +18,8 @@ import { RetirosService } from 'src/retiros/retiros.service';
 import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
 import { throws } from 'assert';
 import RetireRecetaDto from './dto/retire-receta.dto';
+import { log } from 'console';
+import Categoria from 'src/categorias/entities/categoria.entity';
 
 @Injectable()
 export class RecetasService {
@@ -99,6 +101,11 @@ export class RecetasService {
       .innerJoinAndSelect('examen.insumoExamenes', 'insumoExamen')
       .innerJoinAndSelect('insumoExamen.insumo', 'insumo')
       .leftJoinAndSelect('insumo.categoria', 'categoria') // Incluimos la categoría del insumo si es necesario
+      .leftJoinAndSelect('receta.retiro', 'retiro')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo2')
+      .leftJoinAndSelect('insumo2.categoria', 'categoria2')
       .where('receta.is_Active = :isActive', { isActive: true });
 
     if (q) {
@@ -134,14 +141,37 @@ export class RecetasService {
         'insumo.nombre',
         'categoria.id',
         'categoria.nombre',
+        'retiro.id',
+        'retiro.descripcion',
+        'retiro.createdAt',
+        'detalleRetiro.id',
+        'detalleRetiro.cantidad',
+        'insumoDepartamento.id',
+        'insumo2.id',
+        'insumo2.nombre',
+        'categoria2.id',
+        'categoria2.nombre',
       ])
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
-
-    const newRecetas = recetas.map((receta) => {
+    const newRecetas = recetas.map( (receta) => {
+      let retiros = [];
+      if (receta.retiro){
+        retiros = receta.retiro.detalleRetiro.map((detalle) => {
+          return {
+            id: detalle.insumoDepartamento.insumo.id,
+            nombre: detalle.insumoDepartamento.insumo.nombre,
+            cantidad: detalle.cantidad,
+            categoria: {
+              id: detalle.insumoDepartamento.insumo.categoria.id,
+              nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+            }
+          }
+        });
+      }
       return {
         id: receta.id,
         descripcion: receta.descripcion,
@@ -150,7 +180,7 @@ export class RecetasService {
         estado: receta.estado,
         user: { id: receta.user.id, name: receta.user.name },
         paciente: { id: receta.paciente.id, nombre: receta.paciente.nombre },
-        insumos: receta.examen.insumoExamenes.map((insumoExamen) => {
+        insumosRecetados: receta.examen.insumoExamenes.map((insumoExamen) => {
             return {
               id: insumoExamen.insumo.id,
               nombre: insumoExamen.insumo.nombre,
@@ -161,6 +191,7 @@ export class RecetasService {
               },
             };
           }),
+        insumosRetirados: retiros,
       };
     })
 
