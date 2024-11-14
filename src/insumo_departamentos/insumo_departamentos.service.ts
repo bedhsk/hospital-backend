@@ -45,11 +45,11 @@ export class InsumoDepartamentosService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('insumo.nombre LIKE :nombre', { nombre: `%${q}%` });
+      queryBuilder.andWhere("unaccent(insumo.nombre) ILIKE unaccent(:nombre)", { nombre: `%${q}%` });
     }
 
     if (filter) {
-      queryBuilder.andWhere('departamento.nombre = :departamento', {
+      queryBuilder.andWhere("unaccent(departamento.nombre) = unaccent(:departamento)", {
         departamento: `${filter}`,
       });
     }

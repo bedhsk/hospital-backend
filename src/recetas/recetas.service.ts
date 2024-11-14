@@ -110,14 +110,14 @@ export class RecetasService {
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.name ILIKE :name OR paciente.nombre ILIKE :nombre OR paciente.cui ILIKE :cui)',
+        "(unaccent(user.name) ILIKE unaccent(:name) OR unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui)",
         { name: `%${q}%`, nombre: `%${q}%`, cui: `%${q}%` },
       );
     }
 
     if (filter) {
       queryBuilder.andWhere(
-        '(user.name = :user OR paciente.nombre = :paciente)',
+        "(unaccent(user.name) = unaccent(:user) OR unaccent(paciente.nombre) = unaccent(:paciente))",
         { user: filter, paciente: filter },
       );
     }

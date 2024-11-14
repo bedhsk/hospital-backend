@@ -57,13 +57,13 @@ export class AdquisicionesService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('usuario.username LIKE :username', {
+      queryBuilder.andWhere("unaccent(usuario.username) ILIKE unaccent(:username)", {
         username: `%${q}%`,
       });
     }
 
     if (filter) {
-      queryBuilder.andWhere('departamento.nombre = :departamento', {
+      queryBuilder.andWhere("unaccent(departamento.nombre) ILIKE unaccent(:departamento)", {
         departamento: `${filter}`,
       });
     }
