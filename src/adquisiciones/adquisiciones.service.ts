@@ -324,11 +324,22 @@ export class AdquisicionesService {
           lotesAux.push(lote);
         }
       } else {
-        const lote = await this.lotesService.update(loteExistente.id, {
-          cantidadActual: loteExistente.cantidadActual + element.cantidadInical,
-        });
-        if (lote) {
-          lotesAux.push(lote);
+        
+        const insumoDepartamentoLoteExistente = await this.insumoDepartamentoService.findOne(loteExistente.insumoDepartamento.id)
+        console.log("INSUMO LOTE EXISTENTE",insumoDepartamentoLoteExistente.insumo.id)
+        console.log("INSUMO LOTE NUEVO", element.insumoId)
+        if(insumoDepartamentoLoteExistente.insumo.id === element.insumoId){
+          const lote = await this.lotesService.update(loteExistente.id, {
+            cantidadActual: loteExistente.cantidadActual + element.cantidadInical,
+          });
+          if (lote) {
+            lotesAux.push(lote);
+          }
+        }
+        else{
+          throw new NotFoundException(
+            `Insumo con ID ${element.insumoId} no es igual al insumo del lote existente, verifique el ID`,
+          );
         }
       }
     }
