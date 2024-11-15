@@ -120,9 +120,9 @@ export class ExamenesService {
   }
 
   async desactivate(id: string) {
-    const examen = await this.findOne(id); // Validamos que el examen existe
+    const examen = await this.findAnyOne(id); // Validamos que el examen existe
     if (!examen){
-      throw new NotFoundException(`Examen con ID ${id} no encontrado o esta desactivado`,)
+      throw new NotFoundException(`Examen con ID ${id} no encontrado`,)
     }
     examen.is_active = false; // Cambiamos el estado a inactivo
     return this.examenesRepository.save(examen);
