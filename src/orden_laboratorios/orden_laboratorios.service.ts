@@ -129,7 +129,7 @@ export class OrdenLaboratoriosService {
     // Aplicar filtro de búsqueda (si se proporciona)
     if (q) {
       queryBuilder.andWhere(
-        'ordenLaboratorio.usuario ILIKE :usuario OR ordenLaboratorio.examen ILIKE :examen',
+        "unaccent(ordenLaboratorio.usuario) ILIKE unaccent(:usuario) OR unaccent(ordenLaboratorio.examen) ILIKE unaccent(:examen)",
         { usuario: `%${q}%`, examen: `%${q}%` },
       );
     }
