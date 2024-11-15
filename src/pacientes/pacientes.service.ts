@@ -99,8 +99,20 @@ export class PacientesService {
   async findHistorialMedico(id: string) {
     const paciente = await this.pacientesRepository
       .createQueryBuilder('paciente')
+      .leftJoinAndSelect('paciente.antecedente', 'antecedente')
       .leftJoinAndSelect('paciente.recetas', 'recetas')
+      .leftJoinAndSelect('recetas.retiro', 'retiro')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
+
       .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+      .leftJoinAndSelect('ordenesLaboratorio.retiro', 'retiro2')
+      .leftJoinAndSelect('retiro2.detalleRetiro', 'detalleRetiro2')
+      .leftJoinAndSelect('detalleRetiro2.insumoDepartamento', 'insumoDepartamento2')
+      .leftJoinAndSelect('insumoDepartamento2.insumo', 'insumo2')
+      .leftJoinAndSelect('insumo2.categoria', 'categoria2')
       .where('paciente.id = :id', { id })
       .andWhere('paciente.is_active = true')
       .orderBy('recetas.updatedAt', 'DESC')
@@ -111,22 +123,46 @@ export class PacientesService {
     }
 
     const retiros = [
-      ...paciente.recetas.map((receta) => ({
-        id: receta.id,
-        descripcion: receta.descripcion,
-        estado: receta.estado,
-        createdAt: receta.createdAt,
-        updatedAt: receta.updatedAt,
-        tipo: 'Receta', // Identificamos que este es del tipo receta
-      })),
-      ...paciente.ordenesLaboratorio.map((orden) => ({
-        id: orden.id,
-        descripcion: orden.descripcion,
-        estado: orden.estado,
-        createdAt: orden.created_at,
-        updatedAt: orden.updated_at,
-        tipo: 'Orden de Laboratorio', // Identificamos que este es del tipo ordenLaboratorio
-      })),
+      ...paciente.recetas.map((receta) => {
+        let insumos = [];
+        if (receta.retiro) {
+          insumos = receta.retiro.detalleRetiro.map((detalle) => ({
+            id: detalle.insumoDepartamento.insumo.id,
+            nombre: detalle.insumoDepartamento.insumo.nombre,
+            categoria: detalle.insumoDepartamento.insumo.categoria.nombre,
+            cantidad: detalle.cantidad,
+          }));
+        }
+        return{
+          id: receta.id,
+          descripcion: receta.descripcion,
+          estado: receta.estado,
+          createdAt: receta.createdAt,
+          updatedAt: receta.updatedAt,
+          tipo: 'Receta', // Identificamos que este es del tipo receta
+          insumos: insumos,
+        }
+      }),
+      ...paciente.ordenesLaboratorio.map((orden) => {
+        let insumos = [];
+        if (orden.retiro) {
+          insumos = orden.retiro.detalleRetiro.map((detalle) => ({
+            id: detalle.insumoDepartamento.insumo.id,
+            nombre: detalle.insumoDepartamento.insumo.nombre,
+            categoria: detalle.insumoDepartamento.insumo.categoria.nombre,
+            cantidad: detalle.cantidad,
+          }));
+        }
+        return{
+          id: orden.id,
+          descripcion: orden.descripcion,
+          estado: orden.estado,
+          createdAt: orden.created_at,
+          updatedAt: orden.updated_at,
+          tipo: 'Orden de Laboratorio', // Identificamos que este es del tipo ordenLaboratorio
+          insumos: insumos,
+        }
+      }),
     ];
 
     // Ordenar los retiros por fecha de creación
