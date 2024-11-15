@@ -34,7 +34,7 @@ export class RecetasService {
     private readonly departamentosService: DepartamentosService,
   ) {}
 
-  async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
+  async create(createRecetaDto: CreateRecetaDto) {
     const { userId, pacienteId, insumos, estado, ...recetaData } = createRecetaDto;
     const user = await this.usersService.findOne(userId);
     if (!user) {
@@ -65,7 +65,8 @@ export class RecetasService {
         descripcion: 'Entrega de receta para ' + paciente.nombre,
         examenId: examen.id,
       }
-      retiro = await this.retiroService.createByExams(retiroPromise);
+      const retiroAux = await this.retiroService.createByExams(retiroPromise);
+      retiro = retiroAux.retiro;
     }
     else{
       retiro = null;
@@ -83,15 +84,10 @@ export class RecetasService {
     const savedReceta = await this.recetasRepository.save(receta);
 
     this.examenesService.desactivate(examen.id);
-
+    
+    const resultReceta = await this.findOnePublic(savedReceta.id);
     // Retornar solo la información necesaria
-    return {
-      id: savedReceta.id,
-      descripcion: savedReceta.descripcion,
-      createdAt: savedReceta.createdAt,
-      user: { id: user.id, name: user.name },
-      paciente: { id: paciente.id, nombre: paciente.nombre },
-    } as Receta;
+    return resultReceta;
   }
 
   async findAll(query: QueryRecetaDto) {
@@ -232,7 +228,7 @@ export class RecetasService {
       throw new NotFoundException(`Receta #${id} no encontrada`);
     }
     let retiros = [];
-    if (!receta.retiro){
+    if (receta.retiro){
       retiros = receta.retiro.detalleRetiro.map((detalle) => {
         return {
           id: detalle.insumoDepartamento.insumo.id,
@@ -360,6 +356,7 @@ export class RecetasService {
     });
     receta.retiro = retiro.retiro;
     this.examenesService.desactivate(receta.examen.id);
-    return this.recetasRepository.save(receta);
+    const savedReceta = await this.recetasRepository.save(receta);
+    return this.findOnePublic(savedReceta.id);
   }
 }

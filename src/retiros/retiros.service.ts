@@ -18,6 +18,7 @@ import CreateRetiroExamenDto from './dto/create-retiro-examen.dto';
 import { ExamenesService } from 'src/examenes/examenes.service';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
 import { DetalleAdquisicionDto } from 'src/adquisiciones/dtos/create-adquisicion.dto';
+import { log } from 'console';
 
 @Injectable()
 export class RetirosService {
@@ -365,7 +366,6 @@ export class RetirosService {
     const detalleRetiro = await this.detalleRetiroService.findAllRetiroId(
       retiro.id,
     );
-
     return { retiro, detalleRetiro, lotesR };
   }
 
@@ -545,7 +545,7 @@ export class RetirosService {
     });
 
     await Promise.all(lotesPromises);
-
+    log('paso 3.1');
     return lotes;
   }
 
@@ -610,7 +610,7 @@ export class RetirosService {
       detalles: insumosDepartamento,
       ...rest,
     });
-
+    log (retiro);
     return retiro;
   }
 }
