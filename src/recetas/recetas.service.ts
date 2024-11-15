@@ -20,6 +20,7 @@ import { throws } from 'assert';
 import RetireRecetaDto from './dto/retire-receta.dto';
 import { log } from 'console';
 import Categoria from 'src/categorias/entities/categoria.entity';
+import { DepartamentosService } from 'src/departamentos/departamentos.service';
 
 @Injectable()
 export class RecetasService {
@@ -30,21 +31,23 @@ export class RecetasService {
     private readonly pacientesService: PacientesService,
     private readonly examenesService: ExamenesService,
     private readonly retiroService: RetirosService,
+    private readonly departamentosService: DepartamentosService,
   ) {}
 
   async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
     const { userId, pacienteId, insumos, estado, ...recetaData } = createRecetaDto;
     const user = await this.usersService.findOne(userId);
-    const paciente = await this.pacientesService.findOne(pacienteId);
-
     if (!user) {
       throw new NotFoundException('User not found, cannot create receta');
     }
-
+    const paciente = await this.pacientesService.findOne(pacienteId);
     if (!paciente) {
       throw new NotFoundException('Paciente not found, cannot create receta');
     }
-
+    const departamento = await this.departamentosService.findOneByName('Farmacia')
+    if (!departamento){
+      throw new NotFoundException('Departamento Farmacia no encontrado');
+    }
     //Asociar la receta a un grupo de insumos
     const insumosPromise: CreateExamenDto = {
       nombre: 'Receta para ' + paciente.nombre,
@@ -58,7 +61,7 @@ export class RecetasService {
     if (estado === EstadoReceta.ENTREGADO) {
       const retiroPromise: CreateRetiroExamenDto = {
         usuarioId: userId,
-        departamentoId: user.departamento.id,
+        departamentoId: departamento.id,
         descripcion: 'Entrega de receta para ' + paciente.nombre,
         examenId: examen.id,
       }
@@ -219,12 +222,28 @@ export class RecetasService {
   async findOnePublic(id: string) {
     const receta = await this.recetasRepository.findOne({
       where: { id, is_Active: true },
-      relations: ['user', 'paciente', 'examen', 'examen.insumoExamenes', 'examen.insumoExamenes.insumo', 'examen.insumoExamenes.insumo.categoria'], // Incluir la relación con el usuario y el paciente
-      select: ['id', 'descripcion', 'createdAt', 'estado', 'user', 'paciente', 'examen'], // Incluir el campo estado
+      relations: ['user', 'paciente', 'examen', 'examen.insumoExamenes', 'examen.insumoExamenes.insumo', 'examen.insumoExamenes.insumo.categoria',
+        'retiro', 'retiro.detalleRetiro', 'retiro.detalleRetiro.insumoDepartamento', 'retiro.detalleRetiro.insumoDepartamento.insumo', 'retiro.detalleRetiro.insumoDepartamento.insumo.categoria'
+      ], // Incluir la relación con el usuario y el paciente
+      select: ['id', 'descripcion', 'createdAt', 'estado', 'user', 'paciente', 'examen', 'retiro'], // Incluir el campo estado
     });
 
     if (!receta) {
       throw new NotFoundException(`Receta #${id} no encontrada`);
+    }
+    let retiros = [];
+    if (!receta.retiro){
+      retiros = receta.retiro.detalleRetiro.map((detalle) => {
+        return {
+          id: detalle.insumoDepartamento.insumo.id,
+          nombre: detalle.insumoDepartamento.insumo.nombre,
+          cantidad: detalle.cantidad,
+          categoria: {
+            id: detalle.insumoDepartamento.insumo.categoria.id,
+            nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+          }
+        }
+      });
     }
     return {
       id: receta.id,
@@ -234,7 +253,7 @@ export class RecetasService {
       estado: receta.estado,
       user: { id: receta.user.id, name: receta.user.name },
       paciente: { id: receta.paciente.id, nombre: receta.paciente.nombre },
-      insumos: receta.examen.insumoExamenes.map((insumoExamen) => {
+      insumosRecetados: receta.examen.insumoExamenes.map((insumoExamen) => {
           return {
             id: insumoExamen.insumo.id,
             nombre: insumoExamen.insumo.nombre,
@@ -245,6 +264,7 @@ export class RecetasService {
             },
           };
         }),
+      insumosRetirados: retiros,
     };
   }
 
@@ -323,11 +343,18 @@ export class RecetasService {
         'La receta ya ha sido entregada',
       );
     }
+    if (!usuarioRetiro){
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    const departamento = await this.departamentosService.findOneByName('Farmacia')
+    if (!departamento){
+      throw new NotFoundException('Departamento Farmacia no encontrado');
+    }
     receta.estado = EstadoReceta.ENTREGADO;
     this.examenesService.activate(receta.examen.id);
     const retiro = await this.retiroService.createByExams({
       usuarioId: usuarioRetiro.id,
-      departamentoId: usuarioRetiro.departamento.id,
+      departamentoId: departamento.id,
       descripcion: 'Entrega de receta para ' + receta.paciente.nombre,
       examenId: receta.examen.id,
     });

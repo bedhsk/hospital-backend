@@ -163,7 +163,7 @@ import RetireOrdenDto from './dtos/retire-orden-laboratorio.dto';
       description: 'Orden de laboratorio no encontrada',
     })
     findOne(@Param('id') id: string) {
-      return this.ordenLaboratorioService.findOne(id);
+      return this.ordenLaboratorioService.findOnePublic(id);
     }
   
     @Patch(':id')
