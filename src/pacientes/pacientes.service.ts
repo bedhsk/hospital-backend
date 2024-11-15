@@ -25,34 +25,51 @@ export class PacientesService {
   async findAll(query: any) {
     const { q, page = 1, limit = 10 } = query;
     const queryBuilder = this.pacientesRepository
-      .createQueryBuilder('paciente')
-      .leftJoinAndSelect('paciente.antecedente', 'antecedente')
-      .leftJoinAndSelect('paciente.recetas', 'recetas')
-      .where('paciente.is_active = true')
-      .select([
-        'paciente.id',
-        'paciente.nombre',
-        'paciente.sexo',
-        'paciente.cui',
-        'paciente.nacimiento',
-        'paciente.familiares',
-        'paciente.medicos',
-        'paciente.quirurgicos',
-        'paciente.traumaticos',
-        'paciente.alergias',
-        'paciente.vicios',
-        'antecedente.id',
-        'antecedente.gestas',
-        'antecedente.hijos_vivos',
-        'antecedente.hijos_muertos',
-        'antecedente.abortos',
-        'antecedente.ultima_regla',
-        'antecedente.planificacion_familiar',
-        'antecedente.partos',
-        'antecedente.cesareas',
-        'recetas.id',
-        'recetas.descripcion',
-      ]);
+    .createQueryBuilder('paciente')
+    .leftJoinAndSelect('paciente.antecedente', 'antecedente')
+    .leftJoinAndSelect('paciente.recetas', 'recetas')
+    .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+    .leftJoinAndSelect('recetas.user', 'user')
+    .leftJoinAndSelect('recetas.retiro', 'recetasRetiro')  
+    .leftJoinAndSelect('ordenesLaboratorio.usuario', 'ordenesUser')
+    .leftJoinAndSelect('ordenesLaboratorio.retiro', 'ordenesRetiro') 
+    .leftJoinAndSelect('ordenesLaboratorio.examen', 'examen')
+    .where('paciente.is_active = true')
+    .select([
+      'paciente.id',
+      'paciente.nombre',
+      'paciente.sexo',
+      'paciente.cui',
+      'paciente.nacimiento',
+      'paciente.familiares',
+      'paciente.medicos',
+      'paciente.quirurgicos',
+      'paciente.traumaticos',
+      'paciente.alergias',
+      'paciente.vicios',
+      'antecedente.id',
+      'antecedente.gestas',
+      'antecedente.hijos_vivos',
+      'antecedente.hijos_muertos',
+      'antecedente.abortos',
+      'antecedente.ultima_regla',
+      'antecedente.planificacion_familiar',
+      'antecedente.partos',
+      'antecedente.cesareas',
+      'recetas.id',
+      'recetas.descripcion',
+      'recetas.estado',
+      'user.name',
+      'recetas.retiroId',
+      'ordenesLaboratorio.id',
+      'ordenesLaboratorio.descripcion',
+      'ordenesUser.name',
+      'examen.id',
+      'examen.nombre',
+      'examen.descripcion',
+    ]);
+  
+  
 
     if (q) {
       queryBuilder.andWhere("unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui", {
