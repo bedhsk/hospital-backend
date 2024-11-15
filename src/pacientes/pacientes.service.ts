@@ -28,6 +28,7 @@ export class PacientesService {
       .createQueryBuilder('paciente')
       .leftJoinAndSelect('paciente.antecedente', 'antecedente')
       .leftJoinAndSelect('paciente.recetas', 'recetas')
+      .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
       .where('paciente.is_active = true')
       .select([
         'paciente.id',
@@ -52,11 +53,20 @@ export class PacientesService {
         'antecedente.cesareas',
         'recetas.id',
         'recetas.descripcion',
+        'recetas.estado',
+        'ordenesLaboratorio.id',
+        'ordenesLaboratorio.descripcion',
+        'ordenesLaboratorio.estado',
       ]);
 
     if (q) {
-      queryBuilder.andWhere("unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui", {
-        nombre: `%${q}%`, cui: `%${q}%` });
+      queryBuilder.andWhere(
+        'unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui',
+        {
+          nombre: `%${q}%`,
+          cui: `%${q}%`,
+        },
+      );
     }
 
     const totalItems = await queryBuilder.getCount();
