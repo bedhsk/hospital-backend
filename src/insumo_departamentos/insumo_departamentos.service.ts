@@ -100,7 +100,6 @@ export class InsumoDepartamentosService {
       },
       relations: ['insumo', 'departamento'],
     });
-    log('findOneByInsumoAndDepto: ', insumoDepartamento);
     return insumoDepartamento;
   }
 
