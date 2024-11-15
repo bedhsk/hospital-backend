@@ -14,6 +14,7 @@ import { DepartamentosService } from 'src/departamentos/departamentos.service';
 import { InsumoDepartamentosService } from 'src/insumo_departamentos/insumo_departamentos.service';
 import Lote from 'src/lotes/entities/lote.entity';
 import createNewLoteDto from './dtos/create-new-lote.dto';
+import { log } from 'console';
 
 @Injectable()
 export class AdquisicionesService {
@@ -56,13 +57,13 @@ export class AdquisicionesService {
       ]);
 
     if (q) {
-      queryBuilder.andWhere('usuario.username LIKE :username', {
+      queryBuilder.andWhere("unaccent(usuario.username) ILIKE unaccent(:username)", {
         username: `%${q}%`,
       });
     }
 
     if (filter) {
-      queryBuilder.andWhere('departamento.nombre = :departamento', {
+      queryBuilder.andWhere("unaccent(departamento.nombre) ILIKE unaccent(:departamento)", {
         departamento: `${filter}`,
       });
     }
@@ -172,16 +173,19 @@ export class AdquisicionesService {
           is_active: true,
           cantidad,
         });
+        
         await queryRunner.manager.save(detalle);
-
+        log('detalle: ', detalle.id);
         if (lotes) {
           for (const lote of lotes) {
             if (lote.insumoId === insumoId) {
+              log('paso1')
               await this.crearMovimientoLote(
                 insumoDepartamento.id,
                 lote,
                 detalle.id,
               );
+              log('paso2')
             }
           }
         }
@@ -370,7 +374,7 @@ export class AdquisicionesService {
       lote,
       insumoDepartamentoId,
     );
-
+    log('paso 1.2')
     // se crea un movimiento lote.
     return await this.movimientoLoteService.create({
       loteId: loteAd.id,

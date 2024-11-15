@@ -63,7 +63,7 @@ class OrdenLaboratorio {
   @ManyToOne(() => Paciente, (paciente) => paciente.ordenesLaboratorio)
   paciente: Paciente;
 
-  @OneToOne(() => Examen, (examen) => examen.ordenLaboratorio, {
+  @ManyToOne(() => Examen, (examen) => examen.ordenLaboratorio, {
     nullable: false,
   })
   @JoinColumn({ name: 'examenId' })

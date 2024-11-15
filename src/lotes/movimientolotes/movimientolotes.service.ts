@@ -6,6 +6,7 @@ import { DetalleadquisicionesService } from 'src/adquisiciones/detalleadquisicio
 import { DetalleretirosService } from 'src/retiros/detalleretiros/detalleretiros.service';
 import { LotesService } from '../lotes.service';
 import CreateMovimientoLoteDto from '../dto/create-movimiento-lote.dto';
+import { log } from 'console';
 
 @Injectable()
 export class MovimientolotesService {
@@ -33,7 +34,7 @@ export class MovimientolotesService {
         throw new NotFoundException(`Detalle adquisicion con id ${detalleAdquisicionId} no encontrado`);
       }
     }
-  
+    log('paso 1.3')
     let detalleRetiro = null;
     if (detalleRetiroId) {
       detalleRetiro = await this.detalleRetiroService.findOne(detalleRetiroId);

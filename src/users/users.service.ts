@@ -45,13 +45,13 @@ export class UsersService {
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.name ILIKE :name OR user.username ILIKE :username OR user.email ILIKE :email)',
+        "(unaccent(user.name) ILIKE unaccent(:name) OR unaccent(user.username) ILIKE unaccent(:username) OR user.email ILIKE :email)",
         { name: `%${q}%`, username: `%${q}%`, email: `%${q}%` },
       );
     }
 
     if (filter) {
-      queryBuilder.andWhere('role.name = :role', { role: `${filter}` });
+      queryBuilder.andWhere("unaccent(role.name) = unaccent(:role)", { role: `${filter}` });
     }
 
     const totalItems = await queryBuilder.getCount();

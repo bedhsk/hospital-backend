@@ -24,6 +24,7 @@ import CreateRetiroDto, {
 import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
 import RetireOrdenDto from './dtos/retire-orden-laboratorio.dto';
 import { UsersService } from 'src/users/users.service';
+import e from 'express';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -87,9 +88,26 @@ export class OrdenLaboratoriosService {
     }
 
     // Verifica si se proporcionó un ID de retiro y busca el retiro (es opcional)
-    let retiro: Retiro | null = null;
-    if (retiroId) {
-      retiro = await this.retiroRepository.findOne({ where: { id: retiroId } });
+    let retiro;
+
+    if (estado === EstadoOrdenLaboratorio.ENTREGADO) {
+      const laboratorio = await this.departamentoService.findOneByName('Laboratorio');
+      if (!laboratorio) {
+        throw new NotFoundException(
+          `Departamento con nombre Laboratorio no encontrado`,
+        );
+      }
+      const retiroPromise: CreateRetiroExamenDto = {
+        usuarioId: usuarioId,
+        departamentoId: laboratorio.id,
+        descripcion: 'Entrega de receta para ' + paciente.nombre,
+        examenId: examen.id,
+      }
+      const retiroAux = await this.retiroService.createByExams(retiroPromise);
+      retiro = retiroAux.retiro;
+    }
+    else{
+      retiro = null;
     }
 
     // Crear la nueva orden de laboratorio
@@ -103,7 +121,8 @@ export class OrdenLaboratoriosService {
     });
 
     // Guarda y retorna la nueva orden
-    return this.ordenLaboratorioRepository.save(ordenLaboratorio);
+    const savedOrden = await this.ordenLaboratorioRepository.save(ordenLaboratorio);
+    return this.findOnePublic(savedOrden.id);
   }
 
   // Método para obtener todas las órdenes de laboratorio (con filtros opcionales)
@@ -115,12 +134,20 @@ export class OrdenLaboratoriosService {
       .leftJoinAndSelect('ordenLaboratorio.usuario', 'usuario')
       .leftJoinAndSelect('ordenLaboratorio.paciente', 'paciente')
       .leftJoinAndSelect('ordenLaboratorio.examen', 'examen')
-      .leftJoinAndSelect('ordenLaboratorio.retiro', 'retiro');
+      .leftJoinAndSelect('examen.insumoExamenes', 'insumoExamenes')
+      .leftJoinAndSelect('insumoExamenes.insumo', 'insumo')
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .leftJoinAndSelect('ordenLaboratorio.retiro', 'retiro')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo2')
+      .leftJoinAndSelect('insumo2.categoria', 'categoria2')
+      .orderBy('ordenLaboratorio.created_at', 'DESC');
 
     // Aplicar filtro de búsqueda (si se proporciona)
     if (q) {
       queryBuilder.andWhere(
-        'ordenLaboratorio.usuario ILIKE :usuario OR ordenLaboratorio.examen ILIKE :examen',
+        "unaccent(ordenLaboratorio.usuario) ILIKE unaccent(:usuario) OR unaccent(ordenLaboratorio.examen) ILIKE unaccent(:examen)",
         { usuario: `%${q}%`, examen: `%${q}%` },
       );
     }
@@ -139,9 +166,49 @@ export class OrdenLaboratoriosService {
       .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
-
+    const newOrdenes = ordenesLaboratorio.map((orden) => {
+      let retiros = [];
+      if (orden.retiro) {
+        retiros = orden.retiro.detalleRetiro.map((detalle) => {
+          return {
+            id: detalle.id,
+            insumo: detalle.insumoDepartamento.insumo.nombre,
+            cantidad: detalle.cantidad,
+            categoria: {
+              id: detalle.insumoDepartamento.insumo.categoria.id,
+              nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+            }
+          };
+        });
+      }
+      return {
+        id: orden.id,
+        estado: orden.estado,
+        createdAt: orden.created_at,
+        updatedAt: orden.updated_at,
+        usuario: {id: orden.usuario.id, nombre: orden.usuario.name},
+        paciente: {id: orden.paciente.id, nombre: orden.paciente.nombre},
+        examen: {
+          id: orden.examen.id,
+          nombre: orden.examen.nombre,
+          descripcion: orden.examen.descripcion,
+          insumos: orden.examen.insumoExamenes.map((insumoExamen) => {
+            return {
+              id: insumoExamen.insumo.id,
+              nombre: insumoExamen.insumo.nombre,
+              cantidad: insumoExamen.cantidad,
+              categoria: {
+                id: insumoExamen.insumo.categoria.id,
+                nombre: insumoExamen.insumo.categoria.nombre,
+              }
+            };
+          })
+        },
+        insumosRetirados: retiros
+      }
+    });
     return {
-      data: ordenesLaboratorio,
+      data: newOrdenes,
       totalItems,
       totalPages,
       page,
@@ -162,6 +229,60 @@ export class OrdenLaboratoriosService {
     }
 
     return ordenLaboratorio;
+  }
+
+  async findOnePublic(id: string) {
+    const ordenLaboratorio = await this.ordenLaboratorioRepository.findOne({
+      where: { id, is_active: true },
+      relations: ['usuario', 'paciente', 'examen', 'examen.insumoExamenes', 'examen.insumoExamenes.insumo', 'examen.insumoExamenes.insumo.categoria',
+        'retiro', 'retiro.detalleRetiro', 'retiro.detalleRetiro.insumoDepartamento', 'retiro.detalleRetiro.insumoDepartamento.insumo', 'retiro.detalleRetiro.insumoDepartamento.insumo.categoria'],
+    });
+
+    if (!ordenLaboratorio) {
+      throw new NotFoundException(
+        `Orden de laboratorio con ID ${id} no encontrada`,
+      );
+    }
+
+    let retiros = [];
+    if (ordenLaboratorio.retiro) {
+      retiros = ordenLaboratorio.retiro.detalleRetiro.map((detalle) => {
+        return {
+          id: detalle.id,
+          insumo: detalle.insumoDepartamento.insumo.nombre,
+          cantidad: detalle.cantidad,
+          categoria: {
+            id: detalle.insumoDepartamento.insumo.categoria.id,
+            nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+          }
+        };
+      });
+    }
+    return {
+      id: ordenLaboratorio.id,
+      estado: ordenLaboratorio.estado,
+      createdAt: ordenLaboratorio.created_at,
+      updatedAt: ordenLaboratorio.updated_at,
+      usuario: {id: ordenLaboratorio.usuario.id, nombre: ordenLaboratorio.usuario.name},
+      paciente: {id: ordenLaboratorio.paciente.id, nombre: ordenLaboratorio.paciente.nombre},
+      examen: {
+        id: ordenLaboratorio.examen.id,
+        nombre: ordenLaboratorio.examen.nombre,
+        descripcion: ordenLaboratorio.examen.descripcion,
+        insumos: ordenLaboratorio.examen.insumoExamenes.map((insumoExamen) => {
+          return {
+            id: insumoExamen.insumo.id,
+            nombre: insumoExamen.insumo.nombre,
+            cantidad: insumoExamen.cantidad,
+            categoria: {
+              id: insumoExamen.insumo.categoria.id,
+              nombre: insumoExamen.insumo.categoria.nombre,
+            }
+          };
+        }),
+      },
+      insumosRetirados: retiros
+    }
   }
 
   // Método para actualizar una orden de laboratorio
@@ -298,7 +419,8 @@ export class OrdenLaboratoriosService {
       })
       ordenLaboratorio.estado = EstadoOrdenLaboratorio.ENTREGADO;
       ordenLaboratorio.retiro = retiro.retiro;
-      return this.ordenLaboratorioRepository.save(ordenLaboratorio);
+      const savedOrden = await this.ordenLaboratorioRepository.save(ordenLaboratorio);
+      return this.findOnePublic(savedOrden.id);
     }
   }
 }

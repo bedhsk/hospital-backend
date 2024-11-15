@@ -18,6 +18,9 @@ import { RetirosService } from 'src/retiros/retiros.service';
 import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
 import { throws } from 'assert';
 import RetireRecetaDto from './dto/retire-receta.dto';
+import { log } from 'console';
+import Categoria from 'src/categorias/entities/categoria.entity';
+import { DepartamentosService } from 'src/departamentos/departamentos.service';
 
 @Injectable()
 export class RecetasService {
@@ -28,21 +31,23 @@ export class RecetasService {
     private readonly pacientesService: PacientesService,
     private readonly examenesService: ExamenesService,
     private readonly retiroService: RetirosService,
+    private readonly departamentosService: DepartamentosService,
   ) {}
 
-  async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
+  async create(createRecetaDto: CreateRecetaDto) {
     const { userId, pacienteId, insumos, estado, ...recetaData } = createRecetaDto;
     const user = await this.usersService.findOne(userId);
-    const paciente = await this.pacientesService.findOne(pacienteId);
-
     if (!user) {
       throw new NotFoundException('User not found, cannot create receta');
     }
-
+    const paciente = await this.pacientesService.findOne(pacienteId);
     if (!paciente) {
       throw new NotFoundException('Paciente not found, cannot create receta');
     }
-
+    const departamento = await this.departamentosService.findOneByName('Farmacia')
+    if (!departamento){
+      throw new NotFoundException('Departamento Farmacia no encontrado');
+    }
     //Asociar la receta a un grupo de insumos
     const insumosPromise: CreateExamenDto = {
       nombre: 'Receta para ' + paciente.nombre,
@@ -56,11 +61,12 @@ export class RecetasService {
     if (estado === EstadoReceta.ENTREGADO) {
       const retiroPromise: CreateRetiroExamenDto = {
         usuarioId: userId,
-        departamentoId: user.departamento.id,
+        departamentoId: departamento.id,
         descripcion: 'Entrega de receta para ' + paciente.nombre,
         examenId: examen.id,
       }
-      retiro = await this.retiroService.createByExams(retiroPromise);
+      const retiroAux = await this.retiroService.createByExams(retiroPromise);
+      retiro = retiroAux.retiro;
     }
     else{
       retiro = null;
@@ -78,15 +84,10 @@ export class RecetasService {
     const savedReceta = await this.recetasRepository.save(receta);
 
     this.examenesService.desactivate(examen.id);
-
+    
+    const resultReceta = await this.findOnePublic(savedReceta.id);
     // Retornar solo la información necesaria
-    return {
-      id: savedReceta.id,
-      descripcion: savedReceta.descripcion,
-      createdAt: savedReceta.createdAt,
-      user: { id: user.id, name: user.name },
-      paciente: { id: paciente.id, nombre: paciente.nombre },
-    } as Receta;
+    return resultReceta;
   }
 
   async findAll(query: QueryRecetaDto) {
@@ -99,18 +100,23 @@ export class RecetasService {
       .innerJoinAndSelect('examen.insumoExamenes', 'insumoExamen')
       .innerJoinAndSelect('insumoExamen.insumo', 'insumo')
       .leftJoinAndSelect('insumo.categoria', 'categoria') // Incluimos la categoría del insumo si es necesario
+      .leftJoinAndSelect('receta.retiro', 'retiro')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo2')
+      .leftJoinAndSelect('insumo2.categoria', 'categoria2')
       .where('receta.is_Active = :isActive', { isActive: true });
 
     if (q) {
       queryBuilder.andWhere(
-        '(user.name ILIKE :name OR paciente.nombre ILIKE :nombre OR paciente.cui ILIKE :cui)',
+        "(unaccent(user.name) ILIKE unaccent(:name) OR unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui)",
         { name: `%${q}%`, nombre: `%${q}%`, cui: `%${q}%` },
       );
     }
 
     if (filter) {
       queryBuilder.andWhere(
-        '(user.name = :user OR paciente.nombre = :paciente)',
+        "(unaccent(user.name) = unaccent(:user) OR unaccent(paciente.nombre) = unaccent(:paciente))",
         { user: filter, paciente: filter },
       );
     }
@@ -134,14 +140,37 @@ export class RecetasService {
         'insumo.nombre',
         'categoria.id',
         'categoria.nombre',
+        'retiro.id',
+        'retiro.descripcion',
+        'retiro.createdAt',
+        'detalleRetiro.id',
+        'detalleRetiro.cantidad',
+        'insumoDepartamento.id',
+        'insumo2.id',
+        'insumo2.nombre',
+        'categoria2.id',
+        'categoria2.nombre',
       ])
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
 
     const totalPages = Math.ceil(totalItems / limit);
-
-    const newRecetas = recetas.map((receta) => {
+    const newRecetas = recetas.map( (receta) => {
+      let retiros = [];
+      if (receta.retiro){
+        retiros = receta.retiro.detalleRetiro.map((detalle) => {
+          return {
+            id: detalle.insumoDepartamento.insumo.id,
+            nombre: detalle.insumoDepartamento.insumo.nombre,
+            cantidad: detalle.cantidad,
+            categoria: {
+              id: detalle.insumoDepartamento.insumo.categoria.id,
+              nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+            }
+          }
+        });
+      }
       return {
         id: receta.id,
         descripcion: receta.descripcion,
@@ -150,7 +179,7 @@ export class RecetasService {
         estado: receta.estado,
         user: { id: receta.user.id, name: receta.user.name },
         paciente: { id: receta.paciente.id, nombre: receta.paciente.nombre },
-        insumos: receta.examen.insumoExamenes.map((insumoExamen) => {
+        insumosRecetados: receta.examen.insumoExamenes.map((insumoExamen) => {
             return {
               id: insumoExamen.insumo.id,
               nombre: insumoExamen.insumo.nombre,
@@ -161,6 +190,7 @@ export class RecetasService {
               },
             };
           }),
+        insumosRetirados: retiros,
       };
     })
 
@@ -188,12 +218,28 @@ export class RecetasService {
   async findOnePublic(id: string) {
     const receta = await this.recetasRepository.findOne({
       where: { id, is_Active: true },
-      relations: ['user', 'paciente', 'examen', 'examen.insumoExamenes', 'examen.insumoExamenes.insumo', 'examen.insumoExamenes.insumo.categoria'], // Incluir la relación con el usuario y el paciente
-      select: ['id', 'descripcion', 'createdAt', 'estado', 'user', 'paciente', 'examen'], // Incluir el campo estado
+      relations: ['user', 'paciente', 'examen', 'examen.insumoExamenes', 'examen.insumoExamenes.insumo', 'examen.insumoExamenes.insumo.categoria',
+        'retiro', 'retiro.detalleRetiro', 'retiro.detalleRetiro.insumoDepartamento', 'retiro.detalleRetiro.insumoDepartamento.insumo', 'retiro.detalleRetiro.insumoDepartamento.insumo.categoria'
+      ], // Incluir la relación con el usuario y el paciente
+      select: ['id', 'descripcion', 'createdAt', 'estado', 'user', 'paciente', 'examen', 'retiro'], // Incluir el campo estado
     });
 
     if (!receta) {
       throw new NotFoundException(`Receta #${id} no encontrada`);
+    }
+    let retiros = [];
+    if (receta.retiro){
+      retiros = receta.retiro.detalleRetiro.map((detalle) => {
+        return {
+          id: detalle.insumoDepartamento.insumo.id,
+          nombre: detalle.insumoDepartamento.insumo.nombre,
+          cantidad: detalle.cantidad,
+          categoria: {
+            id: detalle.insumoDepartamento.insumo.categoria.id,
+            nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
+          }
+        }
+      });
     }
     return {
       id: receta.id,
@@ -203,7 +249,7 @@ export class RecetasService {
       estado: receta.estado,
       user: { id: receta.user.id, name: receta.user.name },
       paciente: { id: receta.paciente.id, nombre: receta.paciente.nombre },
-      insumos: receta.examen.insumoExamenes.map((insumoExamen) => {
+      insumosRecetados: receta.examen.insumoExamenes.map((insumoExamen) => {
           return {
             id: insumoExamen.insumo.id,
             nombre: insumoExamen.insumo.nombre,
@@ -214,6 +260,7 @@ export class RecetasService {
             },
           };
         }),
+      insumosRetirados: retiros,
     };
   }
 
@@ -292,16 +339,24 @@ export class RecetasService {
         'La receta ya ha sido entregada',
       );
     }
+    if (!usuarioRetiro){
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    const departamento = await this.departamentosService.findOneByName('Farmacia')
+    if (!departamento){
+      throw new NotFoundException('Departamento Farmacia no encontrado');
+    }
     receta.estado = EstadoReceta.ENTREGADO;
     this.examenesService.activate(receta.examen.id);
     const retiro = await this.retiroService.createByExams({
       usuarioId: usuarioRetiro.id,
-      departamentoId: usuarioRetiro.departamento.id,
+      departamentoId: departamento.id,
       descripcion: 'Entrega de receta para ' + receta.paciente.nombre,
       examenId: receta.examen.id,
     });
     receta.retiro = retiro.retiro;
     this.examenesService.desactivate(receta.examen.id);
-    return this.recetasRepository.save(receta);
+    const savedReceta = await this.recetasRepository.save(receta);
+    return this.findOnePublic(savedReceta.id);
   }
 }
