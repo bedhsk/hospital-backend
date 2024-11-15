@@ -88,9 +88,26 @@ export class OrdenLaboratoriosService {
     }
 
     // Verifica si se proporcionó un ID de retiro y busca el retiro (es opcional)
-    let retiro: Retiro | null = null;
-    if (retiroId) {
-      retiro = await this.retiroRepository.findOne({ where: { id: retiroId } });
+    let retiro;
+
+    if (estado === EstadoOrdenLaboratorio.ENTREGADO) {
+      const laboratorio = await this.departamentoService.findOneByName('Laboratorio');
+      if (!laboratorio) {
+        throw new NotFoundException(
+          `Departamento con nombre Laboratorio no encontrado`,
+        );
+      }
+      const retiroPromise: CreateRetiroExamenDto = {
+        usuarioId: usuarioId,
+        departamentoId: laboratorio.id,
+        descripcion: 'Entrega de receta para ' + paciente.nombre,
+        examenId: examen.id,
+      }
+      const retiroAux = await this.retiroService.createByExams(retiroPromise);
+      retiro = retiroAux.retiro;
+    }
+    else{
+      retiro = null;
     }
 
     // Crear la nueva orden de laboratorio
@@ -104,7 +121,8 @@ export class OrdenLaboratoriosService {
     });
 
     // Guarda y retorna la nueva orden
-    return this.ordenLaboratorioRepository.save(ordenLaboratorio);
+    const savedOrden = await this.ordenLaboratorioRepository.save(ordenLaboratorio);
+    return this.findOnePublic(savedOrden.id);
   }
 
   // Método para obtener todas las órdenes de laboratorio (con filtros opcionales)
@@ -401,7 +419,8 @@ export class OrdenLaboratoriosService {
       })
       ordenLaboratorio.estado = EstadoOrdenLaboratorio.ENTREGADO;
       ordenLaboratorio.retiro = retiro.retiro;
-      return this.ordenLaboratorioRepository.save(ordenLaboratorio);
+      const savedOrden = await this.ordenLaboratorioRepository.save(ordenLaboratorio);
+      return this.findOnePublic(savedOrden.id);
     }
   }
 }
