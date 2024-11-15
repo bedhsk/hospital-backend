@@ -59,15 +59,18 @@ export class InsumosService {
 
     if (q) {
       queryBuilder.andWhere(
-        "unaccent(insumo.nombre) ILIKE unaccent(:nombre) OR unaccent(insumo.codigo) ILIKE unaccent(:codigo)",
+        'unaccent(insumo.nombre) ILIKE unaccent(:nombre) OR unaccent(insumo.codigo) ILIKE unaccent(:codigo)',
         { nombre: `%${q}%`, codigo: `%${q}%` },
       );
     }
 
     if (filter) {
-      queryBuilder.andWhere("unaccent(categoria.nombre) = unaccent(:categoria)", {
-        categoria: filter,
-      });
+      queryBuilder.andWhere(
+        'unaccent(categoria.nombre) = unaccent(:categoria)',
+        {
+          categoria: filter,
+        },
+      );
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -98,7 +101,7 @@ export class InsumosService {
           id: insumo.categoria.id,
           nombre: insumo.categoria.nombre,
         },
-        totalCantidadActual: totalCantidad,
+        totalCantidadActual: +totalCantidad,
         departamentos,
         lotes: insumo.insumosDepartamentos.flatMap((dep) =>
           dep.lotes
@@ -329,15 +332,18 @@ export class InsumosService {
 
     if (q) {
       queryBuilder.andWhere(
-        "unaccent(insumo.nombre) ILIKE unaccent(:nombre) OR unaccent(insumo.codigo) ILIKE unaccent(:codigo)",
+        'unaccent(insumo.nombre) ILIKE unaccent(:nombre) OR unaccent(insumo.codigo) ILIKE unaccent(:codigo)',
         { nombre: `%${q}%`, codigo: `%${q}%` },
       );
     }
 
     if (filter) {
-      queryBuilder.andWhere("unaccent(categoria.nombre) = unaccent(:categoria)", {
-        categoria: filter,
-      });
+      queryBuilder.andWhere(
+        'unaccent(categoria.nombre) = unaccent(:categoria)',
+        {
+          categoria: filter,
+        },
+      );
     }
 
     const totalItems = await queryBuilder.getCount();
