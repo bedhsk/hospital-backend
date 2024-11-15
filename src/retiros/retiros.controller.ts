@@ -25,6 +25,7 @@ import Retiro from './entities/retiro.entity';
 import { DetalleretirosService } from './detalleretiros/detalleretiros.service';
 import CreateTransaccionDepartamentoDto from './dto/transaccion_departamento.dto';
 import { query } from 'express';
+import CreateRetiroPublicDto from './dto/create-retiro-public.dto';
 
 @ApiTags('Retiros y detalleRetiro')
 @Controller('retiros')
@@ -130,8 +131,8 @@ export class RetirosController {
     status: 404,
     description: 'Usuario o insumo departamento no encontrado.',
   })
-  create(@Body() createRetiroDto: CreateRetiroDto) {
-    return this.retiroService.create(createRetiroDto);
+  create(@Body() createRetiroDto: CreateRetiroPublicDto) {
+    return this.retiroService.createPublic(createRetiroDto);
   }
 
   @AuthorizedRoles()
@@ -323,7 +324,7 @@ export class RetirosController {
   })
   @ApiParam({ name: 'id', description: 'ID del retiro' })
   findOneOut(@Param('id') id: string) {
-    return this.retiroService.findOneOut(id);
+    return this.retiroService.findOnePublic(id);
   }
 
   @AuthorizedRoles()
