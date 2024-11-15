@@ -19,6 +19,8 @@ import { ExamenesService } from 'src/examenes/examenes.service';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service';
 import { DetalleAdquisicionDto } from 'src/adquisiciones/dtos/create-adquisicion.dto';
 import { log } from 'console';
+import CreateRetiroPublicDto from './dto/create-retiro-public.dto';
+import { throws } from 'assert';
 
 @Injectable()
 export class RetirosService {
@@ -309,6 +311,73 @@ export class RetirosService {
     };
   }
 
+  async findOnePublic(id: string) {
+    const retiro = await this.retiroRepository
+      .createQueryBuilder('retiro')
+      .leftJoinAndSelect('retiro.user', 'user')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento','insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.departamento', 'departamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .leftJoinAndSelect('detalleRetiro.movimientoLote', 'movimientoLote')
+      .leftJoinAndSelect('movimientoLote.lote', 'lote')
+      .where('retiro.id = :id', { id })
+      .andWhere('retiro.is_active = true')
+      .select([
+        'retiro', // Todos los campos de Retiro
+        'user.id',
+        'user.username', // Solo ID y username del usuario
+        'detalleRetiro.id',
+        'detalleRetiro.cantidad',
+        'detalleRetiro.is_active', // Solo ID y cantidad del detalle de Retiro
+        'insumoDepartamento.id',
+        'insumoDepartamento.existencia', // Solo ID y existencia y nombre del insumoDepartamento
+        'insumo.id',
+        'insumo.nombre', // Solo ID y nombre del insumo
+        'categoria.id',
+        'categoria.nombre', // Solo ID y nombre de la categoria
+        'departamento.id',
+        'departamento.nombre', // Id y nombre del departamento.
+        'movimientoLote.id',
+        'movimientoLote.cantidad', // Solo ID y cantidad del movimiento de lote
+        'lote.id',
+        'lote.numeroLote',
+        'lote.fechaCaducidad', // Solo ID y fecha de caducidad del lote
+      ])
+      .getOne();
+
+    if (!retiro) {
+      throw new NotFoundException(
+        `Retiro con ID ${id} no encontrada o desactivada`,
+      );
+    }
+
+    return {
+      id: retiro.id,
+      createdAt: retiro.createdAt,
+      descripcion: retiro.descripcion,
+      user: {
+        id: retiro.user.id,
+        username: retiro.user.username,
+      },
+      detalleRetiro: retiro.detalleRetiro.map((detalle) => ({
+        id: detalle.id,
+        nombreInsumo: detalle.insumoDepartamento.insumo.nombre,
+        cantidad: detalle.cantidad,
+        movimientoLote: detalle.movimientoLote.map((movimiento) => ({
+          id: movimiento.id,
+          cantidad: movimiento.cantidad,
+          lote: {
+            id: movimiento.lote.id,
+            codigo: movimiento.lote.numeroLote,
+            fechaCaducidad: movimiento.lote.fechaCaducidad,
+          },
+        })),
+      })),
+    }
+  }
+
   async create(createRetiro: CreateRetiroDto) {
     const lotesR: createNewLoteDto[] = [];
     const { usuarioId, detalles, ...rest } = createRetiro;
@@ -367,6 +436,47 @@ export class RetirosService {
       retiro.id,
     );
     return { retiro, detalleRetiro, lotesR };
+  }
+
+  async createPublic(createRetiro: CreateRetiroPublicDto){
+    const { usuarioId, descripcion, detalles, ...rest } = createRetiro;
+    const usuario = await this.usuarioService.findOne(createRetiro.usuarioId);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${usuarioId} no encontrado`);
+    }
+
+    const insumosDepartamentos = await Promise.all(detalles.map(async (element) => {
+      const { insumoId, cantidad } = element;
+
+      const insumoDeparamento =
+        await this.insumoDepartamentoService.findByInsumoDepartamentoId(
+          insumoId,
+          usuario.departamento.id,
+        );
+
+      if (!insumoDeparamento) {
+        throw new NotFoundException(
+          `Insumo ${insumoId} no encontrado en el departamento ${usuario.departamento.id} y/o insumo ${insumoId}`,
+        );
+      }
+
+      const result: DetalleRetiroDto = {
+        insumoDepartamentoId: insumoDeparamento.id,
+        cantidad: cantidad,
+      };
+
+      return result;
+    }))
+
+    const retiroCreate: CreateRetiroDto = {
+      usuarioId: usuario.id,
+      descripcion: descripcion,
+      detalles: insumosDepartamentos
+    }
+
+    const {retiro: retiroNew} =  await this.create(retiroCreate);
+    return this.findOnePublic(retiroNew.id);
   }
 
   async update(id: string, updateInsumoDto: UpdateRetiroDto) {
@@ -471,7 +581,6 @@ export class RetirosService {
     const detalleRetiros: DetalleRetiroDto[] = await Promise.all(
       detalleRetirosPromise,
     );
-
     const detalleAdquisiciones: DetalleAdquisicionDto[] = await Promise.all(detalleRetiros.map(async (element) => {
       const { insumoDepartamentoId, cantidad } = element;
       const insumoDepartamento = await this.insumoDepartamentoService.findOne(insumoDepartamentoId);
@@ -545,7 +654,6 @@ export class RetirosService {
     });
 
     await Promise.all(lotesPromises);
-    log('paso 3.1');
     return lotes;
   }
 
@@ -610,7 +718,6 @@ export class RetirosService {
       detalles: insumosDepartamento,
       ...rest,
     });
-    log (retiro);
     return retiro;
   }
 }
