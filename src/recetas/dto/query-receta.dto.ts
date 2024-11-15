@@ -11,6 +11,10 @@ class QueryRecetaDto {
   filter?: string;
 
   @IsOptional()
+  @IsString()
+  filterEstado?: string;
+
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
   page: number = 1;

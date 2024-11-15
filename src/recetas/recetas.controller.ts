@@ -111,6 +111,13 @@ export class RecetasController {
     example: 'Ricardo',
   })
   @ApiQuery({
+    name: 'filterEstado',
+    type: String,
+    required: false,
+    description: 'Estado de la receta a filtrar',
+    example: 'Pendiente',
+  })
+  @ApiQuery({
     name: 'page',
     type: Number,
     required: false,
