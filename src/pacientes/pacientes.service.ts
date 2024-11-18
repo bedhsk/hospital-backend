@@ -25,55 +25,48 @@ export class PacientesService {
   async findAll(query: any) {
     const { q, page = 1, limit = 10 } = query;
     const queryBuilder = this.pacientesRepository
-    .createQueryBuilder('paciente')
-    .leftJoinAndSelect('paciente.antecedente', 'antecedente')
-    .leftJoinAndSelect('paciente.recetas', 'recetas')
-    .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
-    .leftJoinAndSelect('recetas.user', 'user')
-    .leftJoinAndSelect('recetas.retiro', 'recetasRetiro')  
-    .leftJoinAndSelect('ordenesLaboratorio.usuario', 'ordenesUser')
-    .leftJoinAndSelect('ordenesLaboratorio.retiro', 'ordenesRetiro') 
-    .leftJoinAndSelect('ordenesLaboratorio.examen', 'examen')
-    .where('paciente.is_active = true')
-    .select([
-      'paciente.id',
-      'paciente.nombre',
-      'paciente.sexo',
-      'paciente.cui',
-      'paciente.nacimiento',
-      'paciente.familiares',
-      'paciente.medicos',
-      'paciente.quirurgicos',
-      'paciente.traumaticos',
-      'paciente.alergias',
-      'paciente.vicios',
-      'antecedente.id',
-      'antecedente.gestas',
-      'antecedente.hijos_vivos',
-      'antecedente.hijos_muertos',
-      'antecedente.abortos',
-      'antecedente.ultima_regla',
-      'antecedente.planificacion_familiar',
-      'antecedente.partos',
-      'antecedente.cesareas',
-      'recetas.id',
-      'recetas.descripcion',
-      'recetas.estado',
-      'user.name',
-      'recetas.retiroId',
-      'ordenesLaboratorio.id',
-      'ordenesLaboratorio.descripcion',
-      'ordenesUser.name',
-      'examen.id',
-      'examen.nombre',
-      'examen.descripcion',
-    ]);
-  
-  
+      .createQueryBuilder('paciente')
+      .leftJoinAndSelect('paciente.antecedente', 'antecedente')
+      .leftJoinAndSelect('paciente.recetas', 'recetas')
+      .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+      .where('paciente.is_active = true')
+      .select([
+        'paciente.id',
+        'paciente.nombre',
+        'paciente.sexo',
+        'paciente.cui',
+        'paciente.nacimiento',
+        'paciente.familiares',
+        'paciente.medicos',
+        'paciente.quirurgicos',
+        'paciente.traumaticos',
+        'paciente.alergias',
+        'paciente.vicios',
+        'antecedente.id',
+        'antecedente.gestas',
+        'antecedente.hijos_vivos',
+        'antecedente.hijos_muertos',
+        'antecedente.abortos',
+        'antecedente.ultima_regla',
+        'antecedente.planificacion_familiar',
+        'antecedente.partos',
+        'antecedente.cesareas',
+        'recetas.id',
+        'recetas.descripcion',
+        'recetas.estado',
+        'ordenesLaboratorio.id',
+        'ordenesLaboratorio.descripcion',
+        'ordenesLaboratorio.estado',
+      ]);
 
     if (q) {
-      queryBuilder.andWhere("unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui", {
-        nombre: `%${q}%`, cui: `%${q}%` });
+      queryBuilder.andWhere(
+        'unaccent(paciente.nombre) ILIKE unaccent(:nombre) OR paciente.cui ILIKE :cui',
+        {
+          nombre: `%${q}%`,
+          cui: `%${q}%`,
+        },
+      );
     }
 
     const totalItems = await queryBuilder.getCount();
@@ -106,8 +99,20 @@ export class PacientesService {
   async findHistorialMedico(id: string) {
     const paciente = await this.pacientesRepository
       .createQueryBuilder('paciente')
+      .leftJoinAndSelect('paciente.antecedente', 'antecedente')
       .leftJoinAndSelect('paciente.recetas', 'recetas')
+      .leftJoinAndSelect('recetas.retiro', 'retiro')
+      .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
+      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
+      .leftJoinAndSelect('insumo.categoria', 'categoria')
+
       .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+      .leftJoinAndSelect('ordenesLaboratorio.retiro', 'retiro2')
+      .leftJoinAndSelect('retiro2.detalleRetiro', 'detalleRetiro2')
+      .leftJoinAndSelect('detalleRetiro2.insumoDepartamento', 'insumoDepartamento2')
+      .leftJoinAndSelect('insumoDepartamento2.insumo', 'insumo2')
+      .leftJoinAndSelect('insumo2.categoria', 'categoria2')
       .where('paciente.id = :id', { id })
       .andWhere('paciente.is_active = true')
       .orderBy('recetas.updatedAt', 'DESC')
@@ -118,22 +123,46 @@ export class PacientesService {
     }
 
     const retiros = [
-      ...paciente.recetas.map((receta) => ({
-        id: receta.id,
-        descripcion: receta.descripcion,
-        estado: receta.estado,
-        createdAt: receta.createdAt,
-        updatedAt: receta.updatedAt,
-        tipo: 'Receta', // Identificamos que este es del tipo receta
-      })),
-      ...paciente.ordenesLaboratorio.map((orden) => ({
-        id: orden.id,
-        descripcion: orden.descripcion,
-        estado: orden.estado,
-        createdAt: orden.created_at,
-        updatedAt: orden.updated_at,
-        tipo: 'Orden de Laboratorio', // Identificamos que este es del tipo ordenLaboratorio
-      })),
+      ...paciente.recetas.map((receta) => {
+        let insumos = [];
+        if (receta.retiro) {
+          insumos = receta.retiro.detalleRetiro.map((detalle) => ({
+            id: detalle.insumoDepartamento.insumo.id,
+            nombre: detalle.insumoDepartamento.insumo.nombre,
+            categoria: detalle.insumoDepartamento.insumo.categoria.nombre,
+            cantidad: detalle.cantidad,
+          }));
+        }
+        return{
+          id: receta.id,
+          descripcion: receta.descripcion,
+          estado: receta.estado,
+          createdAt: receta.createdAt,
+          updatedAt: receta.updatedAt,
+          tipo: 'Receta', // Identificamos que este es del tipo receta
+          insumos: insumos,
+        }
+      }),
+      ...paciente.ordenesLaboratorio.map((orden) => {
+        let insumos = [];
+        if (orden.retiro) {
+          insumos = orden.retiro.detalleRetiro.map((detalle) => ({
+            id: detalle.insumoDepartamento.insumo.id,
+            nombre: detalle.insumoDepartamento.insumo.nombre,
+            categoria: detalle.insumoDepartamento.insumo.categoria.nombre,
+            cantidad: detalle.cantidad,
+          }));
+        }
+        return{
+          id: orden.id,
+          descripcion: orden.descripcion,
+          estado: orden.estado,
+          createdAt: orden.created_at,
+          updatedAt: orden.updated_at,
+          tipo: 'Orden de Laboratorio', // Identificamos que este es del tipo ordenLaboratorio
+          insumos: insumos,
+        }
+      }),
     ];
 
     // Ordenar los retiros por fecha de creación
