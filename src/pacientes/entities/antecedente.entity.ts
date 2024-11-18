@@ -87,4 +87,11 @@ export default class Antecedente {
     description: 'Numero de cesareas que ha tenido el  paciente',
   })
   cesareas?: number;
+
+  @Column({ default: true })
+  @ApiProperty({
+    description:
+      'Muestra si el antecedente se encuetra activo (sirve para el SoftDelete)',
+  })
+  is_active: boolean;
 }
