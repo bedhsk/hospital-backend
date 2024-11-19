@@ -17,10 +17,11 @@ export class AntecedentesService {
 
 
       async findAll(query: QueryAntecedenteDto) {
-        const { filter, filterCui, filterId, page = 1, limit = 10 } = query;
+        const { q, filterCui, filterId, page = 1, limit = 10 } = query;
       
         const queryBuilder = this.antecedentesRepository.createQueryBuilder('antecedente')
           .leftJoinAndSelect('antecedente.paciente', 'paciente')
+          .where('antecedente.is_active = true')
           .select([
             'antecedente.id',
             'paciente.id',
@@ -37,8 +38,8 @@ export class AntecedentesService {
             'antecedente.cesareas',
           ]);
       
-        if (filter) {
-          queryBuilder.andWhere('paciente.name = :filterName', { filterName: filter });
+        if (q) {
+          queryBuilder.andWhere('paciente.name = :q', { filterName: q });
         }
       
         if (filterCui) {
