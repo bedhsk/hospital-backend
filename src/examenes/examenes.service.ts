@@ -6,6 +6,7 @@ import CreateExamenDto from './dtos/create-examen.dto';
 import { InsumoExamenesService } from 'src/insumo_examenes/insumo_examenes.service'; // Importamos el servicio
 import UpdateExamenDto from './dtos/update-examen.dto';
 import QueryExamenDto from './dtos/query-examen.dto';
+import { log } from 'console';
 
 @Injectable()
 export class ExamenesService {
@@ -29,7 +30,7 @@ export class ExamenesService {
 
     if (insumos && insumos.length > 0) {
       const insumoPromises = insumos.map(async (element) => {
-        const { insumoId, cantidad } = element;
+        const { insumoId, cantidad, cada_horas, por_dias } = element;
 
         // console.log('Insumo ID:', insumoId); // Verificación de insumoId
 
@@ -41,6 +42,8 @@ export class ExamenesService {
           examenId: examenGuardado.id,
           insumoId,
           cantidad,
+          cada_horas,
+          por_dias,
         });
       });
 
@@ -62,7 +65,7 @@ export class ExamenesService {
       .where('examen.is_active = :isActive', { isActive: true });
 
     if (q) {
-      queryBuilder.andWhere("unaccent(examen.nombre) ILIKE unaccent(:nombre)", {
+      queryBuilder.andWhere('unaccent(examen.nombre) ILIKE unaccent(:nombre)', {
         nombre: `%${q}%`,
       });
     }
@@ -112,8 +115,8 @@ export class ExamenesService {
 
   async activate(id: string) {
     const examen = await this.findAnyOne(id); // Validamos que el examen existe
-    if (!examen){
-      throw new NotFoundException(`Examen con ID ${id} no encontrado`,)
+    if (!examen) {
+      throw new NotFoundException(`Examen con ID ${id} no encontrado`);
     }
     examen.is_active = true; // Cambiamos el estado a activo
     return this.examenesRepository.save(examen);
@@ -121,8 +124,8 @@ export class ExamenesService {
 
   async desactivate(id: string) {
     const examen = await this.findAnyOne(id); // Validamos que el examen existe
-    if (!examen){
-      throw new NotFoundException(`Examen con ID ${id} no encontrado`,)
+    if (!examen) {
+      throw new NotFoundException(`Examen con ID ${id} no encontrado`);
     }
     examen.is_active = false; // Cambiamos el estado a inactivo
     return this.examenesRepository.save(examen);

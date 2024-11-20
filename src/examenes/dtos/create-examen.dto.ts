@@ -1,4 +1,14 @@
-import { IsUUID, IsString, MaxLength, IsNotEmpty, IsBoolean, IsOptional, IsArray, ValidateNested, IsNumber } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  MaxLength,
+  IsNotEmpty,
+  IsBoolean,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import CreateInsumoExamenDto from 'src/insumo_examenes/dtos/create-insumo_examen.dto';
 
@@ -27,6 +37,12 @@ class InsumoExamenDto {
 
   @IsNumber()
   cantidad: number;
+
+  @IsNumber()
+  cada_horas: number;
+
+  @IsNumber()
+  por_dias: number;
 }
 
 export default CreateExamenDto;
