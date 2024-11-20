@@ -315,55 +315,68 @@ export class RecetasService {
   }
 
   async update(id: string, updateRecetaDto: UpdateRecetaDto) {
-    const receta = await this.findOne(id);
-    const { userId, pacienteId, insumos, ...recetaData } = updateRecetaDto;
+    try {
+      const receta = await this.findOne(id);
+      const { userId, pacienteId, insumos, ...recetaData } = updateRecetaDto;
 
-    if (receta.estado === EstadoReceta.ENTREGADO) {
-      throw new BadRequestException(
-        'No se puede actualizar una receta con estado "Entregado".',
-      );
-    }
-
-    // Verificar si se envió un roleId y actualizar solo si se envía
-    if (userId) {
-      const user = await this.usersService.findOne(userId);
-      if (!user) {
-        throw new NotFoundException('Role not found, cannot update receta');
+      if (receta.estado === EstadoReceta.ENTREGADO) {
+        throw new BadRequestException(
+          'No se puede actualizar una receta con estado Entregado.',
+        );
       }
-      receta.user = user;
-    }
 
-    if (pacienteId) {
-      const paciente = await this.pacientesService.findOne(pacienteId);
-      if (!paciente) {
-        throw new NotFoundException('Paciente not found, cannot update receta');
+      if (userId) {
+        const user = await this.usersService.findOne(userId);
+        if (!user) {
+          throw new NotFoundException('Usuario no encontrado');
+        }
+        receta.user = user;
       }
-      receta.paciente = paciente;
+
+      if (pacienteId) {
+        const paciente = await this.pacientesService.findOne(pacienteId);
+        if (!paciente) {
+          throw new NotFoundException('Paciente no encontrado');
+        }
+        receta.paciente = paciente;
+      }
+
+      recetaData.estado = receta.estado;
+
+      if (insumos) {
+        try {
+          await this.examenesService.activate(receta.examen.id);
+
+          await this.examenesService.update(receta.examen.id, {
+            nombre: `Receta para ${receta.paciente.nombre}`,
+            insumos: insumos.map((detalle) => ({
+              insumoId: detalle.insumoId,
+              cantidad: detalle.cantidad,
+              cada_horas: detalle.cada_horas,
+              por_dias: detalle.por_dias,
+            })),
+            descripcion: `Receta para ${receta.paciente.nombre}`,
+          });
+
+          await this.examenesService.desactivate(receta.examen.id);
+        } catch (error) {
+          if (error) {
+            throw error;
+          }
+          throw new Error(`Error actualizando examen: ${error.message}`);
+        }
+      }
+
+      this.recetasRepository.merge(receta, recetaData);
+      const savedReceta = await this.recetasRepository.save(receta);
+
+      return this.findOnePublic(savedReceta.id);
+    } catch (error) {
+      if (error) {
+        throw error;
+      }
+      throw new Error(`Error actualizando receta: ${error.message}`);
     }
-
-    recetaData.estado = receta.estado;
-
-    if (insumos) {
-      this.examenesService.activate(receta.examen.id);
-      this.examenesService.update(receta.examen.id, {
-        nombre: 'Receta para ' + receta.paciente.nombre,
-        insumos: insumos.map((detalle) => {
-          return {
-            insumoId: detalle.insumoId,
-            cantidad: detalle.cantidad,
-            cada_horas: detalle.cada_horas,
-            por_dias: detalle.por_dias,
-          };
-        }),
-        descripcion: 'Receta para ' + receta.paciente.nombre,
-      });
-      this.examenesService.desactivate(receta.examen.id);
-    }
-
-    // Mergear los otros datos de la receta
-    this.recetasRepository.merge(receta, recetaData);
-
-    return this.recetasRepository.save(receta);
   }
 
   async remove(id: string) {

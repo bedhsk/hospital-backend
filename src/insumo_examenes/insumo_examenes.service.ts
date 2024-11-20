@@ -44,7 +44,13 @@ export class InsumoExamenesService {
   }
 
   async removeByExamenId(examenId: string): Promise<void> {
-    await this.insumoExamenRepository.delete({ examen: { id: examenId } });
+    try {
+      await this.insumoExamenRepository.delete({ examen: { id: examenId } });
+    } catch (error) {
+      throw new Error(
+        `Error al eliminar los insumos de un examen: ${error.message}`,
+      );
+    }
   }
 
   // Obtener todas las relaciones activas entre insumos y exámenes con filtros y paginación

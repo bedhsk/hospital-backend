@@ -119,6 +119,7 @@ export class ExamenesService {
       throw new NotFoundException(`Examen con ID ${id} no encontrado`);
     }
     examen.is_active = true; // Cambiamos el estado a activo
+
     return this.examenesRepository.save(examen);
   }
 
@@ -154,35 +155,60 @@ export class ExamenesService {
 
   // El update elimina los insumos existentes y los agrega los nuevos
   async update(id: string, updateExamenDto: UpdateExamenDto) {
-    const examen = await this.findOne(id); // Validamos que el examen existe y está activo
-    const { insumos, ...examenData } = updateExamenDto;
-
-    // Actualizamos los datos del examen
-    this.examenesRepository.merge(examen, examenData);
-    const updatedExamen = await this.examenesRepository.save(examen);
-
-    if (insumos) {
-      // Eliminamos los insumos existentes
-      await this.insumoExamenesService.removeByExamenId(id);
-
-      // Agregamos los nuevos insumos
-      const insumoPromises = insumos.map(async (element) => {
-        const { insumoId, cantidad } = element;
-        if (!insumoId) {
-          throw new Error('El insumoId no puede ser nulo');
-        }
-        return await this.insumoExamenesService.create({
-          examenId: updatedExamen.id,
-          insumoId,
-          cantidad,
-        });
+    try {
+      const examen = await this.examenesRepository.findOne({
+        where: { id, is_active: true },
+        relations: ['insumoExamenes', 'insumoExamenes.insumo'],
       });
 
-      await Promise.all(insumoPromises);
-    }
+      if (!examen) {
+        throw new NotFoundException(
+          `Examen con ID ${id} no encontrado o inactivo`,
+        );
+      }
 
-    // Retornamos el examen actualizado con sus insumos
-    return this.findOne(updatedExamen.id);
+      const { insumos, ...examenData } = updateExamenDto;
+
+      // Actualizamos datos básicos
+      this.examenesRepository.merge(examen, examenData);
+      const updatedExamen = await this.examenesRepository.save(examen);
+
+      if (insumos) {
+        try {
+          // Eliminamos insumos existentes
+          await this.insumoExamenesService.removeByExamenId(id);
+
+          // Agregamos nuevos insumos
+          const insumoPromises = insumos.map((element) => {
+            const { insumoId, cantidad, cada_horas, por_dias } = element;
+            if (!insumoId) {
+              throw new Error('El insumoId no puede ser nulo');
+            }
+            return this.insumoExamenesService.create({
+              examenId: updatedExamen.id,
+              insumoId,
+              cantidad,
+              cada_horas,
+              por_dias,
+            });
+          });
+
+          await Promise.all(insumoPromises);
+        } catch (error) {
+          throw new Error(`Error actualizando insumos: ${error.message}`);
+        }
+      }
+
+      return await this.examenesRepository.findOne({
+        where: { id: updatedExamen.id },
+        relations: ['insumoExamenes', 'insumoExamenes.insumo'],
+      });
+    } catch (error) {
+      if (error) {
+        throw error;
+      }
+      throw new Error(`Error actualizando examen: ${error.message}`);
+    }
   }
 
   // Soft delete para un examen
