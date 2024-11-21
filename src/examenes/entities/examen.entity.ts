@@ -30,7 +30,9 @@ class Examen {
   )
   ordenLaboratorio: OrdenLaboratorio[];
 
-  @OneToMany(() => InsumoExamen, (insumoExamen) => insumoExamen.examen)
+  @OneToMany(() => InsumoExamen, (insumoExamen) => insumoExamen.examen, {
+    eager: true,
+  })
   insumoExamenes: InsumoExamen[];
 
   @OneToOne(() => Receta, (receta) => receta.examen, {
