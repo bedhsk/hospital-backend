@@ -22,12 +22,9 @@ export class InsumosDto {
   @IsNotEmpty()
   cantidad: number;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  cada_horas: number;
-
-  @IsNumber()
-  por_dias: number;
+  uso: string;
 }
 class CreateRecetaDto {
   @IsString()

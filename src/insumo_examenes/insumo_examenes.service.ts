@@ -24,8 +24,7 @@ export class InsumoExamenesService {
   async create(
     createInsumoExamenDto: CreateInsumoExamenDto,
   ): Promise<InsumoExamen> {
-    const { insumoId, examenId, cantidad, cada_horas, por_dias } =
-      createInsumoExamenDto;
+    const { insumoId, examenId, cantidad, uso } = createInsumoExamenDto;
 
     // Verificación adicional para evitar que insumoId sea nulo
     if (!insumoId) {
@@ -36,8 +35,7 @@ export class InsumoExamenesService {
       insumo: { id: insumoId }, // Relacionamos el insumo usando su ID
       examen: { id: examenId }, // Relacionamos el examen usando su ID
       cantidad,
-      cada_horas,
-      por_dias,
+      uso,
     });
 
     return await this.insumoExamenRepository.save(insumoExamen);

@@ -57,8 +57,7 @@ export class RecetasService {
         return {
           insumoId: detalle.insumoId,
           cantidad: detalle.cantidad,
-          cada_horas: detalle.cada_horas,
-          por_dias: detalle.por_dias,
+          uso: detalle.uso,
         };
       }),
       descripcion: 'Receta para ' + paciente.nombre,
@@ -145,8 +144,7 @@ export class RecetasService {
         'examen.id',
         'insumoExamen.id',
         'insumoExamen.cantidad',
-        'insumoExamen.cada_horas',
-        'insumoExamen.por_dias',
+        'insumoExamen.uso',
         'insumo.id',
         'insumo.nombre',
         'categoria.id',
@@ -195,8 +193,7 @@ export class RecetasService {
             id: insumoExamen.insumo.id,
             nombre: insumoExamen.insumo.nombre,
             cantidad: insumoExamen.cantidad,
-            cada_horas: insumoExamen.cada_horas,
-            por_dias: insumoExamen.por_dias,
+            uso: insumoExamen.uso,
             categoria: {
               id: insumoExamen.insumo.categoria.id,
               nombre: insumoExamen.insumo.categoria.nombre,
@@ -302,8 +299,7 @@ export class RecetasService {
           id: insumoExamen.insumo.id,
           nombre: insumoExamen.insumo.nombre,
           cantidad: insumoExamen.cantidad,
-          cada_horas: insumoExamen.cada_horas,
-          por_dias: insumoExamen.por_dias,
+          uso: insumoExamen.uso,
           categoria: {
             id: insumoExamen.insumo.categoria.id,
             nombre: insumoExamen.insumo.categoria.nombre,
@@ -352,8 +348,7 @@ export class RecetasService {
             insumos: insumos.map((detalle) => ({
               insumoId: detalle.insumoId,
               cantidad: detalle.cantidad,
-              cada_horas: detalle.cada_horas,
-              por_dias: detalle.por_dias,
+              uso: detalle.uso,
             })),
             descripcion: `Receta para ${receta.paciente.nombre}`,
           });

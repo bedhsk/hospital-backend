@@ -10,11 +10,8 @@ class InsumoExamen {
   @Column({ type: 'int', default: 0 }) // Cantidad de insumos utilizados en el examen
   cantidad: number;
 
-  @Column({ type: 'int', default: null })
-  cada_horas: number;
-
-  @Column({ type: 'int', default: null })
-  por_dias: number;
+  @Column({ type: 'varchar', default: null })
+  uso: string;
 
   @ManyToOne(() => Insumo, (insumo) => insumo.insumoExamenes, {
     nullable: false,
