@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsBoolean,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
 class CreateInsumoExamenDto {
@@ -19,12 +20,8 @@ class CreateInsumoExamenDto {
   cantidad: number;
 
   @IsOptional()
-  @IsNumber()
-  cada_horas?: number;
-
-  @IsOptional()
-  @IsNumber()
-  por_dias?: number;
+  @IsString()
+  uso: string;
 
   @IsBoolean()
   @IsOptional()

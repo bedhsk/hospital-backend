@@ -39,12 +39,8 @@ class InsumoExamenDto {
   cantidad: number;
 
   @IsOptional()
-  @IsNumber()
-  cada_horas: number;
-
-  @IsOptional()
-  @IsNumber()
-  por_dias: number;
+  @IsString()
+  uso: string;
 }
 
 export default CreateExamenDto;

@@ -28,7 +28,7 @@ export class ExamenesService {
 
     if (insumos && insumos.length > 0) {
       const insumoPromises = insumos.map(async (element) => {
-        const { insumoId, cantidad, cada_horas, por_dias } = element;
+        const { insumoId, cantidad, uso } = element;
 
         if (!insumoId) {
           throw new Error('El insumoId no puede ser nulo');
@@ -38,8 +38,7 @@ export class ExamenesService {
           examenId: examenGuardado.id,
           insumoId,
           cantidad,
-          cada_horas,
-          por_dias,
+          uso,
         });
       });
 
@@ -215,7 +214,7 @@ export class ExamenesService {
 
           // Agregamos nuevos insumos
           const insumoPromises = insumos.map((element) => {
-            const { insumoId, cantidad, cada_horas, por_dias } = element;
+            const { insumoId, cantidad, uso } = element;
             if (!insumoId) {
               throw new Error('El insumoId no puede ser nulo');
             }
@@ -223,8 +222,7 @@ export class ExamenesService {
               examenId: updatedExamen.id,
               insumoId,
               cantidad,
-              cada_horas,
-              por_dias,
+              uso,
             });
           });
 
