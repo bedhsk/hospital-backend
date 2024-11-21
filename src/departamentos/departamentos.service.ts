@@ -13,6 +13,7 @@ import UpdateDepartamentoDto from './dto/update-departamento.dto';
 import QueryDepartamentoDto from './dto/query-departamento.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DepartmentDeletedEvent } from 'src/events/department-deleted.event';
+import { query } from 'express';
 
 @Injectable()
 export class DepartamentosService {
@@ -103,6 +104,7 @@ export class DepartamentosService {
 
     return record;
   }
+
   async findOneWithDepartamentos(id: string, queryDto: QueryDepartamentoDto) {
     const { q, filter, page = 1, limit = 10 } = queryDto;
 
@@ -111,7 +113,7 @@ export class DepartamentosService {
     }
 
     // Obtener el departamento con sus insumos relacionados
-    const departamento = await this.departamentosRepository
+    const queryBuilder = this.departamentosRepository
       .createQueryBuilder('departamento')
       .leftJoinAndSelect(
         'departamento.insumosDepartamentos',
@@ -119,8 +121,16 @@ export class DepartamentosService {
       )
       .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
       .where('departamento.id = :id', { id })
-      .andWhere('departamento.is_active = :isActive', { isActive: true })
-      .getOne();
+      .andWhere('departamento.is_active = :isActive', { isActive: true });
+
+    // Agregar filtro por nombre de insumo si se proporciona q
+    if (q) {
+      queryBuilder.andWhere('unaccent(insumo.nombre) ILIKE unaccent(:nombre)', {
+        nombre: `%${q}%`,
+      });
+    }
+
+    const departamento = await queryBuilder.getOne();
 
     if (!departamento) {
       Logger.warn(`Departamento #${id} no encontrado`);
