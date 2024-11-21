@@ -85,8 +85,8 @@ export class DepartamentosController {
     status: 403,
     description: 'Acceso denegado',
   })
-  findOne(@Param('id') id: string) {
-    return this.departamentosService.findOneWithDepartamentos(id);
+  findOne(@Param('id') id: string, @Query() query: QueryDepartamentoDto) {
+    return this.departamentosService.findOneWithDepartamentos(id, query);
   }
 
   @AuthorizedRoles()
