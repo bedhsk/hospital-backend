@@ -18,6 +18,14 @@ class CreateInsumoExamenDto {
   @IsNotEmpty()
   cantidad: number;
 
+  @IsOptional()
+  @IsNumber()
+  cada_horas?: number;
+
+  @IsOptional()
+  @IsNumber()
+  por_dias?: number;
+
   @IsBoolean()
   @IsOptional()
   is_active?: boolean = true;

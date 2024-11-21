@@ -1,4 +1,15 @@
-import { IsString, MinLength, MaxLength, IsEnum, IsArray, IsNotEmpty, ValidateNested, IsNumber, IsUUID, IsOptional } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  MaxLength,
+  IsEnum,
+  IsArray,
+  IsNotEmpty,
+  ValidateNested,
+  IsNumber,
+  IsUUID,
+  IsOptional,
+} from 'class-validator';
 import { EstadoReceta } from '../enum/estado-receta.enum';
 import { Type } from 'class-transformer';
 
@@ -10,6 +21,13 @@ export class InsumosDto {
   @IsNumber()
   @IsNotEmpty()
   cantidad: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  cada_horas: number;
+
+  @IsNumber()
+  por_dias: number;
 }
 class CreateRecetaDto {
   @IsString()
