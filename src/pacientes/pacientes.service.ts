@@ -42,6 +42,9 @@ export class PacientesService {
         'paciente.traumaticos',
         'paciente.alergias',
         'paciente.vicios',
+        'paciente.municipio',
+        'paciente.comunidad',
+        'paciente.telefono',
         'antecedente.id',
         'antecedente.gestas',
         'antecedente.hijos_vivos',
@@ -75,10 +78,17 @@ export class PacientesService {
       .take(limit)
       .getMany();
 
+  
+  const pacientesConEdad = pacientes.map((paciente) => ({
+    ...paciente,
+    edad: paciente.edad, 
+  }));
+
+
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      data: pacientes,
+      data: pacientesConEdad,
       totalItems,
       totalPages,
       page,
@@ -90,10 +100,12 @@ export class PacientesService {
       where: { id, is_active: true },
       relations: ['antecedente'],
     });
+    
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
-    return paciente;
+    return paciente
+
   }
 
   async findHistorialMedico(id: string) {
