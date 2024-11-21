@@ -19,8 +19,6 @@ export class ExamenesService {
   async create(createExamenDto: CreateExamenDto) {
     const { nombre, insumos, ...rest } = createExamenDto;
 
-    // console.log('Insumos recibidos:', insumos); // Verificación de insumos
-
     const examen = this.examenesRepository.create({
       nombre,
       ...rest,
@@ -31,8 +29,6 @@ export class ExamenesService {
     if (insumos && insumos.length > 0) {
       const insumoPromises = insumos.map(async (element) => {
         const { insumoId, cantidad, cada_horas, por_dias } = element;
-
-        // console.log('Insumo ID:', insumoId); // Verificación de insumoId
 
         if (!insumoId) {
           throw new Error('El insumoId no puede ser nulo');
@@ -50,7 +46,27 @@ export class ExamenesService {
       await Promise.all(insumoPromises);
     }
 
-    return await this.findOne(examenGuardado.id);
+    // Buscar el examen y transformar la respuesta
+    const examenCompleto = await this.examenesRepository.findOne({
+      where: { id: examenGuardado.id },
+      relations: ['insumoExamenes', 'insumoExamenes.insumo'],
+    });
+
+    // Transformar la respuesta para excluir cada_horas y por_dias
+    return {
+      id: examenCompleto.id,
+      nombre: examenCompleto.nombre,
+      descripcion: examenCompleto.descripcion,
+      insumoExamenes: examenCompleto.insumoExamenes.map((ie) => ({
+        id: ie.id,
+        cantidad: ie.cantidad,
+        insumo: {
+          id: ie.insumo.id,
+          codigo: ie.insumo.codigo,
+          nombre: ie.insumo.nombre,
+        },
+      })),
+    };
   }
 
   // Obtener todos los exámenes con Soft Delete (solo los que estén activos)
@@ -59,9 +75,28 @@ export class ExamenesService {
 
     const queryBuilder = this.examenesRepository
       .createQueryBuilder('examen')
-      .leftJoinAndSelect('examen.insumoExamenes', 'insumoExamen')
-      .leftJoinAndSelect('insumoExamen.insumo', 'insumo')
-      .leftJoinAndSelect('insumo.categoria', 'categoria')
+      .select([
+        'examen.id',
+        'examen.nombre',
+        'examen.descripcion',
+        'examen.is_active',
+      ])
+      .leftJoin('examen.insumoExamenes', 'insumoExamen')
+      .addSelect([
+        'insumoExamen.id',
+        'insumoExamen.cantidad',
+        'insumoExamen.is_active',
+      ])
+      .leftJoin('insumoExamen.insumo', 'insumo')
+      .addSelect([
+        'insumo.id',
+        'insumo.codigo',
+        'insumo.nombre',
+        'insumo.trazador',
+        'insumo.is_active',
+      ])
+      .leftJoin('insumo.categoria', 'categoria')
+      .addSelect(['categoria.id', 'categoria.nombre', 'categoria.is_active'])
       .where('examen.is_active = :isActive', { isActive: true });
 
     if (q) {
