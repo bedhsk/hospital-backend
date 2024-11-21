@@ -104,8 +104,8 @@ export class DepartamentosService {
     return record;
   }
 
-  async findOneWithDepartamentos(id: string, query = { page: 1, limit: 10 }) {
-    const { page, limit } = query;
+  async findOneWithDepartamentos(id: string, queryDto: QueryDepartamentoDto) {
+    const { q, filter, page = 1, limit = 10 } = queryDto;
 
     if (!isUUID(id)) {
       throw new BadRequestException('ID inválido');
