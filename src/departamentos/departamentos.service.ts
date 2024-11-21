@@ -103,6 +103,7 @@ export class DepartamentosService {
 
     return record;
   }
+
   async findOneWithDepartamentos(id: string, queryDto: QueryDepartamentoDto) {
     const { q, filter, page = 1, limit = 10 } = queryDto;
 
