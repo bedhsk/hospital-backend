@@ -100,54 +100,39 @@ export class DepartamentosService {
 
     return record;
   }
-  async findOneWithDepartamentos(id: string, query = { page: 1, limit: 10 }) {
-    const { page, limit } = query;
-  
-    if (!isUUID(id)) {
-      throw new BadRequestException('ID inválido');
+
+  async findOneWithDepartamentos(departamentoId: string) {
+    if (!isUUID(departamentoId)) {
+      throw new BadRequestException('ID de departamento inválido');
     }
-  
-    // Obtener el departamento con sus insumos relacionados
-    const departamento = await this.departamentosRepository
-      .createQueryBuilder('departamento')
-      .leftJoinAndSelect('departamento.insumosDepartamentos', 'insumoDepartamento')
-      .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
-      .where('departamento.id = :id', { id })
-      .andWhere('departamento.is_active = :isActive', { isActive: true })
-      .getOne();
-  
+
+    const departamento = await this.departamentosRepository.findOne({
+      where: { id: departamentoId, is_active: true },
+      relations: ['insumosDepartamentos', 'insumosDepartamentos.insumo'],
+    });
+
     if (!departamento) {
-      Logger.warn(`Departamento #${id} no encontrado`);
-      throw new NotFoundException(`Departamento #${id} no encontrado`);
+      throw new NotFoundException(
+        `Departamento con ID ${departamentoId} no encontrado`,
+      );
     }
-  
-    // Procesar insumos
-    const insumos = departamento.insumosDepartamentos.map((insumoDepartamento) => ({
-      id: insumoDepartamento.insumo.id,
-      codigo: insumoDepartamento.insumo.codigo,
-      nombre: insumoDepartamento.insumo.nombre,
-      existencia: insumoDepartamento.existencia,
-    }));
-  
-    const totalItems = insumos.length;
-    const totalPages = Math.ceil(totalItems / limit);
-  
-    // Aplicar paginación
-    const paginatedInsumos = insumos.slice((page - 1) * limit, page * limit);
-  
-    // Estructura de respuesta
+
+    const insumos = departamento.insumosDepartamentos.map(
+      (insumoDepartamento) => ({
+        id: insumoDepartamento.insumo.id,
+        codigo: insumoDepartamento.insumo.codigo,
+        nombre: insumoDepartamento.insumo.nombre,
+        existencia: insumoDepartamento.existencia,
+      }),
+    );
+
     return {
       id: departamento.id,
       nombre: departamento.nombre,
-      insumos: paginatedInsumos,
-      totalItems,
-      totalPages,
-      page,
+      insumos: insumos,
     };
   }
-  
 
- 
   async findOneByName(nombre: string) {
     const record = await this.departamentosRepository.findOne({
       where: { nombre, is_active: true },
