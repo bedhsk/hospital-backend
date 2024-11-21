@@ -68,6 +68,21 @@ class CreatePacienteDto {
   @IsOptional()
   cui?: string;
 
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  municipio?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  comunidad?: string;
+
+  @IsString()
+  @MaxLength(255)
+  @IsOptional()
+  telefono?: string;
+
   @IsDate()
   @Type(() => Date)
   @IsNotEmpty()

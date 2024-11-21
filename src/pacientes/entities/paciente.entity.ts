@@ -36,6 +36,26 @@ export default class Paciente {
   })
   cui?: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  @ApiProperty({
+    description: 'Nombre del municipio originario del paciente',
+  })
+  municipio?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  @ApiProperty({
+    description: 'Comunidad o Direccion del paciente',
+  })
+  comunidad?: string;
+
+
+  @Column({ type: 'varchar', length: 12, nullable: true })
+  @ApiProperty({
+    description: 'Número de teléfono del paciente. Puede incluir el código de país.',
+  })
+  telefono?: string;
+
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   @ApiProperty({
     description: 'Fecha de Creaciòn del Paciente se inserta automaticamente',
@@ -54,6 +74,25 @@ export default class Paciente {
     description: 'Fecha Nacimineto Paciente',
   })
   nacimiento: Date;
+
+  @ApiProperty({
+    description: 'Edad calculada automáticamente en base a la fecha de nacimiento No se Lamacena en la base de datos',
+  })
+  get edad(): number {
+    if (!this.nacimiento) return 0; 
+    const hoy = new Date();
+    const nacimiento = new Date(this.nacimiento);
+
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--; 
+    }
+
+    return edad;
+  }
+
 
   @Column({ default: true })
   @ApiProperty({
