@@ -96,7 +96,7 @@ export class RecetasService {
   }
 
   async findAll(query: QueryRecetaDto) {
-    const { q, filter, page = 1, limit = 10 } = query;
+    const { q, filter, filterEstado, page = 1, limit = 10 } = query;
     const queryBuilder = this.recetasRepository
       .createQueryBuilder('receta')
       .leftJoinAndSelect('receta.user', 'user')
@@ -126,6 +126,12 @@ export class RecetasService {
       queryBuilder.andWhere(
         '(unaccent(user.name) = unaccent(:user) OR unaccent(paciente.nombre) = unaccent(:paciente))',
         { user: filter, paciente: filter },
+      );
+    }
+
+    if (filterEstado) {
+      queryBuilder.andWhere("receta.estado = :estado",
+        { estado: filterEstado },
       );
     }
 

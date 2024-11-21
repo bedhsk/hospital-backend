@@ -324,14 +324,20 @@ export class AdquisicionesService {
           lotesAux.push(lote);
         }
       } else {
-        const lote = await this.lotesService.update(loteExistente.id, {
-          cantidadActual: loteExistente.cantidadActual + element.cantidadInical,
-        });
-        if (lote) {
-          lotesAux.push(lote);
+        
+        const insumoDepartamentoLoteExistente = await this.insumoDepartamentoService.findOne(loteExistente.insumoDepartamento.id)
+        if(insumoDepartamentoLoteExistente.insumo.id === element.insumoId){
+          const lote = await this.lotesService.update(loteExistente.id, {
+            cantidadActual: loteExistente.cantidadActual + element.cantidadInical,
+          });
+          if (lote) {
+            detalles.push({ insumoId: insumoId, cantidad: cantidadInical });
+            lotesAux.push(lote);
+          }
         }
       }
     }
+    console.log(detalles)
     const adquisiciones = await this.create({
       usuarioId,
       departamentoId: departamento.id,
