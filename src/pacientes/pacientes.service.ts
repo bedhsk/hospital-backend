@@ -226,7 +226,10 @@ export class PacientesService {
     });
 
     if (pacienteExistentePorCui) {
+      if (pacienteExistentePorCui.cui!='')
+      {
       throw new ConflictException(`Ya existe un paciente con el CUI "${cui}".`);
+      }
     }
 
     //Verifica Si es un paciente eliminado
@@ -234,6 +237,7 @@ export class PacientesService {
       where: { cui, is_active: false },
     });
     if (pacienteEliminado) {
+      if (pacienteEliminado.cui!=""){
       pacienteEliminado.is_active = true;
       this.pacientesRepository.merge(pacienteEliminado, createPacienteDto);
       await this.pacientesRepository.save(pacienteEliminado);
@@ -245,6 +249,7 @@ export class PacientesService {
         );
       }
       return pacienteEliminado;
+    }
     }
 
     // Crear el paciente
@@ -275,7 +280,7 @@ export class PacientesService {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
 
-    const { antecedente, nacimiento, nombre, ...updateData } =
+    const { antecedente, nacimiento, nombre, cui, ...updateData } =
       updatePacienteDto;
 
     // Verificar si ya existe otro paciente con el mismo nombre y fecha de nacimiento
@@ -294,12 +299,27 @@ export class PacientesService {
         );
       }
     }
+    
+
+    if(cui){
+      const pacienteExistentePorCui = await this.pacientesRepository.findOne({
+        where: { cui, is_active: true, id: Not(id) },
+      });
+      if (pacienteExistentePorCui) {
+        if (pacienteExistentePorCui.cui!='')
+        {
+        throw new ConflictException(`Ya existe un paciente con el CUI "${cui}".`);
+        }
+      }
+    }
+
 
     // Incluir nombre y nacimiento en updateData si están presentes
     const updatedPacienteData = {
       ...updateData,
       ...(nombre && { nombre }),
       ...(nacimiento && { nacimiento }),
+      ...(cui && { cui }),
     };
 
     // Actualizar los campos del paciente
