@@ -6,12 +6,14 @@ export class CreateRolesSeed {
     const roleRepository = dataSource.getRepository(Role);
 
     const roles = [
-      { name: 'Admin' },
-      { name: 'Gerente' },
-      { name: 'Doctor' },
-      { name: 'Enfermera' },
-      { name: 'Bodeguero' },
-      { name: 'Labotarista' },
+      { name: 'Farmacia' },
+      { name: 'Bodega' },
+      { name: 'Odontología' },
+      { name: 'Nutrición' },
+      { name: 'Médicos' },
+      { name: 'Enfermería' },
+      { name: 'Laboratorio' },
+      { name: 'Dirección' },
     ];
 
     await roleRepository.save(roles);
