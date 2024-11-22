@@ -11,6 +11,8 @@ import { CreatePacienteDto } from './dto/create-paciente.dto';
 import Antecedente from './entities/antecedente.entity';
 import UpdatePacienteDto from './dto/update-paciente.dto';
 import { now } from 'moment';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PacientDeletedEvent } from 'src/events/pacient-deleted.event';
 
 @Injectable()
 export class PacientesService {
@@ -20,6 +22,8 @@ export class PacientesService {
 
     @InjectRepository(Antecedente)
     private readonly antecedentesRepository: Repository<Antecedente>, // Repositorio de antecedentes
+
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(query: any) {
@@ -27,8 +31,18 @@ export class PacientesService {
     const queryBuilder = this.pacientesRepository
       .createQueryBuilder('paciente')
       .leftJoinAndSelect('paciente.antecedente', 'antecedente')
-      .leftJoinAndSelect('paciente.recetas', 'recetas')
-      .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
+      .leftJoinAndSelect(
+        'paciente.recetas',
+        'recetas',
+        'recetas.is_Active = :isActiveRecetas',
+        { isActiveRecetas: true },
+      )
+      .leftJoinAndSelect(
+        'paciente.ordenesLaboratorio',
+        'ordenesLaboratorio',
+        'ordenesLaboratorio.is_active = :isActiveOrdenes',
+        { isActiveOrdenes: true },
+      )
       .where('paciente.is_active = true')
       .select([
         'paciente.id',
@@ -78,12 +92,10 @@ export class PacientesService {
       .take(limit)
       .getMany();
 
-  
-  const pacientesConEdad = pacientes.map((paciente) => ({
-    ...paciente,
-    edad: paciente.edad, 
-  }));
-
+    const pacientesConEdad = pacientes.map((paciente) => ({
+      ...paciente,
+      edad: paciente.edad,
+    }));
 
     const totalPages = Math.ceil(totalItems / limit);
 
@@ -100,12 +112,11 @@ export class PacientesService {
       where: { id, is_active: true },
       relations: ['antecedente'],
     });
-    
+
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
-    return paciente
-
+    return paciente;
   }
 
   async findHistorialMedico(id: string) {
@@ -115,14 +126,20 @@ export class PacientesService {
       .leftJoinAndSelect('paciente.recetas', 'recetas')
       .leftJoinAndSelect('recetas.retiro', 'retiro')
       .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
-      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect(
+        'detalleRetiro.insumoDepartamento',
+        'insumoDepartamento',
+      )
       .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo')
       .leftJoinAndSelect('insumo.categoria', 'categoria')
 
       .leftJoinAndSelect('paciente.ordenesLaboratorio', 'ordenesLaboratorio')
       .leftJoinAndSelect('ordenesLaboratorio.retiro', 'retiro2')
       .leftJoinAndSelect('retiro2.detalleRetiro', 'detalleRetiro2')
-      .leftJoinAndSelect('detalleRetiro2.insumoDepartamento', 'insumoDepartamento2')
+      .leftJoinAndSelect(
+        'detalleRetiro2.insumoDepartamento',
+        'insumoDepartamento2',
+      )
       .leftJoinAndSelect('insumoDepartamento2.insumo', 'insumo2')
       .leftJoinAndSelect('insumo2.categoria', 'categoria2')
       .where('paciente.id = :id', { id })
@@ -145,7 +162,7 @@ export class PacientesService {
             cantidad: detalle.cantidad,
           }));
         }
-        return{
+        return {
           id: receta.id,
           descripcion: receta.descripcion,
           estado: receta.estado,
@@ -153,7 +170,7 @@ export class PacientesService {
           updatedAt: receta.updatedAt,
           tipo: 'Receta', // Identificamos que este es del tipo receta
           insumos: insumos,
-        }
+        };
       }),
       ...paciente.ordenesLaboratorio.map((orden) => {
         let insumos = [];
@@ -165,7 +182,7 @@ export class PacientesService {
             cantidad: detalle.cantidad,
           }));
         }
-        return{
+        return {
           id: orden.id,
           descripcion: orden.descripcion,
           estado: orden.estado,
@@ -173,7 +190,7 @@ export class PacientesService {
           updatedAt: orden.updated_at,
           tipo: 'Orden de Laboratorio', // Identificamos que este es del tipo ordenLaboratorio
           insumos: insumos,
-        }
+        };
       }),
     ];
 
@@ -193,10 +210,9 @@ export class PacientesService {
       createPacienteDto;
 
     // Verificar si el paciente ya existe
-    
-    
+
     const pacienteExistente = await this.pacientesRepository.findOne({
-      where: { nombre, nacimiento, is_active: true},
+      where: { nombre, nacimiento, is_active: true },
     });
 
     if (pacienteExistente) {
@@ -218,18 +234,18 @@ export class PacientesService {
       where: { cui, is_active: false },
     });
     if (pacienteEliminado) {
-      pacienteEliminado.is_active = true
+      pacienteEliminado.is_active = true;
       this.pacientesRepository.merge(pacienteEliminado, createPacienteDto);
       await this.pacientesRepository.save(pacienteEliminado);
-      if (pacienteEliminado.antecedente)
-      {
-        pacienteEliminado.antecedente.is_active = true
-        this.antecedentesRepository.merge(pacienteEliminado.antecedente, createPacienteDto.antecedente);
-        
+      if (pacienteEliminado.antecedente) {
+        pacienteEliminado.antecedente.is_active = true;
+        this.antecedentesRepository.merge(
+          pacienteEliminado.antecedente,
+          createPacienteDto.antecedente,
+        );
       }
-      return pacienteEliminado
+      return pacienteEliminado;
     }
-   
 
     // Crear el paciente
     const paciente = this.pacientesRepository.create({
@@ -330,14 +346,19 @@ export class PacientesService {
       throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
     }
 
-//Eliminar el antecedente si existe
+    //Eliminar el antecedente si existe
     if (paciente.antecedente) {
-     paciente.antecedente.is_active=false
-     await this.antecedentesRepository.save(paciente.antecedente);
+      paciente.antecedente.is_active = false;
+      await this.antecedentesRepository.save(paciente.antecedente);
     }
 
+    this.eventEmitter.emit(
+      'pacient.deleted',
+      new PacientDeletedEvent(id, paciente),
+    );
+
     // Eliminar el paciente
-    paciente.is_active = false
+    paciente.is_active = false;
     await this.pacientesRepository.save(paciente);
     return {
       message: `Paciente y su antecedente (si existía) han sido desactivados`,
