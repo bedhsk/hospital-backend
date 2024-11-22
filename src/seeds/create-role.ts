@@ -14,6 +14,7 @@ export class CreateRolesSeed {
       { name: 'Enfermería' },
       { name: 'Laboratorio' },
       { name: 'Dirección' },
+      { name: 'SuperAdmin' },
     ];
 
     await roleRepository.save(roles);

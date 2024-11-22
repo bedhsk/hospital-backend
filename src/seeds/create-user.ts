@@ -19,7 +19,7 @@ export class CreateUsersSeed {
     const enfermeriaRole = await roleRepository.findOneBy({ name: 'Enfermería' });
     const laboratorioRole = await roleRepository.findOneBy({ name: 'Laboratorio' });
     const direccionRole = await roleRepository.findOneBy({ name: 'Dirección' });
-    const superAdminRole = await roleRepository.findOneBy({ name: 'Super Admin' });
+    const superAdminRole = await roleRepository.findOneBy({ name: 'SuperAdmin' });
 
     // Obtén departamentos específicos
     const departamentoFarmacia = await departamentoRepository.findOneBy({

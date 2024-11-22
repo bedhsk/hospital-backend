@@ -12,6 +12,7 @@ export class CreateCategoriaSeed {
       { nombre: 'Medicamentos Antimaláricos' },
       { nombre: 'Medicamentos Antifímicos' },
       { nombre: 'Medicamentos Antirretrovirales' },
+      { nombre: 'Quirurgico' },
     ];
 
     await categoriaRepository.save(categoria);
