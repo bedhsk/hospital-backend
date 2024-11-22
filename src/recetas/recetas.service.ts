@@ -21,6 +21,9 @@ import RetireRecetaDto from './dto/retire-receta.dto';
 import { log } from 'console';
 import Categoria from 'src/categorias/entities/categoria.entity';
 import { DepartamentosService } from 'src/departamentos/departamentos.service';
+import { OnEvent } from '@nestjs/event-emitter';
+import { PacientDeletedEvent } from 'src/events/pacient-deleted.event';
+import { runInThisContext } from 'vm';
 
 @Injectable()
 export class RecetasService {
@@ -420,5 +423,19 @@ export class RecetasService {
     this.examenesService.desactivate(receta.examen.id);
     const savedReceta = await this.recetasRepository.save(receta);
     return this.findOnePublic(savedReceta.id);
+  }
+
+  @OnEvent('pacient.deleted')
+  async handlePacienteDeletedEvent(event: { pacienteId: string }) {
+    const { pacienteId } = event;
+    const recetas = await this.recetasRepository.find({
+      where: { paciente: { id: pacienteId }, is_Active: true },
+    });
+
+    recetas.forEach(async (receta) => {
+      if (receta.estado === EstadoReceta.PENDIENTE) {
+        await this.remove(receta.id);
+      }
+    });
   }
 }

@@ -25,6 +25,8 @@ import CreateRetiroExamenDto from 'src/retiros/dto/create-retiro-examen.dto';
 import RetireOrdenDto from './dtos/retire-orden-laboratorio.dto';
 import { UsersService } from 'src/users/users.service';
 import e from 'express';
+import { OnEvent } from '@nestjs/event-emitter';
+import { log } from 'console';
 
 @Injectable()
 export class OrdenLaboratoriosService {
@@ -91,7 +93,8 @@ export class OrdenLaboratoriosService {
     let retiro;
 
     if (estado === EstadoOrdenLaboratorio.ENTREGADO) {
-      const laboratorio = await this.departamentoService.findOneByName('Laboratorio');
+      const laboratorio =
+        await this.departamentoService.findOneByName('Laboratorio');
       if (!laboratorio) {
         throw new NotFoundException(
           `Departamento con nombre Laboratorio no encontrado`,
@@ -102,11 +105,10 @@ export class OrdenLaboratoriosService {
         departamentoId: laboratorio.id,
         descripcion: 'Entrega de receta para ' + paciente.nombre,
         examenId: examen.id,
-      }
+      };
       const retiroAux = await this.retiroService.createByExams(retiroPromise);
       retiro = retiroAux.retiro;
-    }
-    else{
+    } else {
       retiro = null;
     }
 
@@ -117,11 +119,12 @@ export class OrdenLaboratoriosService {
       paciente,
       examen,
       retiro,
-      estado
+      estado,
     });
 
     // Guarda y retorna la nueva orden
-    const savedOrden = await this.ordenLaboratorioRepository.save(ordenLaboratorio);
+    const savedOrden =
+      await this.ordenLaboratorioRepository.save(ordenLaboratorio);
     return this.findOnePublic(savedOrden.id);
   }
 
@@ -139,7 +142,10 @@ export class OrdenLaboratoriosService {
       .leftJoinAndSelect('insumo.categoria', 'categoria')
       .leftJoinAndSelect('ordenLaboratorio.retiro', 'retiro')
       .leftJoinAndSelect('retiro.detalleRetiro', 'detalleRetiro')
-      .leftJoinAndSelect('detalleRetiro.insumoDepartamento', 'insumoDepartamento')
+      .leftJoinAndSelect(
+        'detalleRetiro.insumoDepartamento',
+        'insumoDepartamento',
+      )
       .leftJoinAndSelect('insumoDepartamento.insumo', 'insumo2')
       .leftJoinAndSelect('insumo2.categoria', 'categoria2')
       .orderBy('ordenLaboratorio.created_at', 'DESC');
@@ -147,7 +153,7 @@ export class OrdenLaboratoriosService {
     // Aplicar filtro de búsqueda (si se proporciona)
     if (q) {
       queryBuilder.andWhere(
-        "unaccent(usuario.name) ILIKE unaccent(:usuario) OR unaccent(examen.nombre) ILIKE unaccent(:examen)",
+        'unaccent(usuario.name) ILIKE unaccent(:usuario) OR unaccent(examen.nombre) ILIKE unaccent(:examen)',
         { usuario: `%${q}%`, examen: `%${q}%` },
       );
     }
@@ -177,7 +183,7 @@ export class OrdenLaboratoriosService {
             categoria: {
               id: detalle.insumoDepartamento.insumo.categoria.id,
               nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
-            }
+            },
           };
         });
       }
@@ -186,8 +192,8 @@ export class OrdenLaboratoriosService {
         estado: orden.estado,
         createdAt: orden.created_at,
         updatedAt: orden.updated_at,
-        usuario: {id: orden.usuario.id, nombre: orden.usuario.name},
-        paciente: {id: orden.paciente.id, nombre: orden.paciente.nombre},
+        usuario: { id: orden.usuario.id, nombre: orden.usuario.name },
+        paciente: { id: orden.paciente.id, nombre: orden.paciente.nombre },
         examen: {
           id: orden.examen.id,
           nombre: orden.examen.nombre,
@@ -200,12 +206,12 @@ export class OrdenLaboratoriosService {
               categoria: {
                 id: insumoExamen.insumo.categoria.id,
                 nombre: insumoExamen.insumo.categoria.nombre,
-              }
+              },
             };
-          })
+          }),
         },
-        insumosRetirados: retiros
-      }
+        insumosRetirados: retiros,
+      };
     });
     return {
       data: newOrdenes,
@@ -234,8 +240,19 @@ export class OrdenLaboratoriosService {
   async findOnePublic(id: string) {
     const ordenLaboratorio = await this.ordenLaboratorioRepository.findOne({
       where: { id, is_active: true },
-      relations: ['usuario', 'paciente', 'examen', 'examen.insumoExamenes', 'examen.insumoExamenes.insumo', 'examen.insumoExamenes.insumo.categoria',
-        'retiro', 'retiro.detalleRetiro', 'retiro.detalleRetiro.insumoDepartamento', 'retiro.detalleRetiro.insumoDepartamento.insumo', 'retiro.detalleRetiro.insumoDepartamento.insumo.categoria'],
+      relations: [
+        'usuario',
+        'paciente',
+        'examen',
+        'examen.insumoExamenes',
+        'examen.insumoExamenes.insumo',
+        'examen.insumoExamenes.insumo.categoria',
+        'retiro',
+        'retiro.detalleRetiro',
+        'retiro.detalleRetiro.insumoDepartamento',
+        'retiro.detalleRetiro.insumoDepartamento.insumo',
+        'retiro.detalleRetiro.insumoDepartamento.insumo.categoria',
+      ],
     });
 
     if (!ordenLaboratorio) {
@@ -254,7 +271,7 @@ export class OrdenLaboratoriosService {
           categoria: {
             id: detalle.insumoDepartamento.insumo.categoria.id,
             nombre: detalle.insumoDepartamento.insumo.categoria.nombre,
-          }
+          },
         };
       });
     }
@@ -263,8 +280,14 @@ export class OrdenLaboratoriosService {
       estado: ordenLaboratorio.estado,
       createdAt: ordenLaboratorio.created_at,
       updatedAt: ordenLaboratorio.updated_at,
-      usuario: {id: ordenLaboratorio.usuario.id, nombre: ordenLaboratorio.usuario.name},
-      paciente: {id: ordenLaboratorio.paciente.id, nombre: ordenLaboratorio.paciente.nombre},
+      usuario: {
+        id: ordenLaboratorio.usuario.id,
+        nombre: ordenLaboratorio.usuario.name,
+      },
+      paciente: {
+        id: ordenLaboratorio.paciente.id,
+        nombre: ordenLaboratorio.paciente.nombre,
+      },
       examen: {
         id: ordenLaboratorio.examen.id,
         nombre: ordenLaboratorio.examen.nombre,
@@ -277,12 +300,12 @@ export class OrdenLaboratoriosService {
             categoria: {
               id: insumoExamen.insumo.categoria.id,
               nombre: insumoExamen.insumo.categoria.nombre,
-            }
+            },
           };
         }),
       },
-      insumosRetirados: retiros
-    }
+      insumosRetirados: retiros,
+    };
   }
 
   // Método para actualizar una orden de laboratorio
@@ -360,11 +383,13 @@ export class OrdenLaboratoriosService {
       const nuevoRetiro: CreateRetiroExamenDto = {
         usuarioId: usuario.id,
         departamentoId: laboratorio.id,
-        descripcion: 'Retiro por orden de laboratorio para el paciente:' + paciente.nombre,
+        descripcion:
+          'Retiro por orden de laboratorio para el paciente:' + paciente.nombre,
         examenId: examen.id,
-      }
+      };
 
-      const retiroCompleto = await this.retiroService.createByExams(nuevoRetiro);
+      const retiroCompleto =
+        await this.retiroService.createByExams(nuevoRetiro);
 
       nuevaOrdenLaboratorio = {
         usuarioId: usuario.id,
@@ -374,9 +399,7 @@ export class OrdenLaboratoriosService {
         estado: estado,
         ...rest,
       };
-    }
-
-    else {
+    } else {
       nuevaOrdenLaboratorio = {
         usuarioId: usuario.id,
         pacienteId: paciente.id,
@@ -399,9 +422,9 @@ export class OrdenLaboratoriosService {
     }
     if (ordenLaboratorio.estado === EstadoOrdenLaboratorio.ENTREGADO) {
       throw new BadRequestException('La orden ya fue entregada');
-    }
-    else{
-      const laboratorio = await this.departamentoService.findOneByName('Laboratorio');
+    } else {
+      const laboratorio =
+        await this.departamentoService.findOneByName('Laboratorio');
       if (!laboratorio) {
         throw new NotFoundException(
           `Departamento con nombre Laboratorio no encontrado`,
@@ -409,18 +432,37 @@ export class OrdenLaboratoriosService {
       }
       const user = await this.userService.findOne(usuario.userId);
       if (!user) {
-        throw new NotFoundException(`Usuario con ID ${usuario.userId} no encontrado`);
+        throw new NotFoundException(
+          `Usuario con ID ${usuario.userId} no encontrado`,
+        );
       }
       const retiro = await this.retiroService.createByExams({
         usuarioId: user.id,
         departamentoId: laboratorio.id,
-        descripcion: 'Retiro por orden de laboratorio para el paciente:' + ordenLaboratorio.paciente.nombre,
+        descripcion:
+          'Retiro por orden de laboratorio para el paciente:' +
+          ordenLaboratorio.paciente.nombre,
         examenId: ordenLaboratorio.examen.id,
-      })
+      });
       ordenLaboratorio.estado = EstadoOrdenLaboratorio.ENTREGADO;
       ordenLaboratorio.retiro = retiro.retiro;
-      const savedOrden = await this.ordenLaboratorioRepository.save(ordenLaboratorio);
+      const savedOrden =
+        await this.ordenLaboratorioRepository.save(ordenLaboratorio);
       return this.findOnePublic(savedOrden.id);
     }
+  }
+
+  @OnEvent('pacient.deleted')
+  async handlePacienteDeletedEvent(event: { pacienteId: string }) {
+    const { pacienteId } = event;
+    const ordenesLaboratorio = await this.ordenLaboratorioRepository.find({
+      where: { paciente: { id: pacienteId }, is_active: true },
+    });
+
+    ordenesLaboratorio.forEach(async (orden) => {
+      if (orden.estado === EstadoOrdenLaboratorio.PENDIENTE) {
+        await this.softDelete(orden.id);
+      }
+    });
   }
 }
