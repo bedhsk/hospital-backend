@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryDepartamentoDto from './dto/query-departamento.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Departamentos')
 @Controller('departamentos')
@@ -61,7 +62,7 @@ export class DepartamentosController {
     return this.departamentosService.create(body);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Listar Departamentos',
@@ -75,7 +76,7 @@ export class DepartamentosController {
     return this.departamentosService.findAll(query);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar un departamento',

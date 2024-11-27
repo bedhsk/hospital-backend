@@ -26,6 +26,7 @@ import { DetalleretirosService } from './detalleretiros/detalleretiros.service';
 import CreateTransaccionDepartamentoDto from './dto/transaccion_departamento.dto';
 import { query } from 'express';
 import CreateRetiroPublicDto from './dto/create-retiro-public.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Retiros y detalleRetiro')
 @Controller('retiros')
@@ -35,7 +36,15 @@ export class RetirosController {
     private readonly detalleRetiroService: DetalleretirosService,
   ) {}
 
-  @AuthorizedRoles()
+  @AuthorizedRoles([
+    'Bodega',
+    'Farmacia',
+    'Odontología',
+    'Nutrición',
+    'Médicos',
+    'Enfermería',
+    'Laboratorio',
+  ])
   @Post()
   @ApiBody({
     description: 'Datos de el retiro a crear',
@@ -135,7 +144,7 @@ export class RetirosController {
     return this.retiroService.createPublic(createRetiroDto);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiResponse({
     status: 200,
@@ -251,7 +260,7 @@ export class RetirosController {
     return this.retiroService.findAll(query);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id')
   @ApiResponse({
     status: 200,
@@ -327,7 +336,15 @@ export class RetirosController {
     return this.retiroService.findOnePublic(id);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles([
+    'Bodega',
+    'Farmacia',
+    'Odontología',
+    'Nutrición',
+    'Médicos',
+    'Enfermería',
+    'Laboratorio',
+  ])
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un retiro existente' })
   @ApiBody({
@@ -425,7 +442,15 @@ export class RetirosController {
     return this.retiroService.update(id, updateRetiroDto);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles([
+    'Bodega',
+    'Farmacia',
+    'Odontología',
+    'Nutrición',
+    'Médicos',
+    'Enfermería',
+    'Laboratorio',
+  ])
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un retiro (soft delete)' })
   @ApiResponse({ status: 200, description: 'Retiro desactivado' })
@@ -442,7 +467,7 @@ export class RetirosController {
     return this.retiroService.softDelete(id);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @ApiParam({
     name: 'id',
     type: 'string',
@@ -455,7 +480,7 @@ export class RetirosController {
     return this.detalleRetiroService.findAllRetiroId(id);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @ApiOperation({ summary: 'Obtener todos los retiros por departamento' })
   @ApiResponse({
     status: 200,
@@ -488,7 +513,7 @@ export class RetirosController {
     return await this.retiroService.findAllInDepartamento(query);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Farmacia', 'Bodega'])
   @Post('/transaccion')
   @ApiResponse({
     status: 404,

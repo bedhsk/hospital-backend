@@ -2,12 +2,14 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AleartaSemaforoResponse, SemaforoService } from './semaforo.service';
 import QuerySemaforoDto from './dtos/query-semaforo.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Semaforo')
 @Controller('semaforo')
 export class SemaforoController {
   constructor(private semaforoService: SemaforoService) {}
 
+  @IsPublic()
   @Get('insumos')
   @ApiOperation({
     summary: 'Obtiene alertas de inventario',

@@ -22,13 +22,14 @@ import {
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryRecetaDto from './dto/query-receta.dto';
 import RetireRecetaDto from './dto/retire-receta.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Recetas')
 @Controller('recetas')
 export class RecetasController {
   constructor(private readonly recetasService: RecetasService) {}
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Farmacia', 'Médicos', 'Enfermería'])
   @Post()
   @ApiOperation({
     summary: 'Crear receta',
@@ -84,13 +85,14 @@ export class RecetasController {
     return this.recetasService.create(createRecetaDto);
   }
 
+  @AuthorizedRoles(['Farmacia', 'Enfermería'])
   @AuthorizedRoles()
   @Post(':id/retiro')
   retire(@Param('id') id: string, @Body() body: RetireRecetaDto) {
     return this.recetasService.retiroReceta(id, body);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Listar recetas',
@@ -169,7 +171,7 @@ export class RecetasController {
     return records;
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar receta',
@@ -214,7 +216,7 @@ export class RecetasController {
     return this.recetasService.findOnePublic(id);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Farmacia', 'Médicos', 'Enfermería'])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualizar receta',
@@ -276,6 +278,7 @@ export class RecetasController {
     return this.recetasService.update(id, body);
   }
 
+  @AuthorizedRoles(['Farmacia', 'Médicos', 'Enfermería'])
   @AuthorizedRoles()
   @Delete(':id')
   @ApiOperation({
