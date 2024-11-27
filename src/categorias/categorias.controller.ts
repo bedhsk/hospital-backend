@@ -21,13 +21,14 @@ import {
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryCategoriarDto from './dto/query-categoria.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Categorías')
 @Controller('categorias')
 export class CategoriasController {
   constructor(private readonly categoriasService: CategoriasService) {}
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @Post()
   @ApiOperation({
     summary: 'Crear una nueva categoría',
@@ -62,7 +63,7 @@ export class CategoriasController {
     return this.categoriasService.create(createCategoriaDto);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Obtiene todas las categorías',
@@ -115,7 +116,7 @@ export class CategoriasController {
     return this.categoriasService.findAll(query);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar una categoría',
@@ -160,7 +161,7 @@ export class CategoriasController {
     return this.categoriasService.findOne(id);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @ApiOperation({
     summary: 'Actualizar una categoría',
     description: 'Este endpoint sirve para actualizar una categoría',
@@ -212,7 +213,7 @@ export class CategoriasController {
     return this.categoriasService.update(id, updateCategoriaDto);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @ApiOperation({
     summary: 'Eliminar una categoría (soft delete)',
     description:

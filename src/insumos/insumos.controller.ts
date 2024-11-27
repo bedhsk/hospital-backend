@@ -21,13 +21,14 @@ import {
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryInsumoDto from './dto/query-insumo.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Insumos')
 @Controller('insumos')
 export class InsumosController {
   constructor(private readonly insumosService: InsumosService) {}
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @Post()
   @ApiOperation({
     summary: 'Crear un nuevo insumo',
@@ -74,7 +75,7 @@ export class InsumosController {
     return this.insumosService.create(createInsumoDto);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los insumos',
@@ -204,7 +205,7 @@ export class InsumosController {
     return await this.insumosService.getInsumosWithTotalCantidadActual();
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar un insumo por ID',
@@ -262,7 +263,7 @@ export class InsumosController {
     return this.insumosService.findOneWithDepartamentosAndLotes(id);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @ApiOperation({
     summary: 'Actualizar un insumo',
     description: 'Este endpoint sirve para actualizar un insumo existente',
@@ -335,7 +336,7 @@ export class InsumosController {
     return this.insumosService.update(id, updateInsumoDto);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Bodega'])
   @ApiOperation({
     summary: 'Eliminar (soft delete) un insumo',
     description:
