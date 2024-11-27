@@ -555,7 +555,7 @@ export class AdquisicionesController {
     return this.adquisicionService.softDelete(id);
   }
 
-  @AuthorizedRoles(['Bodega'])
+  @IsPublic()
   @AuthorizedRoles()
   @Get('/:id/detalles-de-adquisicion')
   findAllDetallesByAdquisicionId(@Param('id') id: string) {
