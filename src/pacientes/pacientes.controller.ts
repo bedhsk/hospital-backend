@@ -23,12 +23,14 @@ import { PacientesService } from './pacientes.service';
 import { CreatePacienteDto } from './dto/create-paciente.dto';
 import UpdatePacienteDto from './dto/update-paciente.dto';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Pacientes')
 @Controller('pacientes')
 export class PacientesController {
   constructor(private readonly pacientesService: PacientesService) {}
-  @AuthorizedRoles()
+
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los pacientes',
@@ -90,7 +92,10 @@ export class PacientesController {
               cui: { type: 'string', example: '1234567890123' },
               nacimiento: { type: 'date', example: '1980-01-01' },
               municipio: { type: 'string', example: 'Momostenango' },
-              comunidad: { type: 'string', example: 'Nombre Comunidad o Direccion' },
+              comunidad: {
+                type: 'string',
+                example: 'Nombre Comunidad o Direccion',
+              },
               telefono: { type: 'string', example: '7767642' },
               familiares: { type: 'string', example: 'Padre, Madre' },
               medicos: { type: 'string', example: 'Dr. Smith' },
@@ -120,7 +125,7 @@ export class PacientesController {
                   },
                 },
               },
-              edad:{ type: 'number', example: '44' },
+              edad: { type: 'number', example: '44' },
             },
           },
         },
@@ -140,7 +145,7 @@ export class PacientesController {
     return records;
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id')
   @ApiOperation({
     summary: 'Obtiene un paciente por ID',
@@ -215,7 +220,13 @@ export class PacientesController {
     return this.pacientesService.findHistorialMedico(id);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles([
+    'Odontología',
+    'Nutrición',
+    'Médicos',
+    'Enfermería',
+    'Laboratorio',
+  ])
   @Post()
   @ApiOperation({
     summary: 'Crea un nuevo paciente',
@@ -292,7 +303,14 @@ export class PacientesController {
   create(@Body() body: CreatePacienteDto) {
     return this.pacientesService.create(body);
   }
-  @AuthorizedRoles()
+
+  @AuthorizedRoles([
+    'Odontología',
+    'Nutrición',
+    'Médicos',
+    'Enfermería',
+    'Laboratorio',
+  ])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualiza un paciente existente',
@@ -380,7 +398,13 @@ export class PacientesController {
     return this.pacientesService.update(id, body);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles([
+    'Odontología',
+    'Nutrición',
+    'Médicos',
+    'Enfermería',
+    'Laboratorio',
+  ])
   @Delete(':id')
   @ApiOperation({
     summary: 'Elimina un paciente',

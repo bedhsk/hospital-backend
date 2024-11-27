@@ -24,13 +24,14 @@ import CreateUserDto from './dto/create-user.dto';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryUserDto from './dto/query-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Obtiene todos los usuarios',
@@ -135,25 +136,22 @@ export class UsersController {
     status: 403,
     description: 'Acceso denegado.',
   })
-  findAll(@Query() query: QueryUserDto) {
+  async findAll(@Query() query: QueryUserDto) {
     console.log(query);
-  
-    return this.userService.findAll(query).then(records => {
-      // Filtrar la contraseña de cada usuario en la respuesta
-      const usersWithoutPassword = records.data.map(user => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
-  
-      // Retornar la estructura completa (usuarios filtrados y otros datos)
-      return {
-        ...records,
-        data: usersWithoutPassword,
-      };
+
+    const records = await this.userService.findAll(query);
+    // Filtrar la contraseña de cada usuario en la respuesta
+    const usersWithoutPassword = records.data.map((user) => {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
     });
+    return {
+      ...records,
+      data: usersWithoutPassword,
+    };
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id')
   @ApiOperation({
     summary: 'Obtiene un usuario por ID',
@@ -220,15 +218,14 @@ export class UsersController {
     status: 403,
     description: 'Acceso denegado.',
   })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     console.log(id);
-    return this.userService.findOne(id).then(user => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+    const user = await this.userService.findOne(id);
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Dirección'])
   @Post()
   @ApiOperation({
     summary: 'Crea un nuevo usuario',
@@ -343,19 +340,17 @@ export class UsersController {
     description:
       'Solicitud incorrecta. Puede ser que el rol no se haya encontrado.',
   })
-  create(@Body() body: CreateUserDto) {
-    return this.userService.create(body).then(response => {
-      if (response === null) {
-        return 'El Role no fue encontrado';
-      }
-      
-      // Filtrar la contraseña de la respuesta
-      const { password, ...userWithoutPassword } = response;
-      return userWithoutPassword;
-    });
+  async create(@Body() body: CreateUserDto) {
+    const response = await this.userService.create(body);
+    if (response === null) {
+      return 'El Role no fue encontrado';
+    }
+    // Filtrar la contraseña de la respuesta
+    const { password, ...userWithoutPassword } = response;
+    return userWithoutPassword;
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Dirección'])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualiza un usuario existente',
@@ -398,7 +393,8 @@ export class UsersController {
           type: 'string',
           example: '59271b3e-e4ca-4434-8064-048a094ec8dc',
         },
-        departmentId: {  // Añadir el nuevo campo
+        departmentId: {
+          // Añadir el nuevo campo
           type: 'string',
           example: '234567a9-e4ca-4434-8064-048a094ec8dc',
         },
@@ -481,7 +477,7 @@ export class UsersController {
     return this.userService.update(id, body);
   }
 
-  @AuthorizedRoles()
+  @AuthorizedRoles(['Dirección'])
   @Delete(':id')
   @ApiOperation({
     summary: 'Elimina (desactiva) un usuario',

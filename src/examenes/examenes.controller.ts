@@ -19,12 +19,15 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
+import { AuthorizedRoles } from 'src/common/has-role.decoretor';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Examenes')
 @Controller('examenes')
 export class ExamenesController {
   constructor(private readonly examenesService: ExamenesService) {}
 
+  @AuthorizedRoles(['Laboratorio'])
   @Post()
   @ApiOperation({
     summary: 'Crear un nuevo examen',
@@ -43,6 +46,7 @@ export class ExamenesController {
     return this.examenesService.create(createExamenDto);
   }
 
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Obtener todos los exámenes',
@@ -82,6 +86,7 @@ export class ExamenesController {
     return this.examenesService.findAll(query);
   }
 
+  @IsPublic()
   @Get(':id')
   @ApiOperation({
     summary: 'Obtener un examen por ID',
@@ -106,6 +111,7 @@ export class ExamenesController {
     return this.examenesService.findOneWithInsumos(id);
   }
 
+  @AuthorizedRoles(['Laboratorio'])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualizar un examen',
@@ -123,6 +129,7 @@ export class ExamenesController {
     return this.examenesService.update(id, updateExamenDto);
   }
 
+  @AuthorizedRoles(['Laboratorio'])
   @Delete(':id')
   @ApiOperation({
     summary: 'Eliminar (soft delete) un examen',
