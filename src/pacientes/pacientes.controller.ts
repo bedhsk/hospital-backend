@@ -209,7 +209,7 @@ export class PacientesController {
     return this.pacientesService.findOne(id);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get(':id/historialmedico')
   @ApiResponse({
     status: 404,
