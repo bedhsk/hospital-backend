@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthorizedRoles } from 'src/common/has-role.decoretor';
 import QueryLoteDto from './dto/query-lote.dto';
+import { IsPublic } from 'src/common/is-public.decorator';
 
 @ApiTags('Lotes')
 @Controller('lotes')
@@ -81,7 +82,7 @@ export class LotesController {
     return this.lotesService.create(createLoteDto);
   }
 
-  @AuthorizedRoles()
+  @IsPublic()
   @Get()
   @ApiOperation({
     summary: 'Listar todos los lotes activos',
