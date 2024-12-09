@@ -31,7 +31,7 @@ export class OrdenLaboratoriosController {
     private readonly ordenLaboratorioService: OrdenLaboratoriosService,
   ) {}
 
-  @AuthorizedRoles(['Laboratorio', 'Médicos'])
+  @AuthorizedRoles(['Laboratorio', 'Medicos'])
   @Post()
   @ApiOperation({
     summary: 'Crear una nueva orden de laboratorio',
@@ -74,7 +74,7 @@ export class OrdenLaboratoriosController {
     );
   }
 
-  @AuthorizedRoles(['Laboratorio', 'Médicos'])
+  @AuthorizedRoles(['Laboratorio', 'Medicos'])
   @Post(':id/retiro')
   retire(@Param('id') id: string, @Body() body: RetireOrdenDto) {
     return this.ordenLaboratorioService.retireOrderLaboratorio(id, body);
@@ -223,7 +223,7 @@ export class OrdenLaboratoriosController {
     return this.ordenLaboratorioService.findOnePublic(id);
   }
 
-  @AuthorizedRoles(['Laboratorio', 'Médicos'])
+  @AuthorizedRoles(['Laboratorio', 'Medicos'])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualizar una orden de laboratorio',
@@ -261,7 +261,7 @@ export class OrdenLaboratoriosController {
     return this.ordenLaboratorioService.update(id, updateOrdenLaboratorioDto);
   }
 
-  @AuthorizedRoles(['Laboratorio', 'Médicos'])
+  @AuthorizedRoles(['Laboratorio', 'Medicos'])
   @Delete(':id')
   @ApiOperation({
     summary: 'Eliminar (soft delete) una orden de laboratorio',
@@ -286,7 +286,7 @@ export class OrdenLaboratoriosController {
     return this.ordenLaboratorioService.softDelete(id);
   }
 
-  @AuthorizedRoles(['Laboratorio', 'Médicos'])
+  @AuthorizedRoles(['Laboratorio', 'Medicos'])
   @Post('examen')
   @ApiOperation({
     summary:

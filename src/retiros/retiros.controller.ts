@@ -39,10 +39,10 @@ export class RetirosController {
   @AuthorizedRoles([
     'Bodega',
     'Farmacia',
-    'Odontología',
-    'Nutrición',
-    'Médicos',
-    'Enfermería',
+    'Odontologia',
+    'Nutricion',
+    'Medicos',
+    'Enfermeria',
     'Laboratorio',
   ])
   @Post()
@@ -339,10 +339,10 @@ export class RetirosController {
   @AuthorizedRoles([
     'Bodega',
     'Farmacia',
-    'Odontología',
-    'Nutrición',
-    'Médicos',
-    'Enfermería',
+    'Odontologia',
+    'Nutricion',
+    'Medicos',
+    'Enfermeria',
     'Laboratorio',
   ])
   @Patch(':id')
@@ -445,10 +445,10 @@ export class RetirosController {
   @AuthorizedRoles([
     'Bodega',
     'Farmacia',
-    'Odontología',
-    'Nutrición',
-    'Médicos',
-    'Enfermería',
+    'Odontologia',
+    'Nutricion',
+    'Medicos',
+    'Enfermeria',
     'Laboratorio',
   ])
   @Delete(':id')

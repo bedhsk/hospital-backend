@@ -8,12 +8,12 @@ export class CreateRolesSeed {
     const roles = [
       { name: 'Farmacia' },
       { name: 'Bodega' },
-      { name: 'Odontología' },
-      { name: 'Nutrición' },
-      { name: 'Médicos' },
-      { name: 'Enfermería' },
+      { name: 'Odontologia' },
+      { name: 'Nutricion' },
+      { name: 'Medicos' },
+      { name: 'Enfermeria' },
       { name: 'Laboratorio' },
-      { name: 'Dirección' },
+      { name: 'Direccion' },
       { name: 'SuperAdmin' },
     ];
 
