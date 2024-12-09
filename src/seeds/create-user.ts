@@ -13,13 +13,21 @@ export class CreateUsersSeed {
     // Obtén los roles
     const farmaciaRole = await roleRepository.findOneBy({ name: 'Farmacia' });
     const bodegaRole = await roleRepository.findOneBy({ name: 'Bodega' });
-    const odontologiaRole = await roleRepository.findOneBy({ name: 'Odontología' });
-    const nutricionRole = await roleRepository.findOneBy({ name: 'Nutrición' });
-    const medicosRole = await roleRepository.findOneBy({ name: 'Médicos' });
-    const enfermeriaRole = await roleRepository.findOneBy({ name: 'Enfermería' });
-    const laboratorioRole = await roleRepository.findOneBy({ name: 'Laboratorio' });
-    const direccionRole = await roleRepository.findOneBy({ name: 'Dirección' });
-    const superAdminRole = await roleRepository.findOneBy({ name: 'SuperAdmin' });
+    const odontologiaRole = await roleRepository.findOneBy({
+      name: 'Odontologia',
+    });
+    const nutricionRole = await roleRepository.findOneBy({ name: 'Nutricion' });
+    const medicosRole = await roleRepository.findOneBy({ name: 'Medicos' });
+    const enfermeriaRole = await roleRepository.findOneBy({
+      name: 'Enfermeria',
+    });
+    const laboratorioRole = await roleRepository.findOneBy({
+      name: 'Laboratorio',
+    });
+    const direccionRole = await roleRepository.findOneBy({ name: 'Direccion' });
+    const superAdminRole = await roleRepository.findOneBy({
+      name: 'SuperAdmin',
+    });
 
     // Obtén departamentos específicos
     const departamentoFarmacia = await departamentoRepository.findOneBy({
@@ -29,22 +37,22 @@ export class CreateUsersSeed {
       nombre: 'Bodega',
     });
     const departamentoOdontologia = await departamentoRepository.findOneBy({
-      nombre: 'Odontología',
+      nombre: 'Odontologia',
     });
     const departamentoNutricion = await departamentoRepository.findOneBy({
-      nombre: 'Nutrición',
+      nombre: 'Nutricion',
     });
     const departamentoMedicos = await departamentoRepository.findOneBy({
-      nombre: 'Médicos',
+      nombre: 'Medicos',
     });
     const departamentoEnfermeria = await departamentoRepository.findOneBy({
-      nombre: 'Enfermería',
+      nombre: 'Enfermeria',
     });
     const departamentoLaboratorio = await departamentoRepository.findOneBy({
       nombre: 'Laboratorio',
     });
     const departamentoDireccion = await departamentoRepository.findOneBy({
-      nombre: 'Dirección',
+      nombre: 'Direccion',
     });
     const departamentoAdmin = await departamentoRepository.findOneBy({
       nombre: 'Administración',
@@ -85,7 +93,7 @@ export class CreateUsersSeed {
       },
       {
         name: 'Ana',
-        lastname: 'Odontología',
+        lastname: 'Odontologia',
         username: 'odontologia_user',
         email: 'odontologia_user@gmail.com',
         is_Active: true,
@@ -95,7 +103,7 @@ export class CreateUsersSeed {
       },
       {
         name: 'Sofia',
-        lastname: 'Nutrición',
+        lastname: 'Nutricion',
         username: 'nutricion_user',
         email: 'nutricion_user@gmail.com',
         is_Active: true,
@@ -115,7 +123,7 @@ export class CreateUsersSeed {
       },
       {
         name: 'Carla',
-        lastname: 'Enfermería',
+        lastname: 'Enfermeria',
         username: 'enfermeria_user',
         email: 'enfermeria_user@gmail.com',
         is_Active: true,
@@ -135,7 +143,7 @@ export class CreateUsersSeed {
       },
       {
         name: 'Diana',
-        lastname: 'Dirección',
+        lastname: 'Direccion',
         username: 'direccion_user',
         email: 'direccion_user@gmail.com',
         is_Active: true,

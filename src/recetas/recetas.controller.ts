@@ -29,7 +29,7 @@ import { IsPublic } from 'src/common/is-public.decorator';
 export class RecetasController {
   constructor(private readonly recetasService: RecetasService) {}
 
-  @AuthorizedRoles(['Farmacia', 'Médicos', 'Enfermería'])
+  @AuthorizedRoles(['Farmacia', 'Medicos', 'Enfermeria'])
   @Post()
   @ApiOperation({
     summary: 'Crear receta',
@@ -85,7 +85,7 @@ export class RecetasController {
     return this.recetasService.create(createRecetaDto);
   }
 
-  @AuthorizedRoles(['Farmacia', 'Enfermería'])
+  @AuthorizedRoles(['Farmacia', 'Enfermeria'])
   @AuthorizedRoles()
   @Post(':id/retiro')
   retire(@Param('id') id: string, @Body() body: RetireRecetaDto) {
@@ -216,7 +216,7 @@ export class RecetasController {
     return this.recetasService.findOnePublic(id);
   }
 
-  @AuthorizedRoles(['Farmacia', 'Médicos', 'Enfermería'])
+  @AuthorizedRoles(['Farmacia', 'Medicos', 'Enfermeria'])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualizar receta',
@@ -278,7 +278,7 @@ export class RecetasController {
     return this.recetasService.update(id, body);
   }
 
-  @AuthorizedRoles(['Farmacia', 'Médicos', 'Enfermería'])
+  @AuthorizedRoles(['Farmacia', 'Medicos', 'Enfermeria'])
   @AuthorizedRoles()
   @Delete(':id')
   @ApiOperation({

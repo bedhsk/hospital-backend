@@ -10,7 +10,7 @@ export class CreateDepartamentoSeed {
       { nombre: 'Farmacia' },
       { nombre: 'Pediatría' },
       { nombre: 'Urgencias' },
-      { nombre: 'Enfermería' },
+      { nombre: 'Enfermeria' },
       { nombre: 'Laboratorio' },
       { nombre: 'Traumatología' },
       { nombre: 'Administración' },

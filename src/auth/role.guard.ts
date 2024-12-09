@@ -27,7 +27,7 @@ export class RoleGuard implements CanActivate {
 
     // Allow access to SuperUser
     const superUser =
-      user?.role?.name === 'SuperAdmin' || user?.role?.name === 'Dirección';
+      user?.role?.name === 'SuperAdmin' || user?.role?.name === 'Direccion';
     if (superUser) {
       return true;
     }

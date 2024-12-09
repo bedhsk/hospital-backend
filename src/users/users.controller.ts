@@ -225,7 +225,7 @@ export class UsersController {
     return userWithoutPassword;
   }
 
-  @AuthorizedRoles(['Dirección'])
+  @AuthorizedRoles(['Direccion'])
   @Post()
   @ApiOperation({
     summary: 'Crea un nuevo usuario',
@@ -350,7 +350,7 @@ export class UsersController {
     return userWithoutPassword;
   }
 
-  @AuthorizedRoles(['Dirección'])
+  @AuthorizedRoles(['Direccion'])
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualiza un usuario existente',
@@ -477,7 +477,7 @@ export class UsersController {
     return this.userService.update(id, body);
   }
 
-  @AuthorizedRoles(['Dirección'])
+  @AuthorizedRoles(['Direccion'])
   @Delete(':id')
   @ApiOperation({
     summary: 'Elimina (desactiva) un usuario',
